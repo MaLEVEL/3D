@@ -68,6 +68,9 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                 data = json.loads(post_data)
                 text = data.get("text", "")
                 digits = data.get("digits", "")
+                advance_digits = data.get("advance_digits", "")
+
+                # 提取所有三位数字并去重
                 matches = re.findall(r"\b\d{3}\b", text)
                 seen = set()
                 unique = []
@@ -75,13 +78,39 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                     if m not in seen:
                         seen.add(m)
                         unique.append(m)
-                target = set(digits)
-                filtered = [n for n in unique if any(d in n for d in target)]
+
+                target_include = set(digits) if digits else set()
+                target_advance = set(advance_digits) if advance_digits else set()
+
+                if not target_include and not target_advance:
+                    self._send_json({"error": "请至少输入一个筛选条件"}, 400)
+                    return
+
+                filtered = []
+                for n in unique:
+                    # 条件1：包含数字
+                    if target_include:
+                        if not any(d in n for d in target_include):
+                            continue
+                    # 条件2：标准两码差（绝对值）
+                    if target_advance:
+                        a, b, c = int(n[0]), int(n[1]), int(n[2])
+                        # 计算两两差值的绝对值
+                        adv_set = {
+                            abs(a - b),
+                            abs(a - c),
+                            abs(b - c)
+                        }
+                        if not any(str(d) in target_advance for d in adv_set):
+                            continue
+                    filtered.append(n)
+
                 self._send_json({
                     "total": len(unique),
                     "filtered": filtered,
                     "count": len(filtered),
-                    "percent": round(len(filtered) / len(unique) * 100, 2) if unique else 0
+                    "percent": round(len(filtered) / len(unique) * 100, 2) if unique else 0,
+                    "advance_digits": advance_digits
                 })
             except Exception as e:
                 self._send_json({"error": str(e)}, 500)

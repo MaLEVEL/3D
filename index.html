@@ -9,536 +9,89 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   /* ---------- DESIGN SYSTEM ---------- */
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
+  * { margin: 0; padding: 0; box-sizing: border-box; }
   :root {
-    /* 主色调 —— 深邃电感 */
-    --p-50: #eff6ff;
-    --p-100: #dbeafe;
-    --p-400: #60a5fa;
-    --p-500: #3b82f6;
-    --p-600: #2563eb;
-    --p-700: #1d4ed8;
-    --p-800: #1e40af;
-    
-    /* 中性灰阶 */
-    --n-0: #ffffff;
-    --n-50: #f8fafc;
-    --n-100: #f1f5f9;
-    --n-200: #e2e8f0;
-    --n-300: #cbd5e1;
-    --n-400: #94a3b8;
-    --n-500: #64748b;
-    --n-600: #475569;
-    --n-700: #334155;
-    --n-800: #1e293b;
-    --n-900: #0f172a;
-
-    /* 功能色 */
-    --success: #10b981;
-    --success-dark: #059669;
-    --warning: #f59e0b;
-    --warning-dark: #d97706;
-    --danger: #ef4444;
-    --danger-dark: #dc2626;
-    --info: #3b82f6;
-
-    /* 间距系统 (8px 基数) */
-    --space-1: 4px;
-    --space-2: 8px;
-    --space-3: 12px;
-    --space-4: 16px;
-    --space-5: 20px;
-    --space-6: 24px;
-    --space-8: 32px;
-    --space-10: 40px;
-    --space-12: 48px;
-
-    /* 圆角 */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 20px;
-    --radius-2xl: 24px;
-    --radius-full: 9999px;
-
-    /* 动效 */
-    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    --duration-fast: 150ms;
-    --duration-base: 200ms;
-    --duration-slow: 300ms;
-
-    /* 字体 */
+    --p-50: #eff6ff; --p-100: #dbeafe; --p-400: #60a5fa; --p-500: #3b82f6; --p-600: #2563eb; --p-700: #1d4ed8; --p-800: #1e40af;
+    --n-0: #ffffff; --n-50: #f8fafc; --n-100: #f1f5f9; --n-200: #e2e8f0; --n-300: #cbd5e1; --n-400: #94a3b8; --n-500: #64748b; --n-600: #475569; --n-700: #334155; --n-800: #1e293b; --n-900: #0f172a;
+    --success: #10b981; --success-dark: #059669; --warning: #f59e0b; --warning-dark: #d97706; --danger: #ef4444; --danger-dark: #dc2626; --info: #3b82f6;
+    --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px; --space-12: 48px;
+    --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px; --radius-2xl: 24px; --radius-full: 9999px;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --duration-fast: 150ms; --duration-base: 200ms; --duration-slow: 300ms;
     --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
-
-    /* 玻璃效果 */
-    --glass-bg: rgba(255, 255, 255, 0.75);
-    --glass-border: rgba(255, 255, 255, 0.5);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    --glass-bg: rgba(255, 255, 255, 0.75); --glass-border: rgba(255, 255, 255, 0.5); --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
   }
-
   body {
     font-family: var(--font-sans);
     background: radial-gradient(ellipse at 20% 30%, var(--n-50) 0%, var(--p-50) 100%);
-    min-height: 100vh;
-    padding: var(--space-6) var(--space-4);
-    color: var(--n-800);
-    line-height: 1.5;
+    min-height: 100vh; padding: var(--space-6) var(--space-4); color: var(--n-800); line-height: 1.5;
   }
-
-  @media (min-width: 768px) {
-    body {
-      padding: var(--space-10) var(--space-6);
-    }
-  }
-
-  /* 主容器 */
-  .app {
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-
-  /* 标题区 */
-  .hero {
-    text-align: center;
-    margin-bottom: var(--space-10);
-    position: relative;
-  }
-  .hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    background: rgba(255,255,255,0.7);
-    backdrop-filter: blur(8px);
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-full);
-    border: 1px solid var(--n-200);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--p-600);
-    margin-bottom: var(--space-4);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-  }
-  .hero h1 {
-    font-size: clamp(32px, 6vw, 48px);
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    background: linear-gradient(135deg, var(--n-900), var(--p-700));
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    margin-bottom: var(--space-3);
-  }
-  .hero p {
-    font-size: 16px;
-    color: var(--n-500);
-    max-width: 520px;
-    margin: 0 auto;
-  }
-
-  /* 玻璃卡片 */
-  .glass-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-2xl);
-    box-shadow: var(--glass-shadow), 0 4px 12px rgba(0,0,0,0.02);
-    transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
-  }
-  .glass-card:hover {
-    box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
-  }
-
-  .card-padding {
-    padding: var(--space-6);
-  }
-  @media (min-width: 768px) {
-    .card-padding {
-      padding: var(--space-8);
-    }
-  }
-
-  .section-title {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    margin-bottom: var(--space-6);
-  }
-  .section-title .icon-bg {
-    width: 40px;
-    height: 40px;
-    background: var(--p-100);
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--p-600);
-  }
-  .section-title h2 {
-    font-size: 1.35rem;
-    font-weight: 600;
-    color: var(--n-800);
-  }
-
-  /* 表单 */
-  .form-group {
-    margin-bottom: var(--space-5);
-  }
-  label {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--n-700);
-    margin-bottom: var(--space-2);
-  }
-  .helper-text {
-    display: block;
-    margin-top: var(--space-2);
-    font-size: 0.75rem;
-    color: var(--n-400);
-  }
-  textarea, .filter-input {
-    width: 100%;
-    background: white;
-    border: 1.5px solid var(--n-200);
-    border-radius: var(--radius-lg);
-    padding: var(--space-4);
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    line-height: 1.5;
-    transition: all var(--duration-fast) var(--ease-out);
-    resize: vertical;
-  }
-  textarea {
-    min-height: 180px;
-  }
-  textarea:focus, .filter-input:focus {
-    outline: none;
-    border-color: var(--p-500);
-    box-shadow: 0 0 0 4px var(--p-100);
-  }
-  .input-error {
-    border-color: var(--danger) !important;
-    box-shadow: 0 0 0 3px rgba(239,68,68,0.15) !important;
-  }
-
-  /* 按钮组 */
-  .btn-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-    margin-top: var(--space-2);
-  }
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    height: 46px;
-    padding: 0 var(--space-5);
-    border-radius: var(--radius-lg);
-    font-weight: 600;
-    font-size: 0.9rem;
-    border: none;
-    cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
-    background: white;
-    color: var(--n-700);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  }
-  .btn-primary {
-    background: linear-gradient(105deg, var(--p-600), var(--p-700));
-    color: white;
-    box-shadow: 0 4px 12px rgba(37,99,235,0.25);
-  }
-  .btn-primary:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(37,99,235,0.35);
-  }
-  .btn-secondary {
-    background: white;
-    border: 1px solid var(--n-200);
-  }
-  .btn-secondary:hover {
-    background: var(--n-50);
-    border-color: var(--n-300);
-    transform: translateY(-1px);
-  }
-  .btn-ghost {
-    background: transparent;
-    box-shadow: none;
-    border: 1px solid transparent;
-  }
-  .btn-ghost:hover {
-    background: rgba(0,0,0,0.04);
-    border-color: var(--n-200);
-  }
-  .btn-success {
-    background: var(--success);
-    color: white;
-    box-shadow: 0 4px 12px rgba(16,185,129,0.2);
-  }
-  .btn-warning {
-    background: var(--warning);
-    color: white;
-  }
-  .btn-danger {
-    background: var(--danger);
-    color: white;
-  }
-  .btn-sm {
-    height: 38px;
-    padding: 0 var(--space-4);
-    font-size: 0.8rem;
-  }
-  .btn:active {
-    transform: scale(0.97);
-  }
-  .btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  /* 统计卡片 (Bento) */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-4);
-    margin: var(--space-6) 0;
-  }
-  .stat-card {
-    background: rgba(255,255,255,0.8);
-    backdrop-filter: blur(12px);
-    border-radius: var(--radius-xl);
-    padding: var(--space-5);
-    text-align: center;
-    border: 1px solid var(--n-200);
-    transition: all var(--duration-base);
-  }
-  .stat-card:hover {
-    transform: translateY(-3px);
-    background: white;
-  }
-  .stat-icon {
-    width: 48px;
-    height: 48px;
-    background: var(--p-50);
-    border-radius: var(--radius-md);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--p-600);
-    margin-bottom: var(--space-3);
-  }
-  .stat-number {
-    font-family: var(--font-mono);
-    font-size: 2.4rem;
-    font-weight: 800;
-    color: var(--n-900);
-    line-height: 1.2;
-    margin-bottom: var(--space-1);
-  }
-  .stat-label {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--n-500);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  /* 文本输出区域 (纯文本风格) */
-  .text-output {
-    background: var(--n-50);
-    border: 1px solid var(--n-200);
-    border-radius: var(--radius-lg);
-    padding: var(--space-5);
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    line-height: 1.7;
-    color: var(--n-800);
-    white-space: pre-wrap;
-    word-break: break-all;
-    max-height: 440px;
-    overflow-y: auto;
-    transition: all var(--duration-fast);
-  }
-  .text-output::-webkit-scrollbar {
-    width: 6px;
-  }
-  .text-output::-webkit-scrollbar-thumb {
-    background: var(--n-300);
-    border-radius: var(--radius-full);
-  }
-  .result-header-bar {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-4);
-    gap: var(--space-3);
-  }
-  .badge-count {
-    background: var(--p-100);
-    color: var(--p-700);
-    border-radius: var(--radius-full);
-    padding: 0.25rem 0.8rem;
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: 0.8rem;
-  }
-
-  /* 历史记录卡片 */
-  .history-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    max-height: 420px;
-    overflow-y: auto;
-    padding-right: 4px;
-  }
-  .history-item {
-    background: white;
-    border: 1px solid var(--n-200);
-    border-radius: var(--radius-lg);
-    padding: var(--space-4);
-    transition: all var(--duration-fast);
-    cursor: pointer;
-    position: relative;
-  }
-  .history-item:hover {
-    border-color: var(--p-300);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.05);
-    transform: translateX(4px);
-  }
-  .history-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: var(--space-3);
-    gap: var(--space-2);
-  }
-  .history-time {
-    font-size: 0.75rem;
-    color: var(--n-400);
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-family: var(--font-mono);
-  }
-  .history-digits-badge {
-    background: linear-gradient(135deg, var(--p-500), var(--p-600));
-    color: white;
-    padding: 2px 10px;
-    border-radius: var(--radius-full);
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: 0.8rem;
-  }
-  .history-stats {
-    display: flex;
-    gap: var(--space-4);
-    font-size: 0.75rem;
-    font-family: var(--font-mono);
-    margin-bottom: var(--space-2);
-  }
-  .history-preview {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--n-500);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .history-delete {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: transparent;
-    border: none;
-    color: var(--n-400);
-    cursor: pointer;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: all 0.2s;
-  }
-  .history-item:hover .history-delete {
-    opacity: 1;
-  }
-  .history-delete:hover {
-    background: var(--danger);
-    color: white;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: var(--space-12) var(--space-6);
-    background: rgba(255,255,255,0.6);
-    backdrop-filter: blur(8px);
-    border-radius: var(--radius-2xl);
-    border: 1.5px dashed var(--n-300);
-    color: var(--n-400);
-  }
-
-  /* 加载动画 */
-  .spinner {
-    width: 18px;
-    height: 18px;
-    border: 2px solid currentColor;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
+  @media (min-width: 768px) { body { padding: var(--space-10) var(--space-6); } }
+  .app { max-width: 1100px; margin: 0 auto; }
+  .hero { text-align: center; margin-bottom: var(--space-10); position: relative; }
+  .hero-badge { display: inline-flex; align-items: center; gap: var(--space-2); background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); border: 1px solid var(--n-200); font-size: 13px; font-weight: 600; color: var(--p-600); margin-bottom: var(--space-4); box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+  .hero h1 { font-size: clamp(32px, 6vw, 48px); font-weight: 800; letter-spacing: -0.02em; background: linear-gradient(135deg, var(--n-900), var(--p-700)); background-clip: text; -webkit-background-clip: text; color: transparent; margin-bottom: var(--space-3); }
+  .hero p { font-size: 16px; color: var(--n-500); max-width: 520px; margin: 0 auto; }
+  .glass-card { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: var(--radius-2xl); box-shadow: var(--glass-shadow), 0 4px 12px rgba(0,0,0,0.02); transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out); }
+  .glass-card:hover { box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.12); transform: translateY(-2px); }
+  .card-padding { padding: var(--space-6); }
+  @media (min-width: 768px) { .card-padding { padding: var(--space-8); } }
+  .section-title { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-6); }
+  .section-title .icon-bg { width: 40px; height: 40px; background: var(--p-100); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--p-600); }
+  .section-title h2 { font-size: 1.35rem; font-weight: 600; color: var(--n-800); }
+  .form-group { margin-bottom: var(--space-5); }
+  label { display: block; font-size: 0.9rem; font-weight: 600; color: var(--n-700); margin-bottom: var(--space-2); }
+  .helper-text { display: block; margin-top: var(--space-2); font-size: 0.75rem; color: var(--n-400); }
+  textarea, .filter-input { width: 100%; background: white; border: 1.5px solid var(--n-200); border-radius: var(--radius-lg); padding: var(--space-4); font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.5; transition: all var(--duration-fast) var(--ease-out); resize: vertical; }
+  textarea { min-height: 180px; }
+  textarea:focus, .filter-input:focus { outline: none; border-color: var(--p-500); box-shadow: 0 0 0 4px var(--p-100); }
+  .input-error { border-color: var(--danger) !important; box-shadow: 0 0 0 3px rgba(239,68,68,0.15) !important; }
+  .btn-group { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-2); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); height: 46px; padding: 0 var(--space-5); border-radius: var(--radius-lg); font-weight: 600; font-size: 0.9rem; border: none; cursor: pointer; transition: all var(--duration-fast) var(--ease-out); background: white; color: var(--n-700); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+  .btn-primary { background: linear-gradient(105deg, var(--p-600), var(--p-700)); color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,99,235,0.35); }
+  .btn-secondary { background: white; border: 1px solid var(--n-200); }
+  .btn-secondary:hover { background: var(--n-50); border-color: var(--n-300); transform: translateY(-1px); }
+  .btn-ghost { background: transparent; box-shadow: none; border: 1px solid transparent; }
+  .btn-ghost:hover { background: rgba(0,0,0,0.04); border-color: var(--n-200); }
+  .btn-success { background: var(--success); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.2); }
+  .btn-warning { background: var(--warning); color: white; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-sm { height: 38px; padding: 0 var(--space-4); font-size: 0.8rem; }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin: var(--space-6) 0; }
+  .stat-card { background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); border-radius: var(--radius-xl); padding: var(--space-5); text-align: center; border: 1px solid var(--n-200); transition: all var(--duration-base); }
+  .stat-card:hover { transform: translateY(-3px); background: white; }
+  .stat-icon { width: 48px; height: 48px; background: var(--p-50); border-radius: var(--radius-md); display: inline-flex; align-items: center; justify-content: center; color: var(--p-600); margin-bottom: var(--space-3); }
+  .stat-number { font-family: var(--font-mono); font-size: 2.4rem; font-weight: 800; color: var(--n-900); line-height: 1.2; margin-bottom: var(--space-1); }
+  .stat-label { font-size: 0.8rem; font-weight: 500; color: var(--n-500); text-transform: uppercase; letter-spacing: 0.5px; }
+  .text-output { background: var(--n-50); border: 1px solid var(--n-200); border-radius: var(--radius-lg); padding: var(--space-5); font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.7; color: var(--n-800); white-space: pre-wrap; word-break: break-all; max-height: 440px; overflow-y: auto; transition: all var(--duration-fast); }
+  .text-output::-webkit-scrollbar { width: 6px; }
+  .text-output::-webkit-scrollbar-thumb { background: var(--n-300); border-radius: var(--radius-full); }
+  .result-header-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); gap: var(--space-3); }
+  .badge-count { background: var(--p-100); color: var(--p-700); border-radius: var(--radius-full); padding: 0.25rem 0.8rem; font-family: var(--font-mono); font-weight: 700; font-size: 0.8rem; }
+  .history-list { display: flex; flex-direction: column; gap: var(--space-3); max-height: 420px; overflow-y: auto; padding-right: 4px; }
+  .history-item { background: white; border: 1px solid var(--n-200); border-radius: var(--radius-lg); padding: var(--space-4); transition: all var(--duration-fast); cursor: pointer; position: relative; }
+  .history-item:hover { border-color: var(--p-300); box-shadow: 0 6px 14px rgba(0,0,0,0.05); transform: translateX(4px); }
+  .history-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: var(--space-3); gap: var(--space-2); }
+  .history-time { font-size: 0.75rem; color: var(--n-400); display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono); }
+  .history-digits-badge { background: linear-gradient(135deg, var(--p-500), var(--p-600)); color: white; padding: 2px 10px; border-radius: var(--radius-full); font-family: var(--font-mono); font-weight: 700; font-size: 0.8rem; }
+  .history-advance-badge { background: linear-gradient(135deg, var(--success), var(--success-dark)); color: white; padding: 2px 10px; border-radius: var(--radius-full); font-family: var(--font-mono); font-weight: 700; font-size: 0.8rem; margin-left: 4px; }
+  .history-stats { display: flex; gap: var(--space-4); font-size: 0.75rem; font-family: var(--font-mono); margin-bottom: var(--space-2); }
+  .history-preview { font-family: var(--font-mono); font-size: 0.75rem; color: var(--n-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-delete { position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--n-400); cursor: pointer; width: 28px; height: 28px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s; }
+  .history-item:hover .history-delete { opacity: 1; }
+  .history-delete:hover { background: var(--danger); color: white; }
+  .empty-state { text-align: center; padding: var(--space-12) var(--space-6); background: rgba(255,255,255,0.6); backdrop-filter: blur(8px); border-radius: var(--radius-2xl); border: 1.5px dashed var(--n-300); color: var(--n-400); }
+  .spinner { width: 18px; height: 18px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* 吐司 */
-  .toast-container {
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    z-index: 2000;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .toast {
-    background: var(--n-800);
-    color: white;
-    padding: 12px 20px;
-    border-radius: var(--radius-lg);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-weight: 500;
-    font-size: 0.85rem;
-    box-shadow: 0 12px 28px rgba(0,0,0,0.2);
-    transform: translateX(30px);
-    opacity: 0;
-    transition: all 0.25s var(--ease-out);
-    backdrop-filter: blur(4px);
-  }
-  .toast.show {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  .toast-container { position: fixed; top: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 12px; }
+  .toast { background: var(--n-800); color: white; padding: 12px 20px; border-radius: var(--radius-lg); display: flex; align-items: center; gap: 12px; font-weight: 500; font-size: 0.85rem; box-shadow: 0 12px 28px rgba(0,0,0,0.2); transform: translateX(30px); opacity: 0; transition: all 0.25s var(--ease-out); backdrop-filter: blur(4px); }
+  .toast.show { transform: translateX(0); opacity: 1; }
   .toast-success { background: var(--success-dark); }
   .toast-error { background: var(--danger-dark); }
-
-  @media (prefers-reduced-motion: reduce) {
-    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  }
+  @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
 </style>
 </head>
 <body>
@@ -550,7 +103,7 @@
       <span>本地引擎 · 毫秒级筛选</span>
     </div>
     <h1>彩云筛<span style="font-weight:400">｜</span>号码智选</h1>
-    <p>智能提取三位号码，精准命中任意包含数字</p>
+    <p>智能提取三位号码，支持包含数字 & 标准两码差双重筛选</p>
   </div>
 
   <div class="glass-card card-padding" style="margin-bottom: var(--space-6);">
@@ -568,6 +121,12 @@
       <input type="text" id="filterDigits" class="filter-input" placeholder="例：357" maxlength="10">
       <span class="helper-text">输入任意数字（0-9），号码中包含其中任意一位即入选。</span>
     </div>
+    <!-- 两码差输入 -->
+    <div class="form-group">
+      <label>🧮 两码差数字（绝对值：|百-十|、|百-个|、|十-个|）</label>
+      <input type="text" id="advanceDigits" class="filter-input" placeholder="例：523" maxlength="10">
+      <span class="helper-text">计算规则：例 163 → |1-6|=5, |1-3|=2, |6-3|=3 → 差 5,2,3。只要任一结果包含你输入的数字即命中。</span>
+    </div>
     <div class="btn-group">
       <button class="btn btn-primary" id="filterBtn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>
@@ -584,7 +143,7 @@
     </div>
   </div>
 
-  <!-- 统计卡片 (动态隐藏) -->
+  <!-- 统计卡片 -->
   <div id="statsArea" style="display: none;">
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/></svg></div><div class="stat-number" id="totalCount">0</div><div class="stat-label">总号码数</div></div>
@@ -593,7 +152,7 @@
     </div>
   </div>
 
-  <!-- 结果输出区 (文本风格) -->
+  <!-- 结果输出区 -->
   <div id="resultArea" style="display: none;" class="glass-card card-padding" style="margin-bottom: var(--space-6);">
     <div class="result-header-bar">
       <div class="section-title" style="margin-bottom: 0;">
@@ -622,7 +181,7 @@
   <div id="emptyState" class="empty-state">
     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
     <h3 style="margin-top:12px;">准备就绪</h3>
-    <p>输入号码池和筛选数字，点击筛选后结果将显示为简洁文本列表</p>
+    <p>输入号码池及筛选条件（可单独使用包含数字或两码差，也可组合使用）</p>
   </div>
 </div>
 <div class="toast-container" id="toastContainer"></div>
@@ -630,8 +189,9 @@
 <script>
   (function() {
     // ----- 全局变量 -----
-    let currentResult = [];        // 筛选结果数组
+    let currentResult = [];
     let currentDigits = '';
+    let currentAdvanceDigits = '';
     let currentTotal = 0;
     let currentPercent = '0';
     let lastResultObj = null;
@@ -661,7 +221,6 @@
 446 466 556 557 566 577 667 668 669
 677 688 699 778 779 788 799 889 899`;
 
-    // UI辅助
     function showToast(msg, type = 'success') {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -686,11 +245,10 @@
       }
     }
 
-    // 渲染结果：纯文本格式 (每行10个)
     function renderResultAsText(filtered) {
       const container = document.getElementById('resultBox');
       if (!filtered.length) {
-        container.innerText = '✨ 没有匹配的号码，试试其他筛选数字吧。';
+        container.innerText = '✨ 没有匹配的号码，试试其他筛选条件吧。';
         return;
       }
       let lines = [];
@@ -705,24 +263,24 @@
       renderResultAsText(filtered);
     }
 
-    // 展示筛选后数据
-    function displayFilterResults(data, digitsUsed) {
+    function displayFilterResults(data, digitsUsed, advanceDigitsUsed) {
       document.getElementById('totalCount').innerText = data.total;
       document.getElementById('filteredCount').innerText = data.count;
       document.getElementById('percent').innerText = data.percent + '%';
       currentResult = data.filtered;
       currentDigits = digitsUsed;
+      currentAdvanceDigits = advanceDigitsUsed;
       currentTotal = data.total;
       currentPercent = data.percent;
       updateResultDisplay(data.filtered, data.count);
       document.getElementById('statsArea').style.display = 'block';
       document.getElementById('resultArea').style.display = 'block';
       document.getElementById('emptyState').style.display = 'none';
-      // 保存快照供手动保存历史
       lastResultObj = {
         id: Date.now(),
         time: new Date().toISOString().slice(0,19).replace('T', ' '),
         digits: digitsUsed,
+        advance_digits: advanceDigitsUsed,
         total: data.total,
         count: data.count,
         percent: data.percent,
@@ -730,29 +288,52 @@
       };
     }
 
-    // 调用后端API
     async function startFilter() {
       const inputText = document.getElementById('inputArea').value.trim();
       const digits = document.getElementById('filterDigits').value.trim();
-      if (!inputText) { showToast('请填写号码池', 'error'); document.getElementById('inputArea').classList.add('input-error'); return; }
-      if (!digits) { showToast('请输入筛选数字', 'error'); document.getElementById('filterDigits').classList.add('input-error'); return; }
+      const advanceDigits = document.getElementById('advanceDigits').value.trim();
+
+      if (!inputText) {
+        showToast('请填写号码池', 'error');
+        document.getElementById('inputArea').classList.add('input-error');
+        return;
+      }
+      if (!digits && !advanceDigits) {
+        showToast('请至少输入一个筛选条件（包含数字 或 两码差）', 'error');
+        document.getElementById('filterDigits').classList.add('input-error');
+        document.getElementById('advanceDigits').classList.add('input-error');
+        return;
+      }
+
       document.getElementById('inputArea').classList.remove('input-error');
       document.getElementById('filterDigits').classList.remove('input-error');
+      document.getElementById('advanceDigits').classList.remove('input-error');
+
       setLoading(true);
       try {
         const res = await fetch('/api/filter', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: inputText, digits })
+          body: JSON.stringify({
+            text: inputText,
+            digits: digits,
+            advance_digits: advanceDigits
+          })
         });
-        if (!res.ok) throw new Error('服务异常');
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || '服务异常');
+        }
         const data = await res.json();
-        displayFilterResults(data, digits);
-      } catch(e) { showToast('请求失败: ' + e.message, 'error'); }
-      finally { setLoading(false); }
+        displayFilterResults(data, digits, advanceDigits);
+      } catch(e) {
+        showToast('请求失败: ' + e.message, 'error');
+      } finally {
+        setLoading(false);
+      }
     }
 
-    // 历史记录逻辑
+    // 历史记录
     function getHistory() {
       try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e) { return []; }
     }
@@ -778,8 +359,14 @@
       }
     }
     function restoreHistoryItem(item) {
-      displayFilterResults({ total: item.total, count: item.count, percent: item.percent, filtered: item.filtered }, item.digits);
-      showToast(`恢复记录: ${item.digits} → 命中 ${item.count} 注`);
+      displayFilterResults(
+        { total: item.total, count: item.count, percent: item.percent, filtered: item.filtered },
+        item.digits,
+        item.advance_digits || ''
+      );
+      document.getElementById('filterDigits').value = item.digits || '';
+      document.getElementById('advanceDigits').value = item.advance_digits || '';
+      showToast(`恢复记录: 数字=${item.digits} 两码差=${item.advance_digits||'无'} → 命中 ${item.count} 注`);
     }
     function renderHistory() {
       const history = getHistory();
@@ -800,17 +387,22 @@
           <button class="history-delete" data-id="${item.id}">✕</button>
           <div class="history-meta">
             <span class="history-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${item.time.slice(5)}</span>
-            <span class="history-digits-badge">${item.digits}</span>
+            <span class="history-digits-badge">${item.digits || '无'}</span>
+            ${item.advance_digits ? `<span class="history-advance-badge">两码差 ${item.advance_digits}</span>` : ''}
           </div>
           <div class="history-stats"><span>总计 ${item.total}</span><span>命中 ${item.count}</span><span>占比 ${item.percent}%</span></div>
           <div class="history-preview">${previewStr}</div>
         </div>`;
       }
       listEl.innerHTML = html;
-      // 绑定事件
       document.querySelectorAll('.history-item').forEach(el => {
         const id = parseInt(el.getAttribute('data-id'));
-        el.addEventListener('click', (e) => { if(!e.target.classList.contains('history-delete')){ const found = getHistory().find(h=>h.id === id); if(found) restoreHistoryItem(found); } });
+        el.addEventListener('click', (e) => {
+          if(!e.target.classList.contains('history-delete')){
+            const found = getHistory().find(h=>h.id === id);
+            if(found) restoreHistoryItem(found);
+          }
+        });
         const delBtn = el.querySelector('.history-delete');
         if(delBtn) delBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteHistoryItem(id); });
       });
@@ -832,21 +424,21 @@
     function exportToFile() {
       if (!currentResult.length) { showToast('没有可导出的结果', 'error'); return; }
       const now = new Date().toISOString().slice(0,19).replace(/:/g, '-');
-      let content = `彩票筛选结果\n数字: ${currentDigits}\n总数: ${currentTotal}  命中: ${currentResult.length}  占比: ${currentPercent}%\n${'='.repeat(50)}\n`;
+      let content = `彩票筛选结果\n筛选数字: ${currentDigits || '无'}\n两码差: ${currentAdvanceDigits || '无'}\n总数: ${currentTotal}  命中: ${currentResult.length}  占比: ${currentPercent}%\n${'='.repeat(50)}\n`;
       for (let i=0;i<currentResult.length;i+=10) content += currentResult.slice(i,i+10).join('  ') + '\n';
       const blob = new Blob([content], {type: 'text/plain'});
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `筛号_${currentDigits}_${now}.txt`;
+      a.download = `筛号_${currentDigits || 'N'}_${now}.txt`;
       a.click();
       URL.revokeObjectURL(a.href);
       showToast('文件已保存');
     }
 
-    // 清空所有输入和结果
     function clearAll() {
       document.getElementById('inputArea').value = '';
       document.getElementById('filterDigits').value = '';
+      document.getElementById('advanceDigits').value = '';
       document.getElementById('statsArea').style.display = 'none';
       document.getElementById('resultArea').style.display = 'none';
       document.getElementById('emptyState').style.display = 'block';
@@ -856,10 +448,11 @@
     function loadDemo() {
       document.getElementById('inputArea').value = demoRaw;
       document.getElementById('filterDigits').value = '357';
-      showToast('示例数据已填入，点击筛选即可');
+      document.getElementById('advanceDigits').value = '';
+      showToast('示例数据已填入，可自行输入两码差');
     }
 
-    // 绑定事件
+    // 事件绑定
     document.getElementById('filterBtn').addEventListener('click', startFilter);
     document.getElementById('demoBtn').addEventListener('click', loadDemo);
     document.getElementById('clearBtn').addEventListener('click', clearAll);
@@ -868,6 +461,7 @@
     document.getElementById('exportFileBtn').addEventListener('click', exportToFile);
     document.getElementById('clearHistoryBtn').addEventListener('click', clearAllHistory);
     document.getElementById('filterDigits').addEventListener('keypress', (e) => { if(e.key === 'Enter') startFilter(); });
+    document.getElementById('advanceDigits').addEventListener('keypress', (e) => { if(e.key === 'Enter') startFilter(); });
 
     renderHistory();
   })();
