@@ -2,469 +2,685 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-<title>彩云筛 · 智能号码筛选工具</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>福彩3D组选筛号工具</title>
 <style>
-  /* ---------- DESIGN SYSTEM ---------- */
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --p-50: #eff6ff; --p-100: #dbeafe; --p-400: #60a5fa; --p-500: #3b82f6; --p-600: #2563eb; --p-700: #1d4ed8; --p-800: #1e40af;
-    --n-0: #ffffff; --n-50: #f8fafc; --n-100: #f1f5f9; --n-200: #e2e8f0; --n-300: #cbd5e1; --n-400: #94a3b8; --n-500: #64748b; --n-600: #475569; --n-700: #334155; --n-800: #1e293b; --n-900: #0f172a;
-    --success: #10b981; --success-dark: #059669; --warning: #f59e0b; --warning-dark: #d97706; --danger: #ef4444; --danger-dark: #dc2626; --info: #3b82f6;
-    --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px; --space-12: 48px;
-    --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px; --radius-2xl: 24px; --radius-full: 9999px;
-    --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --duration-fast: 150ms; --duration-base: 200ms; --duration-slow: 300ms;
-    --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
-    --glass-bg: rgba(255, 255, 255, 0.75); --glass-border: rgba(255, 255, 255, 0.5); --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    --bg: #f5f7fb; --panel: rgba(255,255,255,.88); --line: #dce3ee;
+    --text: #172033; --muted: #66758c; --blue: #2563eb; --blue2: #1d4ed8;
+    --green: #059669; --amber: #d97706; --red: #dc2626; --radius: 12px;
+    --mono: "Cascadia Code", "Consolas", monospace;
   }
+  *:focus-visible { outline: 3px solid rgba(37,99,235,.25); outline-offset: 2px; }
   body {
-    font-family: var(--font-sans);
-    background: radial-gradient(ellipse at 20% 30%, var(--n-50) 0%, var(--p-50) 100%);
-    min-height: 100vh; padding: var(--space-6) var(--space-4); color: var(--n-800); line-height: 1.5;
+    min-height: 100vh; padding: 32px 18px; color: var(--text);
+    font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
+    background:
+      linear-gradient(135deg, rgba(37,99,235,.08), transparent 35%),
+      linear-gradient(315deg, rgba(5,150,105,.08), transparent 32%),
+      var(--bg);
   }
-  @media (min-width: 768px) { body { padding: var(--space-10) var(--space-6); } }
-  .app { max-width: 1100px; margin: 0 auto; }
-  .hero { text-align: center; margin-bottom: var(--space-10); position: relative; }
-  .hero-badge { display: inline-flex; align-items: center; gap: var(--space-2); background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); border: 1px solid var(--n-200); font-size: 13px; font-weight: 600; color: var(--p-600); margin-bottom: var(--space-4); box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-  .hero h1 { font-size: clamp(32px, 6vw, 48px); font-weight: 800; letter-spacing: -0.02em; background: linear-gradient(135deg, var(--n-900), var(--p-700)); background-clip: text; -webkit-background-clip: text; color: transparent; margin-bottom: var(--space-3); }
-  .hero p { font-size: 16px; color: var(--n-500); max-width: 520px; margin: 0 auto; }
-  .glass-card { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: var(--radius-2xl); box-shadow: var(--glass-shadow), 0 4px 12px rgba(0,0,0,0.02); transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out); }
-  .glass-card:hover { box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.12); transform: translateY(-2px); }
-  .card-padding { padding: var(--space-6); }
-  @media (min-width: 768px) { .card-padding { padding: var(--space-8); } }
-  .section-title { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-6); }
-  .section-title .icon-bg { width: 40px; height: 40px; background: var(--p-100); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--p-600); }
-  .section-title h2 { font-size: 1.35rem; font-weight: 600; color: var(--n-800); }
-  .form-group { margin-bottom: var(--space-5); }
-  label { display: block; font-size: 0.9rem; font-weight: 600; color: var(--n-700); margin-bottom: var(--space-2); }
-  .helper-text { display: block; margin-top: var(--space-2); font-size: 0.75rem; color: var(--n-400); }
-  textarea, .filter-input { width: 100%; background: white; border: 1.5px solid var(--n-200); border-radius: var(--radius-lg); padding: var(--space-4); font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.5; transition: all var(--duration-fast) var(--ease-out); resize: vertical; }
-  textarea { min-height: 180px; }
-  textarea:focus, .filter-input:focus { outline: none; border-color: var(--p-500); box-shadow: 0 0 0 4px var(--p-100); }
-  .input-error { border-color: var(--danger) !important; box-shadow: 0 0 0 3px rgba(239,68,68,0.15) !important; }
-  .btn-group { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-2); }
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); height: 46px; padding: 0 var(--space-5); border-radius: var(--radius-lg); font-weight: 600; font-size: 0.9rem; border: none; cursor: pointer; transition: all var(--duration-fast) var(--ease-out); background: white; color: var(--n-700); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-  .btn-primary { background: linear-gradient(105deg, var(--p-600), var(--p-700)); color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
-  .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,99,235,0.35); }
-  .btn-secondary { background: white; border: 1px solid var(--n-200); }
-  .btn-secondary:hover { background: var(--n-50); border-color: var(--n-300); transform: translateY(-1px); }
-  .btn-ghost { background: transparent; box-shadow: none; border: 1px solid transparent; }
-  .btn-ghost:hover { background: rgba(0,0,0,0.04); border-color: var(--n-200); }
-  .btn-success { background: var(--success); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.2); }
-  .btn-warning { background: var(--warning); color: white; }
-  .btn-danger { background: var(--danger); color: white; }
-  .btn-sm { height: 38px; padding: 0 var(--space-4); font-size: 0.8rem; }
-  .btn:active { transform: scale(0.97); }
-  .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin: var(--space-6) 0; }
-  .stat-card { background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); border-radius: var(--radius-xl); padding: var(--space-5); text-align: center; border: 1px solid var(--n-200); transition: all var(--duration-base); }
-  .stat-card:hover { transform: translateY(-3px); background: white; }
-  .stat-icon { width: 48px; height: 48px; background: var(--p-50); border-radius: var(--radius-md); display: inline-flex; align-items: center; justify-content: center; color: var(--p-600); margin-bottom: var(--space-3); }
-  .stat-number { font-family: var(--font-mono); font-size: 2.4rem; font-weight: 800; color: var(--n-900); line-height: 1.2; margin-bottom: var(--space-1); }
-  .stat-label { font-size: 0.8rem; font-weight: 500; color: var(--n-500); text-transform: uppercase; letter-spacing: 0.5px; }
-  .text-output { background: var(--n-50); border: 1px solid var(--n-200); border-radius: var(--radius-lg); padding: var(--space-5); font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.7; color: var(--n-800); white-space: pre-wrap; word-break: break-all; max-height: 440px; overflow-y: auto; transition: all var(--duration-fast); }
-  .text-output::-webkit-scrollbar { width: 6px; }
-  .text-output::-webkit-scrollbar-thumb { background: var(--n-300); border-radius: var(--radius-full); }
-  .result-header-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); gap: var(--space-3); }
-  .badge-count { background: var(--p-100); color: var(--p-700); border-radius: var(--radius-full); padding: 0.25rem 0.8rem; font-family: var(--font-mono); font-weight: 700; font-size: 0.8rem; }
-  .history-list { display: flex; flex-direction: column; gap: var(--space-3); max-height: 420px; overflow-y: auto; padding-right: 4px; }
-  .history-item { background: white; border: 1px solid var(--n-200); border-radius: var(--radius-lg); padding: var(--space-4); transition: all var(--duration-fast); cursor: pointer; position: relative; }
-  .history-item:hover { border-color: var(--p-300); box-shadow: 0 6px 14px rgba(0,0,0,0.05); transform: translateX(4px); }
-  .history-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: var(--space-3); gap: var(--space-2); }
-  .history-time { font-size: 0.75rem; color: var(--n-400); display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono); }
-  .history-digits-badge { background: linear-gradient(135deg, var(--p-500), var(--p-600)); color: white; padding: 2px 10px; border-radius: var(--radius-full); font-family: var(--font-mono); font-weight: 700; font-size: 0.8rem; }
-  .history-advance-badge { background: linear-gradient(135deg, var(--success), var(--success-dark)); color: white; padding: 2px 10px; border-radius: var(--radius-full); font-family: var(--font-mono); font-weight: 700; font-size: 0.8rem; margin-left: 4px; }
-  .history-stats { display: flex; gap: var(--space-4); font-size: 0.75rem; font-family: var(--font-mono); margin-bottom: var(--space-2); }
-  .history-preview { font-family: var(--font-mono); font-size: 0.75rem; color: var(--n-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .history-delete { position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--n-400); cursor: pointer; width: 28px; height: 28px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s; }
-  .history-item:hover .history-delete { opacity: 1; }
-  .history-delete:hover { background: var(--danger); color: white; }
-  .empty-state { text-align: center; padding: var(--space-12) var(--space-6); background: rgba(255,255,255,0.6); backdrop-filter: blur(8px); border-radius: var(--radius-2xl); border: 1.5px dashed var(--n-300); color: var(--n-400); }
-  .spinner { width: 18px; height: 18px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .toast-container { position: fixed; top: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 12px; }
-  .toast { background: var(--n-800); color: white; padding: 12px 20px; border-radius: var(--radius-lg); display: flex; align-items: center; gap: 12px; font-weight: 500; font-size: 0.85rem; box-shadow: 0 12px 28px rgba(0,0,0,0.2); transform: translateX(30px); opacity: 0; transition: all 0.25s var(--ease-out); backdrop-filter: blur(4px); }
-  .toast.show { transform: translateX(0); opacity: 1; }
-  .toast-success { background: var(--success-dark); }
-  .toast-error { background: var(--danger-dark); }
-  @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+  .app { max-width: 1120px; margin: 0 auto; }
+  .hero { margin-bottom: 24px; }
+  .hero h1 { font-size: clamp(30px, 5vw, 46px); letter-spacing: 0; margin-bottom: 8px; }
+  .hero p { color: var(--muted); font-size: 15px; }
+  .shell { max-width: 1360px; margin: 0 auto; display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 20px; align-items: start; }
+  .sidebar { position: sticky; top: 20px; display: grid; gap: 18px; }
+  .brand { display: grid; gap: 10px; }
+  .brand-mark { width: 54px; height: 54px; border-radius: 14px; display: grid; place-items: center; color: #fff; font: 800 18px/1 var(--mono); background: linear-gradient(135deg, var(--blue), var(--blue2)); box-shadow: 0 14px 28px rgba(37,99,235,.22); }
+  .card {
+    background: var(--panel); border: 1px solid rgba(220,227,238,.9);
+    border-radius: 16px; box-shadow: 0 16px 40px rgba(17,24,39,.08);
+    padding: 24px; margin-bottom: 20px; backdrop-filter: blur(12px);
+  }
+  h2 { font-size: 20px; margin-bottom: 18px; }
+  label { display: block; font-weight: 700; margin-bottom: 8px; }
+  .form-group { margin-bottom: 18px; }
+  textarea, input {
+    width: 100%; border: 1.5px solid var(--line); border-radius: var(--radius);
+    padding: 13px 14px; background: #fff; color: var(--text); font-size: 14px;
+    font-family: var(--mono); outline: none;
+  }
+  textarea { min-height: 190px; resize: vertical; line-height: 1.65; }
+  textarea:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(37,99,235,.12); }
+  .helper { display: block; color: var(--muted); font-size: 12px; margin-top: 7px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 1080px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: static; order: -1; }
+    .sidebar-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 760px) {
+    body { padding: 20px 12px; }
+    .grid-2, .stats, .sidebar-grid { grid-template-columns: 1fr; }
+    .segment-row { flex-direction: column; align-items: flex-start; }
+    .segment-label { width: auto; }
+    .history-actions { flex-direction: column; align-items: stretch; }
+    .inline-issue { width: 100%; }
+  }
+  .segment-stack { display: grid; gap: 14px; }
+  .segment-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+  .segment-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .segment-title { font-weight: 900; }
+  .segment-title span { color: var(--muted); font: 700 12px var(--mono); margin-left: 8px; }
+  .switch { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 800; cursor: pointer; }
+  .switch input { width: 18px; height: 18px; accent-color: var(--blue); }
+  .segment-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .segment-label { width: 104px; flex: 0 0 auto; color: var(--muted); font-weight: 700; font-size: 13px; }
+  .segment-digits { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg-digit {
+    width: 36px; height: 36px; border: 2px solid var(--line); border-radius: 9px;
+    display: grid; place-items: center; background: #fff; cursor: pointer;
+    font-family: var(--mono); font-weight: 800; user-select: none;
+  }
+  .seg-digit.active { background: var(--blue); border-color: var(--blue2); color: #fff; }
+  .segment-card.disabled { opacity: .62; }
+  .segment-card.disabled .seg-digit { cursor: default; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  button {
+    border: 0; border-radius: 11px; min-height: 42px; padding: 0 16px;
+    font-weight: 800; cursor: pointer; color: #fff; background: var(--blue);
+  }
+  button:hover { filter: brightness(.96); transform: translateY(-1px); }
+  button:disabled { opacity: .6; cursor: wait; transform: none; }
+  .secondary { background: #fff; color: var(--text); border: 1px solid var(--line); }
+  .green { background: var(--green); }
+  .amber { background: var(--amber); }
+  .red { background: var(--red); }
+  .ghost { background: transparent; color: var(--muted); border: 1px solid transparent; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  .stat strong { display: block; font: 800 34px/1 var(--mono); margin-bottom: 6px; }
+  .stat span { color: var(--muted); font-size: 13px; }
+  .sidebar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .metric { background: #f8faff; border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+  .metric-label { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+  .metric-value { font: 800 18px/1.2 var(--mono); word-break: break-word; }
+  .sidebar-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .sidebar-head h2 { margin: 0; font-size: 16px; }
+  .draw-list { display: grid; gap: 10px; max-height: 520px; overflow: auto; padding-right: 2px; }
+  .draw-item { display: grid; gap: 8px; background: #fbfdff; border: 1px solid var(--line); border-radius: 14px; padding: 13px 14px; }
+  .draw-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .draw-issue { font: 800 14px/1 var(--mono); }
+  .draw-date { color: var(--muted); font-size: 12px; }
+  .draw-balls { display: flex; gap: 8px; }
+  .ball { width: 38px; height: 38px; border-radius: 999px; display: grid; place-items: center; background: linear-gradient(135deg, var(--blue), var(--blue2)); color: #fff; font: 800 16px/1 var(--mono); box-shadow: 0 10px 18px rgba(37,99,235,.18); }
+  .empty-side { color: var(--muted); border: 1px dashed var(--line); border-radius: 14px; padding: 18px; font-size: 13px; text-align: center; }
+  .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .section-head h2 { margin: 0; }
+  .hidden { display: none !important; }
+  .result-head, .history-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 10px; background: #dbeafe; color: #1d4ed8; font: 800 12px var(--mono); }
+  .output {
+    background: #f8fafc; border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px; min-height: 90px; max-height: 430px; overflow: auto;
+    white-space: pre-wrap; word-break: break-all; font: 14px/1.75 var(--mono);
+  }
+  .history-list { display: grid; gap: 12px; max-height: 560px; overflow: auto; padding-right: 4px; }
+  .history-item { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+  .history-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+  .pill { border-radius: 999px; padding: 3px 9px; font: 800 12px var(--mono); background: #eef2ff; color: #3730a3; }
+  .pill.green { background: #dcfce7; color: #166534; }
+  .pill.red { background: #fee2e2; color: #991b1b; }
+  .pill.amber { background: #fef3c7; color: #92400e; }
+  .history-preview { color: var(--muted); font: 13px var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .inline-issue { width: 116px; height: 34px; padding: 6px 9px; }
+  .empty { text-align: center; color: var(--muted); border: 1.5px dashed var(--line); border-radius: 16px; padding: 34px; }
+  .toast-box { position: fixed; right: 18px; top: 18px; display: grid; gap: 10px; z-index: 20; }
+  .toast { background: #172033; color: #fff; padding: 12px 14px; border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,.2); }
 </style>
 </head>
 <body>
-
-<div class="app">
-  <div class="hero">
-    <div class="hero-badge">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-      <span>本地引擎 · 毫秒级筛选</span>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="card">
+      <div class="brand">
+        <div class="brand-mark">3D</div>
+        <div>
+          <h1 style="font-size:22px;margin:0 0 6px">福彩3D组选筛号</h1>
+          <p style="color:var(--muted);font-size:13px;line-height:1.6;margin:0">段组可多选同时生效；按日期生成期号保存在历史。</p>
+        </div>
+      </div>
     </div>
-    <h1>彩云筛<span style="font-weight:400">｜</span>号码智选</h1>
-    <p>智能提取三位号码，支持包含数字 & 标准两码差双重筛选</p>
-  </div>
 
-  <div class="glass-card card-padding" style="margin-bottom: var(--space-6);">
-    <div class="section-title">
-      <div class="icon-bg"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div>
+    <div class="card">
+      <div class="sidebar-head">
+        <h2>开奖概览</h2>
+        <button class="secondary" id="refreshDrawBtn" style="min-height:36px;font-size:13px">更新开奖</button>
+      </div>
+      <div class="sidebar-grid">
+        <div class="metric"><div class="metric-label">最新期号</div><div class="metric-value" id="latestIssue">--</div></div>
+        <div class="metric"><div class="metric-label">下一期号</div><div class="metric-value" id="nextIssue">--</div></div>
+        <div class="metric"><div class="metric-label">开奖号</div><div class="metric-value" id="latestDraw">---</div></div>
+        <div class="metric"><div class="metric-label">本地条数</div><div class="metric-value" id="drawCount">0</div></div>
+      </div>
+      <span class="helper" id="drawStatus">读取本地开奖记录。</span>
+    </div>
+
+    <div class="card">
+      <div class="sidebar-head"><h2>近10期开奖</h2></div>
+      <div class="draw-list" id="drawList"></div>
+      <div class="empty-side hidden" id="drawEmpty">本地还没有开奖记录。<br>点"更新开奖"获取。</div>
+    </div>
+  </aside>
+
+  <main class="main">
+  <div class="card">
+    <div class="section-head">
       <h2>筛选配置</h2>
+      <span class="badge" id="saveIssueBadge">保存期号 --</span>
     </div>
     <div class="form-group">
-      <label>📋 号码池（自动提取全部3位数字）</label>
-      <textarea id="inputArea" placeholder="支持任意文本：组六、组三、混合格式均可&#10;例如：012 013 014 015 ...&#10;001 002 005 ..."></textarea>
-      <span class="helper-text">系统自动识别所有三位数字组合，无视中文/换行。</span>
+      <label>号码池</label>
+      <textarea id="inputArea" placeholder="粘贴任意文本，系统会自动提取所有三位数字，例如：012 013 014 001 112"></textarea>
+      <span class="helper">自动识别所有 000-999 格式的三位号码，并去重保留原顺序。</span>
     </div>
-    <div class="form-group">
-      <label>🎯 筛选数字（包含任一即命中）</label>
-      <input type="text" id="filterDigits" class="filter-input" placeholder="例：357" maxlength="10">
-      <span class="helper-text">输入任意数字（0-9），号码中包含其中任意一位即入选。</span>
-    </div>
-    <!-- 两码差输入 -->
-    <div class="form-group">
-      <label>🧮 两码差数字（绝对值：|百-十|、|百-个|、|十-个|）</label>
-      <input type="text" id="advanceDigits" class="filter-input" placeholder="例：523" maxlength="10">
-      <span class="helper-text">计算规则：例 163 → |1-6|=5, |1-3|=2, |6-3|=3 → 差 5,2,3。只要任一结果包含你输入的数字即命中。</span>
-    </div>
-    <div class="btn-group">
-      <button class="btn btn-primary" id="filterBtn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>
-        <span>开始筛选</span>
-      </button>
-      <button class="btn btn-secondary" id="demoBtn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-        <span>示例数据</span>
-      </button>
-      <button class="btn btn-ghost" id="clearBtn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/></svg>
-        <span>清空</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- 统计卡片 -->
-  <div id="statsArea" style="display: none;">
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/></svg></div><div class="stat-number" id="totalCount">0</div><div class="stat-label">总号码数</div></div>
-      <div class="stat-card"><div class="stat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><div class="stat-number" id="filteredCount">0</div><div class="stat-label">筛选命中</div></div>
-      <div class="stat-card"><div class="stat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></div><div class="stat-number" id="percent">0%</div><div class="stat-label">命中占比</div></div>
-    </div>
-  </div>
-
-  <!-- 结果输出区 -->
-  <div id="resultArea" style="display: none;" class="glass-card card-padding" style="margin-bottom: var(--space-6);">
-    <div class="result-header-bar">
-      <div class="section-title" style="margin-bottom: 0;">
-        <div class="icon-bg"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
-        <h2>筛选结果</h2>
-        <span class="badge-count" id="resultBadge">0组</span>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>胆码筛选</label>
+        <input id="filterDigits" placeholder="例：357" maxlength="10">
+        <span class="helper">号码中包含任意一个所填数字即保留。</span>
       </div>
-      <div class="btn-group" style="margin-top:0;">
-        <button class="btn btn-sm btn-success" id="copyResultBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制</button>
-        <button class="btn btn-sm btn-secondary" id="saveHistoryBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>保存历史</button>
-        <button class="btn btn-sm btn-warning" id="exportFileBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>保存文件</button>
+      <div class="form-group">
+        <label>两码差数字</label>
+        <input id="advanceDigits" placeholder="例：523" maxlength="10">
+        <span class="helper">百十、百个、十个任意一个差值命中即保留。</span>
       </div>
     </div>
-    <div class="text-output" id="resultBox">等待筛选…</div>
+    <div class="form-group">
+      <label>段组条件</label>
+      <div class="segment-stack" id="segmentGroups"></div>
+      <span class="helper">可以同时启用多个段组。每个启用的段组都要覆盖 0-9，筛选结果必须同时通过所有启用段组。</span>
+    </div>
+    <div class="toolbar">
+      <button id="filterBtn">开始筛选</button>
+      <button class="secondary" id="demoBtn">示例数据</button>
+      <button class="ghost" id="clearBtn">清空</button>
+    </div>
   </div>
 
-  <!-- 历史记录区 -->
-  <div id="historyArea" style="display: none;" class="glass-card card-padding">
-    <div class="history-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-5);">
-      <div class="section-title" style="margin-bottom:0;"><div class="icon-bg"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></div><h2>筛选历史</h2><span class="badge-count" id="historyCount">0</span></div>
-      <button class="btn btn-sm btn-danger" id="clearHistoryBtn">清空历史</button>
+  <div id="statsArea" style="display:none">
+    <div class="stats">
+      <div class="stat"><strong id="totalCount">0</strong><span>号码池总数</span></div>
+      <div class="stat"><strong id="filteredCount">0</strong><span>筛选命中</span></div>
+      <div class="stat"><strong id="percent">0%</strong><span>命中占比</span></div>
+    </div>
+  </div>
+
+  <div id="resultArea" class="card" style="display:none">
+    <div class="result-head">
+      <h2 style="margin:0">筛选结果 <span class="badge" id="resultBadge">0组</span></h2>
+      <div class="toolbar">
+        <button class="green" id="copyResultBtn">复制</button>
+        <button class="secondary" id="saveHistoryBtn">保存历史</button>
+        <button class="amber" id="exportFileBtn">保存文件</button>
+      </div>
+    </div>
+    <div class="output" id="resultBox">等待筛选</div>
+  </div>
+
+  <div id="historyArea" class="card" style="display:none">
+    <div class="history-head">
+      <h2 style="margin:0">筛选历史 <span class="badge" id="historyCount">0</span></h2>
+      <div class="toolbar">
+        <button class="green" id="updateDrawBtn">更新中奖记录</button>
+        <button class="red" id="clearHistoryBtn">清空历史</button>
+      </div>
     </div>
     <div class="history-list" id="historyList"></div>
   </div>
 
-  <div id="emptyState" class="empty-state">
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-    <h3 style="margin-top:12px;">准备就绪</h3>
-    <p>输入号码池及筛选条件（可单独使用包含数字或两码差，也可组合使用）</p>
-  </div>
+  <div id="emptyState" class="empty">输入号码池并设置筛选条件后开始。</div>
+  </main>
 </div>
-<div class="toast-container" id="toastContainer"></div>
+<div class="toast-box" id="toastContainer"></div>
 
 <script>
-  (function() {
-    // ----- 全局变量 -----
-    let currentResult = [];
-    let currentDigits = '';
-    let currentAdvanceDigits = '';
-    let currentTotal = 0;
-    let currentPercent = '0';
-    let lastResultObj = null;
-    const HISTORY_KEY = 'lottery_filter_history';
-    const MAX_HISTORY = 50;
+(function(){
+  const HISTORY_KEY = "lottery_filter_history_v3";
+  const OLD_KEYS = ["lottery_filter_history_v2", "lottery_filter_history"];
+  const MAX_HISTORY = 80;
+  const SEGMENT_SIZES = {"2-2-6":[2,2,6], "2-3-5":[2,3,5], "5-5":[5,5]};
+  const SEGMENT_LABELS = {"2-2-6":"2-2-6 段组", "2-3-5":"2-3-5 段组", "5-5":"5-5 段组"};
+  const SEGMENT_DEMOS = {"2-2-6":["01","23","456789"], "2-3-5":["01","234","56789"], "5-5":["01234","56789"]};
+  let currentResult = [], currentDigits = "", currentAdvanceDigits = "", currentSegment = "";
+  let currentSegmentFilters = [], currentTotal = 0, currentPercent = 0, lastResultObj = null;
+  let drawRecords = [], latestIssue = "", latestDraw = "", nextIssue = "";
 
-    const demoRaw = `组六：
+  const demoRaw = `组六：
 012 013 014 015 016 017 018 019 023 024
-025 026 027 028 029 034 035 036 037
-038 039 045 046 047 048 049 056 057
-058 059 067 068 069 078 079 089 123
-124 125 126 127 128 129 134 135 136 137
-138 139 146 147 148 149 156 157 158 159
-167 168 169 178 179 189 234 235 236 237
-238 239 245 246 247 248 249 256 257
-258 259 267 268 269 278 279 289 345
-346 347 348 349 356 357 358 359 367
-368 369 378 379 389 456 457 458 459
-467 468 469 478 479 489 567 568 569
-578 579 589 678 679 689 789
+
 
 组三：
 001 002 005 006 007 008 009 011 022
-055 066 077 088 099 112 113 116 122 133
-166 223 225 226 227 228 229 233 255 266
-277 288 299 336 338 339 366 388 399
-446 466 556 557 566 577 667 668 669
-677 688 699 778 779 788 799 889 899`;
+`;
 
-    function showToast(msg, type = 'success') {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      toast.className = `toast toast-${type}`;
-      toast.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>${msg}</span>`;
-      container.appendChild(toast);
-      setTimeout(() => toast.classList.add('show'), 10);
-      setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-      }, 2800);
-    }
+  const $ = id => document.getElementById(id);
+  function toast(msg) {
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.textContent = msg;
+    $("toastContainer").appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  }
+  function nowText() {
+    return new Date().toISOString().slice(0,19).replace("T", " ");
+  }
+  function autoIssueName() {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}${mm}${dd}`;
+  }
+  function cleanDigits(value) {
+    return String(value || "").replace(/\D/g, "").split("").filter((v, i, a) => a.indexOf(v) === i).join("");
+  }
+  function modeOrder() { return ["2-2-6", "2-3-5", "5-5"]; }
+  function modeCard(mode) { return document.querySelector(`.segment-card[data-mode="${mode}"]`); }
 
-    function setLoading(loading) {
-      const btn = document.getElementById('filterBtn');
-      if (loading) {
-        btn.disabled = true;
-        btn.innerHTML = '<div class="spinner"></div><span>筛选中…</span>';
-      } else {
-        btn.disabled = false;
-        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg><span>开始筛选</span>';
-      }
-    }
+  async function apiGet(path) {
+    const res = await fetch(path, {cache: "no-store"});
+    const data = await res.json();
+    if (!res.ok || data.ok === false) throw new Error(data.error || "请求失败");
+    return data;
+  }
 
-    function renderResultAsText(filtered) {
-      const container = document.getElementById('resultBox');
-      if (!filtered.length) {
-        container.innerText = '✨ 没有匹配的号码，试试其他筛选条件吧。';
-        return;
-      }
-      let lines = [];
-      for (let i = 0; i < filtered.length; i += 10) {
-        lines.push(filtered.slice(i, i + 10).join('  '));
-      }
-      container.innerText = lines.join('\n');
-    }
+  function updateSaveIssueBadge() {
+    $("saveIssueBadge").textContent = `保存期号 ${nextIssue || autoIssueName()}`;
+  }
 
-    function updateResultDisplay(filtered, count) {
-      document.getElementById('resultBadge').innerText = `${count}组`;
-      renderResultAsText(filtered);
-    }
+  function renderDrawSidebar() {
+    $("latestIssue").textContent = latestIssue || "--";
+    $("nextIssue").textContent = nextIssue || "--";
+    $("latestDraw").textContent = latestDraw || "---";
+    $("drawCount").textContent = String(drawRecords.length);
+    updateSaveIssueBadge();
 
-    function displayFilterResults(data, digitsUsed, advanceDigitsUsed) {
-      document.getElementById('totalCount').innerText = data.total;
-      document.getElementById('filteredCount').innerText = data.count;
-      document.getElementById('percent').innerText = data.percent + '%';
-      currentResult = data.filtered;
-      currentDigits = digitsUsed;
-      currentAdvanceDigits = advanceDigitsUsed;
-      currentTotal = data.total;
-      currentPercent = data.percent;
-      updateResultDisplay(data.filtered, data.count);
-      document.getElementById('statsArea').style.display = 'block';
-      document.getElementById('resultArea').style.display = 'block';
-      document.getElementById('emptyState').style.display = 'none';
-      lastResultObj = {
-        id: Date.now(),
-        time: new Date().toISOString().slice(0,19).replace('T', ' '),
-        digits: digitsUsed,
-        advance_digits: advanceDigitsUsed,
-        total: data.total,
-        count: data.count,
-        percent: data.percent,
-        filtered: data.filtered
-      };
+    if (!drawRecords.length) {
+      $("drawList").innerHTML = "";
+      $("drawEmpty").classList.remove("hidden");
+      $("drawStatus").textContent = "本地还没有开奖记录。";
+      return;
     }
 
-    async function startFilter() {
-      const inputText = document.getElementById('inputArea').value.trim();
-      const digits = document.getElementById('filterDigits').value.trim();
-      const advanceDigits = document.getElementById('advanceDigits').value.trim();
+    $("drawEmpty").classList.add("hidden");
+    $("drawStatus").textContent = `显示最近 ${Math.min(10, drawRecords.length)} 期，下一期号 ${nextIssue || "--"}。`;
+    $("drawList").innerHTML = drawRecords.slice(0, 10).map(item => {
+      const balls = String(item.draw || "").padStart(3, "0").split("").map(d => `<span class="ball">${d}</span>`).join("");
+      return `<div class="draw-item">
+        <div class="draw-top"><span class="draw-issue">${item.issue || "--"}</span><span class="draw-date">${item.date || ""}</span></div>
+        <div class="draw-balls">${balls}</div>
+      </div>`;
+    }).join("");
+  }
 
-      if (!inputText) {
-        showToast('请填写号码池', 'error');
-        document.getElementById('inputArea').classList.add('input-error');
-        return;
-      }
-      if (!digits && !advanceDigits) {
-        showToast('请至少输入一个筛选条件（包含数字 或 两码差）', 'error');
-        document.getElementById('filterDigits').classList.add('input-error');
-        document.getElementById('advanceDigits').classList.add('input-error');
-        return;
-      }
+  async function loadDraws() {
+    try {
+      const data = await apiGet("/api/draws");
+      drawRecords = data.records || [];
+      latestIssue = data.latest ? data.latest.issue : "";
+      latestDraw = data.latest ? data.latest.draw : "";
+      nextIssue = data.nextIssue || "";
+    } catch (e) {
+      // 无本地记录时静默处理
+    }
+    renderDrawSidebar();
+  }
 
-      document.getElementById('inputArea').classList.remove('input-error');
-      document.getElementById('filterDigits').classList.remove('input-error');
-      document.getElementById('advanceDigits').classList.remove('input-error');
+  async function refreshDraws() {
+    $("refreshDrawBtn").disabled = true;
+    $("updateDrawBtn").disabled = true;
+    try {
+      const updated = await api("/api/update_draws", {});
+      drawRecords = (updated.records || []).slice(0, 50);
+      latestIssue = updated.latest ? updated.latest.issue : "";
+      latestDraw = updated.latest ? updated.latest.draw : "";
+      nextIssue = updated.nextIssue || "";
+      renderDrawSidebar();
+      toast(`已更新开奖：${latestIssue || "--"}期 ${latestDraw || "---"}`);
+    } catch (e) {
+      toast(e.message);
+    } finally {
+      $("refreshDrawBtn").disabled = false;
+      $("updateDrawBtn").disabled = false;
+    }
+  }
 
-      setLoading(true);
-      try {
-        const res = await fetch('/api/filter', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: inputText,
-            digits: digits,
-            advance_digits: advanceDigits
-          })
-        });
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || '服务异常');
-        }
-        const data = await res.json();
-        displayFilterResults(data, digits, advanceDigits);
-      } catch(e) {
-        showToast('请求失败: ' + e.message, 'error');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    // 历史记录
-    function getHistory() {
-      try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e) { return []; }
-    }
-    function saveHistoryItem(item) {
-      let hist = getHistory();
-      hist.unshift(item);
-      if (hist.length > MAX_HISTORY) hist = hist.slice(0, MAX_HISTORY);
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
-      renderHistory();
-    }
-    function deleteHistoryItem(id) {
-      const newHist = getHistory().filter(h => h.id !== id);
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(newHist));
-      renderHistory();
-      showToast('已删除记录');
-    }
-    function clearAllHistory() {
-      if (!getHistory().length) return;
-      if (confirm('清空所有历史记录？不可恢复')) {
-        localStorage.removeItem(HISTORY_KEY);
-        renderHistory();
-        showToast('历史已清空');
-      }
-    }
-    function restoreHistoryItem(item) {
-      displayFilterResults(
-        { total: item.total, count: item.count, percent: item.percent, filtered: item.filtered },
-        item.digits,
-        item.advance_digits || ''
-      );
-      document.getElementById('filterDigits').value = item.digits || '';
-      document.getElementById('advanceDigits').value = item.advance_digits || '';
-      showToast(`恢复记录: 数字=${item.digits} 两码差=${item.advance_digits||'无'} → 命中 ${item.count} 注`);
-    }
-    function renderHistory() {
-      const history = getHistory();
-      const historyArea = document.getElementById('historyArea');
-      const listEl = document.getElementById('historyList');
-      const countSpan = document.getElementById('historyCount');
-      countSpan.innerText = history.length;
-      if (history.length === 0) {
-        historyArea.style.display = 'none';
-        return;
-      }
-      historyArea.style.display = 'block';
-      let html = '';
-      for (let item of history) {
-        const previewArr = item.filtered.slice(0, 8);
-        const previewStr = previewArr.join(' ') + (item.filtered.length > 8 ? ` …等${item.filtered.length}个` : '');
-        html += `<div class="history-item" data-id="${item.id}">
-          <button class="history-delete" data-id="${item.id}">✕</button>
-          <div class="history-meta">
-            <span class="history-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${item.time.slice(5)}</span>
-            <span class="history-digits-badge">${item.digits || '无'}</span>
-            ${item.advance_digits ? `<span class="history-advance-badge">两码差 ${item.advance_digits}</span>` : ''}
-          </div>
-          <div class="history-stats"><span>总计 ${item.total}</span><span>命中 ${item.count}</span><span>占比 ${item.percent}%</span></div>
-          <div class="history-preview">${previewStr}</div>
-        </div>`;
-      }
-      listEl.innerHTML = html;
-      document.querySelectorAll('.history-item').forEach(el => {
-        const id = parseInt(el.getAttribute('data-id'));
-        el.addEventListener('click', (e) => {
-          if(!e.target.classList.contains('history-delete')){
-            const found = getHistory().find(h=>h.id === id);
-            if(found) restoreHistoryItem(found);
-          }
-        });
-        const delBtn = el.querySelector('.history-delete');
-        if(delBtn) delBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteHistoryItem(id); });
+  function renderSegmentGroups(savedFilters) {
+    const savedMap = {};
+    (savedFilters || []).forEach(item => { if (item && item.mode) savedMap[item.mode] = item; });
+    $("segmentGroups").innerHTML = modeOrder().map(mode => {
+      const sizes = SEGMENT_SIZES[mode];
+      const saved = savedMap[mode];
+      const enabled = saved ? saved.enabled !== false : mode === "2-3-5";
+      const rows = sizes.map((size, i) => {
+        const digits = Array.from({length: 10}, (_, d) => `<div class="seg-digit" data-digit="${d}">${d}</div>`).join("");
+        return `<div class="segment-row"><span class="segment-label">第${i + 1}组 ${size}码</span><div class="segment-digits">${digits}</div></div>`;
+      }).join("");
+      return `<div class="segment-card ${enabled ? "" : "disabled"}" data-mode="${mode}">
+        <div class="segment-top">
+          <div class="segment-title">${SEGMENT_LABELS[mode]}<span>${mode === "5-5" ? "必须跨两段" : "不能落满三段"}</span></div>
+          <label class="switch"><input type="checkbox" class="segment-enable" ${enabled ? "checked" : ""}>启用</label>
+        </div>
+        ${rows}
+      </div>`;
+    }).join("");
+    modeOrder().forEach(mode => {
+      const card = modeCard(mode);
+      card.querySelector(".segment-enable").addEventListener("change", e => {
+        card.classList.toggle("disabled", !e.target.checked);
       });
+      card.querySelectorAll(".seg-digit").forEach(el => el.addEventListener("click", () => toggleDigit(mode, el)));
+      setSegmentUI(mode, savedMap[mode]?.groups || SEGMENT_DEMOS[mode]);
+    });
+  }
+  function toggleDigit(mode, el) {
+    const card = modeCard(mode);
+    if (!card.querySelector(".segment-enable").checked) return;
+    if (el.classList.contains("active")) {
+      el.classList.remove("active");
+      return;
     }
+    card.querySelectorAll(`.seg-digit[data-digit="${el.dataset.digit}"]`).forEach(x => x.classList.remove("active"));
+    el.classList.add("active");
+  }
+  function setSegmentUI(mode, groups) {
+    const card = modeCard(mode);
+    card.querySelectorAll(".seg-digit.active").forEach(el => el.classList.remove("active"));
+    [...card.querySelectorAll(".segment-row")].forEach((row, i) => {
+      (groups[i] || "").split("").forEach(d => row.querySelector(`[data-digit="${d}"]`)?.classList.add("active"));
+    });
+  }
+  function getModeGroups(mode) {
+    const card = modeCard(mode);
+    return [...card.querySelectorAll(".segment-row")].map(row =>
+      [...row.querySelectorAll(".seg-digit.active")].map(el => el.dataset.digit).join("")
+    );
+  }
+  function getSegmentFilters() {
+    return modeOrder().map(mode => ({
+      mode,
+      enabled: modeCard(mode).querySelector(".segment-enable").checked,
+      groups: getModeGroups(mode)
+    }));
+  }
+  function validateSegmentFilters() {
+    const filters = getSegmentFilters().filter(item => item.enabled);
+    for (const item of filters) {
+      const sizes = SEGMENT_SIZES[item.mode];
+      const used = new Set();
+      for (let i = 0; i < sizes.length; i++) {
+        if ((item.groups[i] || "").length !== sizes[i]) return {ok:false, msg:`${item.mode} 第${i + 1}组需要 ${sizes[i]} 个数字`};
+        for (const d of item.groups[i]) {
+          if (used.has(d)) return {ok:false, msg:`${item.mode} 段组数字不能重复`};
+          used.add(d);
+        }
+      }
+      if (used.size !== 10) return {ok:false, msg:`${item.mode} 必须覆盖 0-9 全部数字`};
+    }
+    return {ok:true, filters};
+  }
 
-    function copyResult() {
-      if (!currentResult.length) { showToast('无结果可复制', 'error'); return; }
-      let text = '';
-      for (let i=0;i<currentResult.length;i+=10) text += currentResult.slice(i,i+10).join('  ') + '\n';
-      navigator.clipboard.writeText(text.trim()).then(()=>showToast('已复制到剪贴板')).catch(()=>showToast('复制失败','error'));
+  async function api(path, body) {
+    const res = await fetch(path, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(body || {})
+    });
+    const data = await res.json();
+    if (!res.ok || data.ok === false) throw new Error(data.error || "请求失败");
+    return data;
+  }
+  function resultText(filtered) {
+    return filtered.length
+      ? filtered.reduce((lines, n, i) => {
+          if (i % 10 === 0) lines.push([]);
+          lines[lines.length - 1].push(n);
+          return lines;
+        }, []).map(line => line.join("  ")).join("\n")
+      : "没有匹配的号码";
+  }
+  function renderResult(filtered) {
+    $("resultBadge").textContent = `${filtered.length}组`;
+    $("resultBox").textContent = resultText(filtered);
+  }
+  function displayFilterResults(data, digits, advanceDigits, segment, filters) {
+    currentResult = data.filtered || [];
+    currentDigits = digits;
+    currentAdvanceDigits = advanceDigits;
+    currentSegment = segment || "";
+    currentSegmentFilters = filters || data.segment_filters || [];
+    currentTotal = data.total || 0;
+    currentPercent = data.percent || 0;
+    $("totalCount").textContent = currentTotal;
+    $("filteredCount").textContent = currentResult.length;
+    $("percent").textContent = currentPercent + "%";
+    renderResult(currentResult);
+    $("statsArea").style.display = "block";
+    $("resultArea").style.display = "block";
+    $("emptyState").style.display = "none";
+    lastResultObj = {
+      id: Date.now(),
+      time: nowText(),
+      targetIssue: nextIssue || autoIssueName(),
+      digits,
+      advance_digits: advanceDigits,
+      segment,
+      segment_filters: currentSegmentFilters,
+      total: currentTotal,
+      count: currentResult.length,
+      percent: currentPercent,
+      filtered: currentResult,
+      actualDraw: null,
+      hit: null
+    };
+  }
+  async function startFilter() {
+    const text = $("inputArea").value.trim();
+    const digits = cleanDigits($("filterDigits").value);
+    const advanceDigits = cleanDigits($("advanceDigits").value);
+    $("filterDigits").value = digits;
+    $("advanceDigits").value = advanceDigits;
+    const seg = validateSegmentFilters();
+    if (!text) return toast("请填写号码池");
+    if (!seg.ok) return toast(seg.msg);
+    if (!digits && !advanceDigits && !seg.filters.length) return toast("请至少输入一个筛选条件");
+    $("filterBtn").disabled = true;
+    try {
+      const data = await api("/api/filter", {
+        text,
+        digits,
+        advance_digits: advanceDigits,
+        segment_filters: seg.filters
+      });
+      displayFilterResults(data, digits, advanceDigits, data.segment || "", seg.filters);
+      toast(`筛选完成：${data.count}组`);
+    } catch(e) {
+      toast(e.message);
+    } finally {
+      $("filterBtn").disabled = false;
     }
-    function saveToHistoryManually() {
-      if (!lastResultObj) { showToast('请先进行一次筛选', 'error'); return; }
-      const exists = getHistory().some(h => h.id === lastResultObj.id);
-      if(exists) { showToast('这条结果已在历史中', 'error'); return; }
-      saveHistoryItem(lastResultObj);
-      showToast('已保存到历史');
-    }
-    function exportToFile() {
-      if (!currentResult.length) { showToast('没有可导出的结果', 'error'); return; }
-      const now = new Date().toISOString().slice(0,19).replace(/:/g, '-');
-      let content = `彩票筛选结果\n筛选数字: ${currentDigits || '无'}\n两码差: ${currentAdvanceDigits || '无'}\n总数: ${currentTotal}  命中: ${currentResult.length}  占比: ${currentPercent}%\n${'='.repeat(50)}\n`;
-      for (let i=0;i<currentResult.length;i+=10) content += currentResult.slice(i,i+10).join('  ') + '\n';
-      const blob = new Blob([content], {type: 'text/plain'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `筛号_${currentDigits || 'N'}_${now}.txt`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-      showToast('文件已保存');
-    }
+  }
 
-    function clearAll() {
-      document.getElementById('inputArea').value = '';
-      document.getElementById('filterDigits').value = '';
-      document.getElementById('advanceDigits').value = '';
-      document.getElementById('statsArea').style.display = 'none';
-      document.getElementById('resultArea').style.display = 'none';
-      document.getElementById('emptyState').style.display = 'block';
-      currentResult = [];
-      lastResultObj = null;
-    }
-    function loadDemo() {
-      document.getElementById('inputArea').value = demoRaw;
-      document.getElementById('filterDigits').value = '357';
-      document.getElementById('advanceDigits').value = '';
-      showToast('示例数据已填入，可自行输入两码差');
-    }
-
-    // 事件绑定
-    document.getElementById('filterBtn').addEventListener('click', startFilter);
-    document.getElementById('demoBtn').addEventListener('click', loadDemo);
-    document.getElementById('clearBtn').addEventListener('click', clearAll);
-    document.getElementById('copyResultBtn').addEventListener('click', copyResult);
-    document.getElementById('saveHistoryBtn').addEventListener('click', saveToHistoryManually);
-    document.getElementById('exportFileBtn').addEventListener('click', exportToFile);
-    document.getElementById('clearHistoryBtn').addEventListener('click', clearAllHistory);
-    document.getElementById('filterDigits').addEventListener('keypress', (e) => { if(e.key === 'Enter') startFilter(); });
-    document.getElementById('advanceDigits').addEventListener('keypress', (e) => { if(e.key === 'Enter') startFilter(); });
-
+  function getHistory() {
+    try {
+      const current = localStorage.getItem(HISTORY_KEY);
+      if (current) return JSON.parse(current);
+      for (const key of OLD_KEYS) {
+        const old = localStorage.getItem(key);
+        if (old) return JSON.parse(old);
+      }
+      return [];
+    } catch { return []; }
+  }
+  function setHistory(items) {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, MAX_HISTORY)));
     renderHistory();
-  })();
+  }
+  function statusPill(item) {
+    if (item.hit === true) return `<span class="pill green">中奖 ${item.actualDraw}</span>`;
+    if (item.hit === false) return `<span class="pill red">未中 ${item.actualDraw}</span>`;
+    return `<span class="pill amber">待开奖</span>`;
+  }
+  function renderHistory() {
+    const history = getHistory();
+    $("historyCount").textContent = history.length;
+    $("historyArea").style.display = history.length ? "block" : "none";
+    if (!history.length) return;
+    $("historyList").innerHTML = history.map(item => {
+      const preview = (item.filtered || []).slice(0, 10).join(" ") + ((item.filtered || []).length > 10 ? ` ...等${item.count}组` : "");
+      return `<div class="history-item" data-id="${item.id}">
+        <div class="history-meta">
+          <span class="pill">${item.time || ""}</span>
+          ${statusPill(item)}
+          ${item.digits ? `<span class="pill">三胆码 ${item.digits}</span>` : ""}
+          ${item.advance_digits ? `<span class="pill">两码差 ${item.advance_digits}</span>` : ""}
+        </div>
+        <div class="history-preview">期号 ${item.targetIssue || "--"} | 总数 ${item.total} | 命中 ${item.count} | 占比 ${item.percent}% | ${preview}</div>
+        <div class="history-actions">
+          <input class="inline-issue" data-role="issue" value="${item.targetIssue || ""}" placeholder="期号">
+          <button class="secondary" data-role="save-issue">改期号</button>
+          <button class="secondary" data-role="load">加载条件</button>
+          <button class="red" data-role="delete">删除</button>
+        </div>
+      </div>`;
+    }).join("");
+    document.querySelectorAll(".history-item").forEach(el => {
+      const id = Number(el.dataset.id);
+      el.querySelector('[data-role="save-issue"]').addEventListener("click", () => updateHistoryIssue(id, el.querySelector('[data-role="issue"]').value.trim()));
+      el.querySelector('[data-role="load"]').addEventListener("click", () => {
+        const item = getHistory().find(x => Number(x.id) === id);
+        if (item) restoreHistoryItem(item);
+      });
+      el.querySelector('[data-role="delete"]').addEventListener("click", () => deleteHistoryItem(id));
+      el.querySelector('[data-role="issue"]').addEventListener("keydown", e => {
+        if (e.key === "Enter") updateHistoryIssue(id, e.currentTarget.value.trim());
+      });
+    });
+  }
+  function updateHistoryIssue(id, issue) {
+    const hist = getHistory();
+    const item = hist.find(x => Number(x.id) === id);
+    if (!item) return;
+    item.targetIssue = issue || autoIssueName();
+    item.actualIssue = null;
+    item.actualDraw = null;
+    item.hit = null;
+    setHistory(hist);
+    toast("期号已更新");
+  }
+  function deleteHistoryItem(id) {
+    setHistory(getHistory().filter(x => Number(x.id) !== id));
+    toast("已删除");
+  }
+  function restoreHistoryItem(item) {
+    $("filterDigits").value = item.digits || "";
+    $("advanceDigits").value = item.advance_digits || "";
+    renderSegmentGroups(item.segment_filters || itemToSegmentFilters(item));
+    displayFilterResults({total:item.total, count:item.count, percent:item.percent, filtered:item.filtered || []}, item.digits || "", item.advance_digits || "", item.segment || "", item.segment_filters || []);
+    toast(`已加载历史：${item.count}组`);
+  }
+  function itemToSegmentFilters(item) {
+    if (item.segment_mode && item.groups) {
+      return [{mode:item.segment_mode, enabled:true, groups:item.groups}];
+    }
+    return null;
+  }
+  function saveToHistory() {
+    if (!lastResultObj) return toast("请先筛选");
+    const hist = getHistory();
+    if (hist.some(h => h.id === lastResultObj.id)) return toast("这条结果已经保存");
+    hist.unshift(lastResultObj);
+    setHistory(hist);
+    toast(`已保存历史，期号 ${lastResultObj.targetIssue}`);
+  }
+  async function updateDrawRecords() {
+    const hist = getHistory();
+    if (!hist.length) return toast("暂无历史记录");
+    $("updateDrawBtn").disabled = true;
+    $("refreshDrawBtn").disabled = true;
+    try {
+      const updated = await api("/api/update_draws", {});
+      drawRecords = (updated.records || []).slice(0, 50);
+      latestIssue = updated.latest ? updated.latest.issue : "";
+      latestDraw = updated.latest ? updated.latest.draw : "";
+      nextIssue = updated.nextIssue || "";
+      renderDrawSidebar();
+      const checked = await api("/api/check_history", {items: hist});
+      setHistory(checked.items || hist);
+      toast(`已更新开奖：${latestIssue}期 ${latestDraw}`);
+    } catch(e) {
+      toast(e.message);
+    } finally {
+      $("updateDrawBtn").disabled = false;
+      $("refreshDrawBtn").disabled = false;
+    }
+  }
+
+  function copyResult() {
+    if (!currentResult.length) return toast("无结果可复制");
+    navigator.clipboard.writeText($("resultBox").textContent).then(() => toast("已复制")).catch(() => toast("复制失败"));
+  }
+  function exportToFile() {
+    if (!currentResult.length) return toast("无结果可保存");
+    const content = `筛选结果\n自动期号:${autoIssueName()} 数字:${currentDigits || "--"} 两码差:${currentAdvanceDigits || "--"} 段组:${currentSegment || "--"}\n总数:${currentTotal} 命中:${currentResult.length} 占比:${currentPercent}%\n${"=".repeat(50)}\n${$("resultBox").textContent}\n`;
+    const blob = new Blob([content], {type:"text/plain;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `筛号_${new Date().toISOString().slice(0,19).replace(/:/g,"-")}.txt`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast("文件已保存");
+  }
+  function clearAll() {
+    $("inputArea").value = "";
+    $("filterDigits").value = "";
+    $("advanceDigits").value = "";
+    renderSegmentGroups();
+    $("statsArea").style.display = "none";
+    $("resultArea").style.display = "none";
+    $("emptyState").style.display = "block";
+    currentResult = [];
+    lastResultObj = null;
+  }
+  function loadDemo() {
+    $("inputArea").value = demoRaw;
+    $("filterDigits").value = "357";
+    $("advanceDigits").value = "";
+    renderSegmentGroups([
+      {mode:"2-2-6", enabled:false, groups:SEGMENT_DEMOS["2-2-6"]},
+      {mode:"2-3-5", enabled:true, groups:SEGMENT_DEMOS["2-3-5"]},
+      {mode:"5-5", enabled:true, groups:SEGMENT_DEMOS["5-5"]}
+    ]);
+    toast("示例数据已填入，2-3-5 和 5-5 已同时启用");
+  }
+  function clearHistory() {
+    if (!getHistory().length) return;
+    if (confirm("清空所有历史记录？")) {
+      localStorage.removeItem(HISTORY_KEY);
+      OLD_KEYS.forEach(key => localStorage.removeItem(key));
+      renderHistory();
+      toast("历史已清空");
+    }
+  }
+
+  $("refreshDrawBtn").addEventListener("click", refreshDraws);
+  $("filterBtn").addEventListener("click", startFilter);
+  $("demoBtn").addEventListener("click", loadDemo);
+  $("clearBtn").addEventListener("click", clearAll);
+  $("copyResultBtn").addEventListener("click", copyResult);
+  $("saveHistoryBtn").addEventListener("click", saveToHistory);
+  $("exportFileBtn").addEventListener("click", exportToFile);
+  $("updateDrawBtn").addEventListener("click", updateDrawRecords);
+  $("clearHistoryBtn").addEventListener("click", clearHistory);
+  ["filterDigits","advanceDigits"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") startFilter(); }));
+  loadDraws();
+  renderSegmentGroups();
+  renderHistory();
+})();
 </script>
 </body>
 </html>
