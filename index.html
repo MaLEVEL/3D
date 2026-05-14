@@ -184,10 +184,15 @@
         <span class="helper">号码中包含任意一个所填数字即保留。</span>
       </div>
       <div class="form-group">
-        <label>两码差数字</label>
-        <input id="advanceDigits" placeholder="例：523" maxlength="10">
-        <span class="helper">百十、百个、十个任意一个差值命中即保留。</span>
+        <label>杀码筛选</label>
+        <input id="killDigits" placeholder="例：48" maxlength="10">
+        <span class="helper">号码中包含任意一个杀码即排除（优先级最高）。</span>
       </div>
+    </div>
+    <div class="form-group">
+      <label>两码差数字</label>
+      <input id="advanceDigits" placeholder="例：523" maxlength="10">
+      <span class="helper">百十、百个、十个任意一个差值命中即保留。</span>
     </div>
     <div class="form-group">
       <label>段组条件</label>
@@ -245,7 +250,7 @@
   const SEGMENT_SIZES = {"2-2-6":[2,2,6], "2-3-5":[2,3,5], "5-5":[5,5]};
   const SEGMENT_LABELS = {"2-2-6":"2-2-6 段组", "2-3-5":"2-3-5 段组", "5-5":"5-5 段组"};
   const SEGMENT_DEMOS = {"2-2-6":["01","23","456789"], "2-3-5":["01","234","56789"], "5-5":["01234","56789"]};
-  let currentResult = [], currentDigits = "", currentAdvanceDigits = "", currentSegment = "";
+  let currentResult = [], currentDigits = "", currentAdvanceDigits = "", currentKillDigits = "", currentSegment = "";
   let currentSegmentFilters = [], currentTotal = 0, currentPercent = 0, lastResultObj = null;
   let drawRecords = [], latestIssue = "", latestDraw = "", nextIssue = "";
 
@@ -447,10 +452,11 @@
     $("resultBadge").textContent = `${filtered.length}组`;
     $("resultBox").textContent = resultText(filtered);
   }
-  function displayFilterResults(data, digits, advanceDigits, segment, filters) {
+  function displayFilterResults(data, digits, advanceDigits, killDigits, segment, filters) {
     currentResult = data.filtered || [];
     currentDigits = digits;
     currentAdvanceDigits = advanceDigits;
+    currentKillDigits = killDigits || "";
     currentSegment = segment || "";
     currentSegmentFilters = filters || data.segment_filters || [];
     currentTotal = data.total || 0;
@@ -468,6 +474,7 @@
       targetIssue: nextIssue || autoIssueName(),
       digits,
       advance_digits: advanceDigits,
+      kill_digits: currentKillDigits,
       segment,
       segment_filters: currentSegmentFilters,
       total: currentTotal,
@@ -482,21 +489,24 @@
     const text = $("inputArea").value.trim();
     const digits = cleanDigits($("filterDigits").value);
     const advanceDigits = cleanDigits($("advanceDigits").value);
+    const killDigits = cleanDigits($("killDigits").value);
     $("filterDigits").value = digits;
     $("advanceDigits").value = advanceDigits;
+    $("killDigits").value = killDigits;
     const seg = validateSegmentFilters();
     if (!text) return toast("请填写号码池");
     if (!seg.ok) return toast(seg.msg);
-    if (!digits && !advanceDigits && !seg.filters.length) return toast("请至少输入一个筛选条件");
+    if (!digits && !advanceDigits && !killDigits && !seg.filters.length) return toast("请至少输入一个筛选条件");
     $("filterBtn").disabled = true;
     try {
       const data = await api("/api/filter", {
         text,
         digits,
         advance_digits: advanceDigits,
+        kill_digits: killDigits,
         segment_filters: seg.filters
       });
-      displayFilterResults(data, digits, advanceDigits, data.segment || "", seg.filters);
+      displayFilterResults(data, digits, advanceDigits, killDigits, data.segment || "", seg.filters);
       toast(`筛选完成：${data.count}组`);
     } catch(e) {
       toast(e.message);
@@ -579,8 +589,9 @@
   function restoreHistoryItem(item) {
     $("filterDigits").value = item.digits || "";
     $("advanceDigits").value = item.advance_digits || "";
+    $("killDigits").value = item.kill_digits || "";
     renderSegmentGroups(item.segment_filters || itemToSegmentFilters(item));
-    displayFilterResults({total:item.total, count:item.count, percent:item.percent, filtered:item.filtered || []}, item.digits || "", item.advance_digits || "", item.segment || "", item.segment_filters || []);
+    displayFilterResults({total:item.total, count:item.count, percent:item.percent, filtered:item.filtered || []}, item.digits || "", item.advance_digits || "", item.kill_digits || "", item.segment || "", item.segment_filters || []);
     toast(`已加载历史：${item.count}组`);
   }
   function itemToSegmentFilters(item) {
@@ -626,7 +637,7 @@
   }
   function exportToFile() {
     if (!currentResult.length) return toast("无结果可保存");
-    const content = `筛选结果\n自动期号:${autoIssueName()} 数字:${currentDigits || "--"} 两码差:${currentAdvanceDigits || "--"} 段组:${currentSegment || "--"}\n总数:${currentTotal} 命中:${currentResult.length} 占比:${currentPercent}%\n${"=".repeat(50)}\n${$("resultBox").textContent}\n`;
+    const content = `筛选结果\n自动期号:${autoIssueName()} 数字:${currentDigits || "--"} 杀码:${currentKillDigits || "--"} 两码差:${currentAdvanceDigits || "--"} 段组:${currentSegment || "--"}\n总数:${currentTotal} 命中:${currentResult.length} 占比:${currentPercent}%\n${"=".repeat(50)}\n${$("resultBox").textContent}\n`;
     const blob = new Blob([content], {type:"text/plain;charset=utf-8"});
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -639,6 +650,7 @@
     $("inputArea").value = "";
     $("filterDigits").value = "";
     $("advanceDigits").value = "";
+    $("killDigits").value = "";
     renderSegmentGroups();
     $("statsArea").style.display = "none";
     $("resultArea").style.display = "none";
@@ -650,6 +662,7 @@
     $("inputArea").value = demoRaw;
     $("filterDigits").value = "357";
     $("advanceDigits").value = "";
+    $("killDigits").value = "4";
     renderSegmentGroups([
       {mode:"2-2-6", enabled:false, groups:SEGMENT_DEMOS["2-2-6"]},
       {mode:"2-3-5", enabled:true, groups:SEGMENT_DEMOS["2-3-5"]},
@@ -676,7 +689,7 @@
   $("exportFileBtn").addEventListener("click", exportToFile);
   $("updateDrawBtn").addEventListener("click", updateDrawRecords);
   $("clearHistoryBtn").addEventListener("click", clearHistory);
-  ["filterDigits","advanceDigits"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") startFilter(); }));
+  ["filterDigits","advanceDigits","killDigits"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") startFilter(); }));
   loadDraws();
   renderSegmentGroups();
   renderHistory();

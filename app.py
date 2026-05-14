@@ -257,6 +257,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         text = data.get("text", "")
         digits = data.get("digits", "")
         advance_digits = data.get("advance_digits", "")
+        kill_digits = data.get("kill_digits", "")
         segment_filters = normalize_segment_filters(data)
 
         matches = re.findall(r"\b\d{3}\b", text)
@@ -269,13 +270,16 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 
         target_include = set(digits) if digits else set()
         target_advance = set(advance_digits) if advance_digits else set()
+        target_kill = set(kill_digits) if kill_digits else set()
 
-        if not target_include and not target_advance and not segment_filters:
+        if not target_include and not target_advance and not target_kill and not segment_filters:
             self._send_json({"error": "please enter at least one filter condition"}, 400)
             return
 
         filtered = []
         for n in unique:
+            if target_kill and any(d in n for d in target_kill):
+                continue
             if target_include and not any(d in n for d in target_include):
                 continue
             if target_advance:
