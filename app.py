@@ -13,8 +13,11 @@ import urllib.request
 import webbrowser
 
 PORT = 5000
+AUTO_OPEN_BROWSER = os.environ.get("FC3D_AUTO_OPEN_BROWSER", "1") != "0"
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(ROOT, "draw_records.json")
+HISTORY_FILE = os.path.join(ROOT, "history_records.json")
+MAX_HISTORY = 80
 OFFICIAL_PAGE_SIZE = 30
 SEGMENT_PATTERNS = {
     "2-2-6": [2, 2, 6],
@@ -45,6 +48,25 @@ def save_draw_records(records):
     records.sort(key=lambda r: str(r.get("issue", "")))
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(records[-500:], f, ensure_ascii=False, indent=2)
+
+
+def load_history_records():
+    if not os.path.exists(HISTORY_FILE):
+        return []
+    try:
+        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, list) else []
+    except (OSError, json.JSONDecodeError):
+        return []
+
+
+def save_history_records(items):
+    records = items if isinstance(items, list) else []
+    records = records[:MAX_HISTORY]
+    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(records, f, ensure_ascii=False, indent=2)
+    return records
 
 
 def fetch_latest_draw():
@@ -228,15 +250,23 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path.startswith("/api/draws"):
             return self._api_draws()
+        if self.path.startswith("/api/history"):
+            return self._api_history_get()
         if self.path in ("/", "/index.html"):
             self._send_html(HTML_PAGE)
         else:
             self._send_html("<h1>404 Not Found</h1>", 404)
 
+    def do_DELETE(self):
+        if self.path == "/api/history":
+            save_history_records([])
+            return self._send_json({"ok": True, "items": []})
+        self._send_json({"error": "Not Found"}, 404)
+
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
 
@@ -248,6 +278,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                 return self._api_update_draws()
             if self.path == "/api/check_history":
                 return self._api_check_history()
+            if self.path == "/api/history":
+                return self._api_history_save()
             self._send_json({"error": "Not Found"}, 404)
         except Exception as e:
             self._send_json({"error": str(e)}, 500)
@@ -336,19 +368,36 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
     def _api_check_history(self):
         body = self._read_json_body()
         items = body.get("items", [])
-        records = load_draw_records()
-        by_issue = {str(r.get("issue")): r for r in records}
-        checked = []
-        for item in items:
-            target_issue = str(item.get("targetIssue") or item.get("issue") or "")
-            draw = by_issue.get(target_issue)
-            next_item = dict(item)
-            if draw:
-                next_item["actualIssue"] = draw.get("issue")
-                next_item["actualDraw"] = draw.get("draw")
-                next_item["hit"] = group_hit(item.get("filtered", []), draw.get("draw", ""))
-            checked.append(next_item)
-        self._send_json({"ok": True, "items": checked, "drawCount": len(records)})
+        checked = check_history_items(items)
+        self._send_json({"ok": True, "items": checked, "drawCount": len(load_draw_records())})
+
+    def _api_history_get(self):
+        self._send_json({"ok": True, "items": load_history_records()})
+
+    def _api_history_save(self):
+        body = self._read_json_body()
+        items = save_history_records(body.get("items", []))
+        self._send_json({"ok": True, "items": items, "count": len(items)})
+
+
+def check_history_items(items):
+    records = load_draw_records()
+    by_issue = {str(r.get("issue")): r for r in records}
+    checked = []
+    for item in items:
+        target_issue = str(item.get("targetIssue") or item.get("issue") or "")
+        draw = by_issue.get(target_issue)
+        next_item = dict(item)
+        if draw:
+            next_item["actualIssue"] = draw.get("issue")
+            next_item["actualDraw"] = draw.get("draw")
+            next_item["hit"] = group_hit(item.get("filtered", []), draw.get("draw", ""))
+        checked.append(next_item)
+    return checked
+
+
+class ReusableTCPServer(socketserver.TCPServer):
+    allow_reuse_address = True
 
 
 def open_browser():
@@ -361,6 +410,7 @@ if __name__ == "__main__":
     print("  URL: http://127.0.0.1:5000")
     print("  Ctrl+C to stop")
     print("=" * 60)
-    threading.Timer(1.0, open_browser).start()
-    with socketserver.TCPServer(("", PORT), RequestHandler) as httpd:
+    if AUTO_OPEN_BROWSER:
+        threading.Timer(1.0, open_browser).start()
+    with ReusableTCPServer(("", PORT), RequestHandler) as httpd:
         httpd.serve_forever()
