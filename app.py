@@ -64,9 +64,31 @@ def load_history_records():
 def save_history_records(items):
     records = items if isinstance(items, list) else []
     records = records[:MAX_HISTORY]
+    json_str = json.dumps(records, ensure_ascii=False, indent=2)
+    json_str = _compact_filtered_arrays(json_str)
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(records, f, ensure_ascii=False, indent=2)
+        f.write(json_str)
     return records
+
+
+def _compact_filtered_arrays(json_str):
+    def compact(match):
+        key = match.group(1)
+        items = re.findall(r'"(\d+)"', match.group(0))
+        if len(items) <= 10:
+            return match.group(0)
+        lines = []
+        for i in range(0, len(items), 10):
+            chunk = items[i:i + 10]
+            lines.append("          " + ", ".join(f'"{n}"' for n in chunk))
+        return f'"{key}": [\n' + ",\n".join(lines) + "\n        ]"
+
+    return re.sub(
+        r'"(filtered)":\s*\[\s*(?:[^[]*?)\s*\]',
+        compact,
+        json_str,
+        flags=re.DOTALL,
+    )
 
 
 def fetch_latest_draw():

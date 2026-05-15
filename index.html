@@ -59,24 +59,46 @@
     .history-actions { flex-direction: column; align-items: stretch; }
     .inline-issue { width: 100%; }
   }
-  .segment-stack { display: grid; gap: 14px; }
-  .segment-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
-  .segment-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-  .segment-title { font-weight: 900; }
-  .segment-title span { color: var(--muted); font: 700 12px var(--mono); margin-left: 8px; }
-  .switch { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 800; cursor: pointer; }
-  .switch input { width: 18px; height: 18px; accent-color: var(--blue); }
-  .segment-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .segment-label { width: 104px; flex: 0 0 auto; color: var(--muted); font-weight: 700; font-size: 13px; }
-  .segment-digits { display: flex; flex-wrap: wrap; gap: 6px; }
-  .seg-digit {
-    width: 36px; height: 36px; border: 2px solid var(--line); border-radius: 9px;
-    display: grid; place-items: center; background: #fff; cursor: pointer;
-    font-family: var(--mono); font-weight: 800; user-select: none;
+  .segment-stack { display: grid; gap: 12px; }
+  .segment-selector { display: flex; gap: 8px; margin-bottom: 2px; }
+  .segment-select {
+    flex: 1; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px;
+    font-size: 13px; background: #fff; color: var(--text); outline: none; cursor: pointer;
+    font-family: inherit;
   }
+  .segment-select:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(37,99,235,.12); }
+  .segment-add-btn {
+    width: 40px; height: 40px; border: none; border-radius: 10px; background: var(--blue);
+    color: #fff; font-size: 22px; cursor: pointer; display: grid; place-items: center;
+    flex-shrink: 0; padding: 0; min-height: auto; line-height: 1;
+  }
+  .segment-add-btn:hover { filter: brightness(.96); transform: translateY(-1px); }
+  .segment-card { background: #fff; border: 1.5px solid var(--blue); border-radius: 14px; padding: 14px; position: relative; }
+  .segment-card-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .segment-card-title { font-weight: 900; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .segment-card-badge { background: var(--blue); color: #fff; font: 800 10px var(--mono); padding: 2px 8px; border-radius: 999px; }
+  .segment-delete-btn {
+    width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 7px;
+    background: #fff; color: var(--red); font-size: 16px; cursor: pointer;
+    display: grid; place-items: center; padding: 0; min-height: auto; line-height: 1;
+  }
+  .segment-delete-btn:hover { background: #fef2f2; border-color: var(--red); }
+  .segment-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .segment-row:last-child { margin-bottom: 0; }
+  .segment-label { width: 90px; flex: 0 0 auto; color: var(--muted); font-weight: 700; font-size: 12px; }
+  .segment-digits { display: flex; flex-wrap: wrap; gap: 5px; }
+  .seg-digit {
+    width: 34px; height: 34px; border: 2px solid var(--line); border-radius: 8px;
+    display: grid; place-items: center; background: #fff; cursor: pointer;
+    font-family: var(--mono); font-weight: 800; user-select: none; font-size: 13px;
+    transition: all .12s;
+  }
+  .seg-digit:hover { border-color: var(--blue); }
   .seg-digit.active { background: var(--blue); border-color: var(--blue2); color: #fff; }
-  .segment-card.disabled { opacity: .62; }
+  .segment-card.disabled { opacity: .55; border-color: var(--line); }
   .segment-card.disabled .seg-digit { cursor: default; }
+  .segment-card.disabled .seg-digit:hover { border-color: var(--line); }
+  .segment-empty { color: var(--muted); font-size: 12px; padding: 6px 0; }
   .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   button {
     border: 0; border-radius: 11px; min-height: 42px; padding: 0 16px;
@@ -196,8 +218,17 @@
     </div>
     <div class="form-group">
       <label>段组条件</label>
+      <div class="segment-selector">
+        <select class="segment-select" id="segmentTypeSelect">
+          <option value="">选择段组类型添加...</option>
+          <option value="2-2-6">2-2-6 段组</option>
+          <option value="2-3-5">2-3-5 段组</option>
+          <option value="5-5">5-5 段组</option>
+        </select>
+        <button class="segment-add-btn" id="segmentAddBtn" title="添加段组条件">+</button>
+      </div>
       <div class="segment-stack" id="segmentGroups"></div>
-      <span class="helper">可以同时启用多个段组。每个启用的段组都要覆盖 0-9，筛选结果必须同时通过所有启用段组。</span>
+      <span class="helper">选择段组类型后点击 + 添加条件。可添加多个，筛选结果必须同时通过所有段组。</span>
     </div>
     <div class="toolbar">
       <button id="filterBtn">开始筛选</button>
@@ -254,6 +285,7 @@
   let currentSegmentFilters = [], currentTotal = 0, currentPercent = 0, lastResultObj = null;
   let drawRecords = [], latestIssue = "", latestDraw = "", nextIssue = "";
   let historyItems = [];
+  let segmentCards = [], segmentCardIdCounter = 0;
 
   const demoRaw = `组六：
 012 013 014 015 016 017 018 019 023 024
@@ -284,9 +316,6 @@
   function cleanDigits(value) {
     return String(value || "").replace(/\D/g, "").split("").filter((v, i, a) => a.indexOf(v) === i).join("");
   }
-  function modeOrder() { return ["2-2-6", "2-3-5", "5-5"]; }
-  function modeCard(mode) { return document.querySelector(`.segment-card[data-mode="${mode}"]`); }
-
   async function apiGet(path) {
     const res = await fetch(path, {cache: "no-store"});
     const data = await res.json();
@@ -355,79 +384,110 @@
     }
   }
 
-  function renderSegmentGroups(savedFilters) {
-    const savedMap = {};
-    (savedFilters || []).forEach(item => { if (item && item.mode) savedMap[item.mode] = item; });
-    $("segmentGroups").innerHTML = modeOrder().map(mode => {
-      const sizes = SEGMENT_SIZES[mode];
-      const saved = savedMap[mode];
-      const enabled = saved ? saved.enabled !== false : mode === "2-3-5";
+  function addSegmentCard(mode) {
+    if (!mode || !SEGMENT_SIZES[mode]) return;
+    const card = {
+      id: ++segmentCardIdCounter,
+      mode,
+      groups: SEGMENT_DEMOS[mode].map(g => g)
+    };
+    segmentCards.push(card);
+    renderSegmentCards();
+    $("segmentTypeSelect").value = "";
+  }
+  function removeSegmentCard(cardId) {
+    segmentCards = segmentCards.filter(c => c.id !== cardId);
+    renderSegmentCards();
+  }
+  function renderSegmentCards() {
+    if (!segmentCards.length) {
+      $("segmentGroups").innerHTML = `<div class="segment-empty">暂未添加段组条件。</div>`;
+      return;
+    }
+    $("segmentGroups").innerHTML = segmentCards.map(card => {
+      const sizes = SEGMENT_SIZES[card.mode];
+      const hint = card.mode === "5-5" ? "必须跨两段" : "不能落满三段";
       const rows = sizes.map((size, i) => {
-        const digits = Array.from({length: 10}, (_, d) => `<div class="seg-digit" data-digit="${d}">${d}</div>`).join("");
+        const digits = Array.from({length: 10}, (_, d) => {
+          const active = (card.groups[i] || "").includes(String(d));
+          return `<div class="seg-digit${active ? " active" : ""}" data-digit="${d}" data-card="${card.id}" data-row="${i}">${d}</div>`;
+        }).join("");
         return `<div class="segment-row"><span class="segment-label">第${i + 1}组 ${size}码</span><div class="segment-digits">${digits}</div></div>`;
       }).join("");
-      return `<div class="segment-card ${enabled ? "" : "disabled"}" data-mode="${mode}">
-        <div class="segment-top">
-          <div class="segment-title">${SEGMENT_LABELS[mode]}<span>${mode === "5-5" ? "必须跨两段" : "不能落满三段"}</span></div>
-          <label class="switch"><input type="checkbox" class="segment-enable" ${enabled ? "checked" : ""}>启用</label>
+      return `<div class="segment-card" data-card="${card.id}">
+        <div class="segment-card-header">
+          <div class="segment-card-title">${SEGMENT_LABELS[card.mode]}<span class="segment-card-badge">#${card.id}</span><span style="color:var(--muted);font:700 11px var(--mono);">${hint}</span></div>
+          <button class="segment-delete-btn" data-action="remove" data-card="${card.id}" title="删除此段组">×</button>
         </div>
         ${rows}
       </div>`;
     }).join("");
-    modeOrder().forEach(mode => {
-      const card = modeCard(mode);
-      card.querySelector(".segment-enable").addEventListener("change", e => {
-        card.classList.toggle("disabled", !e.target.checked);
-      });
-      card.querySelectorAll(".seg-digit").forEach(el => el.addEventListener("click", () => toggleDigit(mode, el)));
-      setSegmentUI(mode, savedMap[mode]?.groups || SEGMENT_DEMOS[mode]);
+
+    document.querySelectorAll(".seg-digit").forEach(el => {
+      el.addEventListener("click", () => toggleDigit(Number(el.dataset.card), Number(el.dataset.row), el));
+    });
+    document.querySelectorAll("[data-action='remove']").forEach(btn => {
+      btn.addEventListener("click", () => removeSegmentCard(Number(btn.dataset.card)));
     });
   }
-  function toggleDigit(mode, el) {
-    const card = modeCard(mode);
-    if (!card.querySelector(".segment-enable").checked) return;
+  function renderSegmentGroups(savedFilters) {
+    segmentCards = [];
+    segmentCardIdCounter = 0;
+    if (savedFilters && savedFilters.length) {
+      savedFilters.forEach(item => {
+        if (item && item.mode && SEGMENT_SIZES[item.mode]) {
+          const groups = (item.groups && item.groups.length === SEGMENT_SIZES[item.mode].length)
+            ? item.groups.map(g => g)
+            : SEGMENT_DEMOS[item.mode].map(g => g);
+          segmentCards.push({ id: ++segmentCardIdCounter, mode: item.mode, groups });
+        }
+      });
+    }
+    renderSegmentCards();
+  }
+  function toggleDigit(cardId, rowIndex, el) {
     if (el.classList.contains("active")) {
       el.classList.remove("active");
-      return;
+    } else {
+      const cardEl = document.querySelector(`.segment-card[data-card="${cardId}"]`);
+      cardEl.querySelectorAll(`.seg-digit[data-row="${rowIndex}"][data-digit="${el.dataset.digit}"]`).forEach(x => x.classList.remove("active"));
+      el.classList.add("active");
     }
-    card.querySelectorAll(`.seg-digit[data-digit="${el.dataset.digit}"]`).forEach(x => x.classList.remove("active"));
-    el.classList.add("active");
+    syncCardGroups(cardId);
   }
-  function setSegmentUI(mode, groups) {
-    const card = modeCard(mode);
-    card.querySelectorAll(".seg-digit.active").forEach(el => el.classList.remove("active"));
-    [...card.querySelectorAll(".segment-row")].forEach((row, i) => {
-      (groups[i] || "").split("").forEach(d => row.querySelector(`[data-digit="${d}"]`)?.classList.add("active"));
-    });
-  }
-  function getModeGroups(mode) {
-    const card = modeCard(mode);
-    return [...card.querySelectorAll(".segment-row")].map(row =>
+  function syncCardGroups(cardId) {
+    const card = segmentCards.find(c => c.id === cardId);
+    if (!card) return;
+    const cardEl = document.querySelector(`.segment-card[data-card="${cardId}"]`);
+    card.groups = [...cardEl.querySelectorAll(".segment-row")].map(row =>
       [...row.querySelectorAll(".seg-digit.active")].map(el => el.dataset.digit).join("")
     );
   }
   function getSegmentFilters() {
-    return modeOrder().map(mode => ({
-      mode,
-      enabled: modeCard(mode).querySelector(".segment-enable").checked,
-      groups: getModeGroups(mode)
+    document.querySelectorAll(".segment-card").forEach(cardEl => {
+      syncCardGroups(Number(cardEl.dataset.card));
+    });
+    return segmentCards.map(card => ({
+      mode: card.mode,
+      enabled: true,
+      groups: card.groups
     }));
   }
   function validateSegmentFilters() {
-    const filters = getSegmentFilters().filter(item => item.enabled);
-    for (const item of filters) {
-      const sizes = SEGMENT_SIZES[item.mode];
+    if (!segmentCards.length) return {ok: true, filters: []};
+    for (const card of segmentCards) {
+      const sizes = SEGMENT_SIZES[card.mode];
       const used = new Set();
       for (let i = 0; i < sizes.length; i++) {
-        if ((item.groups[i] || "").length !== sizes[i]) return {ok:false, msg:`${item.mode} 第${i + 1}组需要 ${sizes[i]} 个数字`};
-        for (const d of item.groups[i]) {
-          if (used.has(d)) return {ok:false, msg:`${item.mode} 段组数字不能重复`};
+        if ((card.groups[i] || "").length !== sizes[i]) return {ok:false, msg:`${card.mode} #${card.id} 第${i + 1}组需要 ${sizes[i]} 个数字`};
+        for (const d of card.groups[i]) {
+          if (used.has(d)) return {ok:false, msg:`${card.mode} #${card.id} 段组数字不能重复`};
           used.add(d);
         }
       }
-      if (used.size !== 10) return {ok:false, msg:`${item.mode} 必须覆盖 0-9 全部数字`};
+      if (used.size !== 10) return {ok:false, msg:`${card.mode} #${card.id} 必须覆盖 0-9 全部数字`};
     }
-    return {ok:true, filters};
+    return {ok:true, filters: getSegmentFilters()};
   }
 
   async function api(path, body) {
@@ -626,8 +686,9 @@
     toast(`已加载历史：${item.count}组`);
   }
   function itemToSegmentFilters(item) {
+    if (item.segment_filters && item.segment_filters.length) return item.segment_filters;
     if (item.segment_mode && item.groups) {
-      return [{mode:item.segment_mode, enabled:true, groups:item.groups}];
+      return [{mode:item.segment_mode, groups:item.groups}];
     }
     return null;
   }
@@ -686,7 +747,8 @@
     $("filterDigits").value = "";
     $("advanceDigits").value = "";
     $("killDigits").value = "";
-    renderSegmentGroups();
+    segmentCards = [];
+    renderSegmentCards();
     $("statsArea").style.display = "none";
     $("resultArea").style.display = "none";
     $("emptyState").style.display = "block";
@@ -699,11 +761,10 @@
     $("advanceDigits").value = "";
     $("killDigits").value = "4";
     renderSegmentGroups([
-      {mode:"2-2-6", enabled:false, groups:SEGMENT_DEMOS["2-2-6"]},
-      {mode:"2-3-5", enabled:true, groups:SEGMENT_DEMOS["2-3-5"]},
-      {mode:"5-5", enabled:true, groups:SEGMENT_DEMOS["5-5"]}
+      {mode:"2-3-5", groups:SEGMENT_DEMOS["2-3-5"]},
+      {mode:"5-5", groups:SEGMENT_DEMOS["5-5"]}
     ]);
-    toast("示例数据已填入，2-3-5 和 5-5 已同时启用");
+    toast("示例数据已填入，2-3-5 和 5-5 段组已添加");
   }
   async function clearHistory() {
     if (!historyItems.length) return;
@@ -723,6 +784,7 @@
     }
   }
 
+  $("segmentAddBtn").addEventListener("click", () => addSegmentCard($("segmentTypeSelect").value));
   $("refreshDrawBtn").addEventListener("click", refreshDraws);
   $("filterBtn").addEventListener("click", startFilter);
   $("demoBtn").addEventListener("click", loadDemo);
@@ -734,7 +796,7 @@
   $("clearHistoryBtn").addEventListener("click", clearHistory);
   ["filterDigits","advanceDigits","killDigits"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") startFilter(); }));
   loadDraws();
-  renderSegmentGroups();
+  renderSegmentCards();
   loadHistory();
 })();
 </script>
