@@ -6,6 +6,9 @@ import app
 
 
 class HistoryStorageTest(unittest.TestCase):
+    def test_server_handles_requests_in_threads(self):
+        self.assertTrue(app.ReusableTCPServer.daemon_threads)
+
     def test_server_reuses_address_between_restarts(self):
         self.assertTrue(app.ReusableTCPServer.allow_reuse_address)
 

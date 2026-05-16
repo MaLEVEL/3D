@@ -213,6 +213,54 @@ def normalize_segment_filters(data):
     return [{"mode": mode, "groups_data": groups_data, "groups": groups}] if groups else []
 
 
+def validate_code_filter(item):
+    code_len = int(item.get("code_len", 3))
+    if code_len < 3 or code_len > 8:
+        raise ValueError(f"码数必须在3-8之间，当前为{code_len}")
+    condition = item.get("condition", "012")
+    if condition not in ("01", "012", "123"):
+        raise ValueError(f"条件只能是01、012或123，当前为{condition}")
+    digits = str(item.get("digits", ""))
+    if len(digits) != code_len:
+        raise ValueError(f"需要恰好{code_len}个数字，当前有{len(digits)}个")
+    if not digits.isdigit() or len(set(digits)) != len(digits):
+        raise ValueError(f"数字必须是不重复的0-9数字")
+    return {"code_len": code_len, "condition": condition, "digits": digits}
+
+
+def passes_code_filter(number, code_filter):
+    digits = code_filter["digits"]
+    condition = code_filter["condition"]
+    count = len(set(number) & set(digits))
+    if condition == "01":
+        return count in (0, 1)
+    elif condition == "012":
+        return count in (0, 1, 2)
+    elif condition == "123":
+        return count in (1, 2, 3)
+    return True
+
+
+def normalize_code_filters(data):
+    filters = data.get("code_filters")
+    if isinstance(filters, list):
+        result = []
+        for item in filters:
+            if not isinstance(item, dict) or not item.get("enabled", True):
+                continue
+            cf = validate_code_filter(item)
+            result.append(cf)
+        return result
+    return []
+
+
+def code_filter_desc(code_filters):
+    return "; ".join(
+        f"{cf['code_len']}码={cf['condition']}[{cf['digits']}]"
+        for cf in code_filters
+    )
+
+
 def segment_desc(segment_filters):
     return "; ".join(
         f"{item['mode']} segment [" + " | ".join(item["groups_data"]) + "]"
@@ -291,6 +339,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         advance_digits = data.get("advance_digits", "")
         kill_digits = data.get("kill_digits", "")
         segment_filters = normalize_segment_filters(data)
+        code_filters = normalize_code_filters(data)
 
         matches = re.findall(r"\b\d{3}\b", text)
         seen = set()
@@ -304,7 +353,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         target_advance = set(advance_digits) if advance_digits else set()
         target_kill = set(kill_digits) if kill_digits else set()
 
-        if not target_include and not target_advance and not target_kill and not segment_filters:
+        if not target_include and not target_advance and not target_kill and not segment_filters and not code_filters:
             self._send_json({"error": "please enter at least one filter condition"}, 400)
             return
 
@@ -321,6 +370,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                     continue
             if any(not passes_segment_pattern(n, item["groups"], item["mode"]) for item in segment_filters):
                 continue
+            if any(not passes_code_filter(n, cf) for cf in code_filters):
+                continue
             filtered.append(n)
 
         self._send_json({
@@ -333,6 +384,11 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             "segment_filters": [
                 {"mode": item["mode"], "groups": item["groups_data"]}
                 for item in segment_filters
+            ],
+            "code_desc": code_filter_desc(code_filters),
+            "code_filters": [
+                {"code_len": cf["code_len"], "condition": cf["condition"], "digits": cf["digits"]}
+                for cf in code_filters
             ],
         })
 
@@ -396,8 +452,9 @@ def check_history_items(items):
     return checked
 
 
-class ReusableTCPServer(socketserver.TCPServer):
+class ReusableTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     allow_reuse_address = True
+    daemon_threads = True
 
 
 def open_browser():

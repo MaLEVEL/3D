@@ -199,6 +199,42 @@
   .segment-delete-btn:hover { background: var(--red-bg); border-color: var(--red); }
   .segment-empty { color: var(--text-muted); font-size: 12px; padding: 5px 0; }
 
+  /* N码条件 */
+  .code-selector { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+  .code-select { width: 90px; flex-shrink: 0; }
+  .code-stack { display: grid; gap: 10px; }
+  .code-card {
+    background: #fdf6ff; border: 1px solid #e0c8f0;
+    border-radius: var(--radius); padding: 13px;
+  }
+  .code-card-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .code-card-title { font-weight: 800; font-size: 12px; display: flex; align-items: center; gap: 7px; color: #8b2fc9; }
+  .code-card-badge {
+    background: rgba(139,47,201,.12); color: #8b2fc9;
+    font: 800 9px var(--mono); padding: 1px 7px; border-radius: 999px;
+  }
+  .code-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+  .code-row:last-child { margin-bottom: 0; }
+  .code-label { width: 82px; flex-shrink: 0; color: var(--text-muted); font-weight: 700; font-size: 11px; }
+  .code-digits { display: flex; flex-wrap: wrap; gap: 4px; }
+  .code-digit {
+    width: 30px; height: 30px; border: 1.5px solid var(--border); border-radius: 6px;
+    display: grid; place-items: center; background: #fff; cursor: pointer;
+    font-family: var(--mono); font-weight: 700; user-select: none; font-size: 12px;
+    color: var(--text-dim); transition: all .12s;
+  }
+  .code-digit:hover { border-color: #8b2fc9; background: #fdf6ff; }
+  .code-digit.active { background: #8b2fc9; border-color: #8b2fc9; color: #fff; }
+  .code-delete-btn {
+    width: 24px; height: 24px; border: 1px solid var(--border); border-radius: 6px;
+    background: #fff; color: var(--red); font-size: 15px; cursor: pointer;
+    display: grid; place-items: center; padding: 0; min-height: auto; line-height: 1;
+    transition: all .12s;
+  }
+  .code-delete-btn:hover { background: var(--red-bg); border-color: var(--red); }
+  .code-empty { color: var(--text-muted); font-size: 12px; padding: 5px 0; }
+  .code-hint { display: block; color: var(--text-muted); font-size: 10px; margin-top: 4px; }
+
   /* 按钮 - 纯色，无渐变 */
   button {
     border: 0; border-radius: var(--radius-sm); min-height: 40px; padding: 0 18px;
@@ -362,7 +398,7 @@
         <div class="card-head">
           <span class="card-head-num">2</span>
           <span class="card-head-title">筛选条件</span>
-          <span class="card-head-sub">— 胆码 · 杀码 · 两码差 · 段组</span>
+          <span class="card-head-sub">— 胆码 · 杀码 · 两码差 · 段组 · N码</span>
         </div>
         <div class="card-body">
           <div class="grid-2">
@@ -395,6 +431,24 @@
             </div>
             <div class="segment-stack" id="segmentGroups"></div>
             <span class="helper">选择段组类型后点击 + 添加条件。可添加多个，筛选结果必须同时通过所有段组。</span>
+          </div>
+          <div class="form-group">
+            <label>N码条件 <span style="font-weight:400;color:var(--text-muted);font-size:11px;">（可选）</span></label>
+            <div class="code-selector">
+              <select class="code-select" id="codeLenSelect">
+                <option value="3">3码</option><option value="4">4码</option>
+                <option value="5" selected>5码</option><option value="6">6码</option>
+                <option value="7">7码</option><option value="8">8码</option>
+              </select>
+              <select class="code-select" id="codeCondSelect">
+                <option value="01">=01</option>
+                <option value="012" selected>=012</option>
+                <option value="123">=123</option>
+              </select>
+              <button class="btn-green" id="codeAddBtn" title="添加N码条件" style="width:40px;height:40px;padding:0;font-size:20px;min-height:auto;">+</button>
+            </div>
+            <div class="code-stack" id="codeCards"></div>
+            <span class="helper">选择码数N和条件后点击+添加。可添加多个，筛选结果必须同时通过所有N码条件。</span>
           </div>
         </div>
       </div>
@@ -452,10 +506,11 @@
   var SEGMENT_LABELS = {"2-2-6":"2-2-6 段组", "2-3-5":"2-3-5 段组", "5-5":"5-5 段组"};
   var SEGMENT_DEMOS = {"2-2-6":["01","23","456789"], "2-3-5":["01","234","56789"], "5-5":["01234","56789"]};
   var currentResult = [], currentDigits = "", currentAdvanceDigits = "", currentKillDigits = "", currentSegment = "";
-  var currentSegmentFilters = [], currentTotal = 0, currentPercent = 0, lastResultObj = null;
+  var currentSegmentFilters = [], currentCodeFilters = [], currentTotal = 0, currentPercent = 0, lastResultObj = null;
   var drawRecords = [], latestIssue = "", latestDraw = "", nextIssue = "";
   var historyItems = [];
   var segmentCards = [], segmentCardIdCounter = 0;
+  var codeCards = [], codeCardIdCounter = 0;
   var qimaCodes = [];
 
   var demoRaw = "组六：\n012 013 014 015 016 017 018 019 023 024\n\n\n组三：\n001 002 005 006 007 008 009 011 022\n";
@@ -599,6 +654,54 @@
     return {ok:true, filters: getSegmentFilters()};
   }
 
+  function addCodeCard() {
+    var codeLen = Number($("codeLenSelect").value);
+    var condition = $("codeCondSelect").value;
+    codeCards.push({ id: ++codeCardIdCounter, codeLen: codeLen, condition: condition, digits: "" });
+    renderCodeCards();
+  }
+  function removeCodeCard(cardId) { codeCards = codeCards.filter(function(c) { return c.id !== cardId; }); renderCodeCards(); }
+  function renderCodeCards() {
+    if (!codeCards.length) { $("codeCards").innerHTML = '<div class="code-empty">暂未添加N码条件。</div>'; return; }
+    $("codeCards").innerHTML = codeCards.map(function(card) {
+      var hintMap = {"01":"号码中包含0~1个所选数字即通过","012":"号码中包含0~2个所选数字即通过","123":"号码中包含1~3个所选数字即通过"};
+      var hint = hintMap[card.condition] || "";
+      var digitsHtml = Array.from({length:10}, function(_, d) {
+        var active = (card.digits || "").indexOf(String(d)) !== -1;
+        return '<div class="code-digit' + (active ? " active" : "") + '" data-digit="' + d + '" data-card="' + card.id + '">' + d + '</div>';
+      }).join("");
+      var selected = card.digits ? "[" + card.digits + "]" : "(点击下方数字选择" + card.codeLen + "个)";
+      return '<div class="code-card" data-card="' + card.id + '"><div class="code-card-header"><div class="code-card-title">' + card.codeLen + '码=' + card.condition + ' <span class="code-card-badge">#' + card.id + '</span><span style="color:var(--text-muted);font:700 10px var(--mono);">' + selected + '</span></div><button class="code-delete-btn" data-action="remove-code" data-card="' + card.id + '" title="删除">&times;</button></div><div class="code-row"><span class="code-label">选' + card.codeLen + '个数字</span><div class="code-digits">' + digitsHtml + '</div></div><span class="code-hint">' + hint + '</span></div>';
+    }).join("");
+    document.querySelectorAll(".code-digit").forEach(function(el) { el.addEventListener("click", function() { toggleCodeDigit(Number(el.dataset.card), Number(el.dataset.digit), el); }); });
+    document.querySelectorAll("[data-action='remove-code']").forEach(function(btn) { btn.addEventListener("click", function() { removeCodeCard(Number(btn.dataset.card)); }); });
+  }
+  function toggleCodeDigit(cardId, digit, el) {
+    var card = codeCards.find(function(c) { return c.id === cardId; });
+    if (!card) return;
+    var current = card.digits || "";
+    if (el.classList.contains("active")) {
+      el.classList.remove("active");
+      card.digits = current.replace(String(digit), "");
+    } else {
+      if (current.length >= card.codeLen) return toast("该条件最多选" + card.codeLen + "个数字，请先取消一个");
+      card.digits = (current + String(digit)).split("").sort().join("");
+      el.classList.add("active");
+    }
+    renderCodeCards();
+  }
+  function getCodeFilters() {
+    return codeCards.map(function(card) { return { code_len: card.codeLen, condition: card.condition, digits: card.digits, enabled: true }; });
+  }
+  function validateCodeFilters() {
+    if (!codeCards.length) return {ok:true, filters:[]};
+    for (var i = 0; i < codeCards.length; i++) {
+      var card = codeCards[i];
+      if (!card.digits || card.digits.length !== card.codeLen) return {ok:false, msg: card.codeLen + "码=#" + card.id + " 需要选择恰好" + card.codeLen + "个数字"};
+    }
+    return {ok:true, filters: getCodeFilters()};
+  }
+
   function addQima() {
     var raw = $("qimaInput").value.replace(/\s/g, "");
     var digits = [].filter.call(raw, function(v,i,a) { return a.indexOf(v) === i; }).join("");
@@ -631,26 +734,29 @@
     return filtered.reduce(function(lines, n, i) { if (i%10===0) lines.push([]); lines[lines.length-1].push(n); return lines; }, []).map(function(line) { return line.join("  "); }).join("\n");
   }
   function renderResult(filtered) { $("resultBadge").textContent = filtered.length + "组"; $("resultBox").textContent = resultText(filtered); }
-  function displayFilterResults(data, digits, advanceDigits, killDigits, segment, filters) {
+  function displayFilterResults(data, digits, advanceDigits, killDigits, segment, filters, codeFilters) {
     currentResult = data.filtered || []; currentDigits = digits; currentAdvanceDigits = advanceDigits;
     currentKillDigits = killDigits || ""; currentSegment = segment || "";
     currentSegmentFilters = filters || data.segment_filters || [];
+    currentCodeFilters = codeFilters || data.code_filters || [];
     currentTotal = data.total || 0; currentPercent = data.percent || 0;
     $("totalCount").textContent = currentTotal; $("filteredCount").textContent = currentResult.length;
     $("percent").textContent = currentPercent + "%";
     renderResult(currentResult);
     $("statsArea").style.display = "block"; $("resultArea").style.display = "block"; $("emptyState").style.display = "none";
-    lastResultObj = { id: Date.now(), time: nowText(), targetIssue: nextIssue || autoIssueName(), digits: digits, advance_digits: advanceDigits, kill_digits: currentKillDigits, segment: segment, segment_filters: currentSegmentFilters, total: currentTotal, count: currentResult.length, percent: currentPercent, filtered: currentResult, actualDraw: null, hit: null };
+    lastResultObj = { id: Date.now(), time: nowText(), targetIssue: nextIssue || autoIssueName(), digits: digits, advance_digits: advanceDigits, kill_digits: currentKillDigits, segment: segment, segment_filters: currentSegmentFilters, code_filters: currentCodeFilters, total: currentTotal, count: currentResult.length, percent: currentPercent, filtered: currentResult, actualDraw: null, hit: null };
   }
   async function startFilter() {
     var text = $("inputArea").value.trim(), digits = cleanDigits($("filterDigits").value), advanceDigits = cleanDigits($("advanceDigits").value), killDigits = cleanDigits($("killDigits").value);
     $("filterDigits").value = digits; $("advanceDigits").value = advanceDigits; $("killDigits").value = killDigits;
     var seg = validateSegmentFilters();
+    var code = validateCodeFilters();
     if (!text) return toast("请填写号码池");
     if (!seg.ok) return toast(seg.msg);
-    if (!digits && !advanceDigits && !killDigits && !seg.filters.length) return toast("请至少输入一个筛选条件");
+    if (!code.ok) return toast(code.msg);
+    if (!digits && !advanceDigits && !killDigits && !seg.filters.length && !code.filters.length) return toast("请至少输入一个筛选条件");
     $("filterBtn").disabled = true;
-    try { var data = await api("/api/filter", {text:text, digits:digits, advance_digits:advanceDigits, kill_digits:killDigits, segment_filters:seg.filters}); displayFilterResults(data, digits, advanceDigits, killDigits, data.segment || "", seg.filters); toast("筛选完成：" + data.count + "组"); }
+    try { var data = await api("/api/filter", {text:text, digits:digits, advance_digits:advanceDigits, kill_digits:killDigits, segment_filters:seg.filters, code_filters:code.filters}); displayFilterResults(data, digits, advanceDigits, killDigits, data.segment || "", seg.filters, data.code_filters || []); toast("筛选完成：" + data.count + "组"); }
     catch(e) { toast(e.message); }
     finally { $("filterBtn").disabled = false; }
   }
@@ -683,7 +789,8 @@
     $("historyList").innerHTML = history.map(function(item) {
       var preview = (item.filtered || []).slice(0, 10).join(" ") + ((item.filtered||[]).length > 10 ? " ...等" + item.count + "组" : "");
       var segPills = (item.segment_filters || []).map(function(f) { return '<span class="pill green">' + f.mode + ' 段组</span>'; }).join("");
-      return '<div class="history-item" data-id="' + item.id + '"><div class="history-meta"><span class="pill">' + (item.time||"") + '</span>' + statusPill(item) + (item.digits ? '<span class="pill">胆码 ' + item.digits + '</span>' : "") + (item.kill_digits ? '<span class="pill red">杀码 ' + item.kill_digits + '</span>' : "") + (item.advance_digits ? '<span class="pill">两码差 ' + item.advance_digits + '</span>' : "") + segPills + '</div><div class="history-preview">期号 ' + (item.targetIssue||"--") + ' | 总数 ' + item.total + ' | 命中 ' + item.count + ' | 占比 ' + item.percent + '% | ' + preview + '</div><div class="history-actions"><input class="inline-issue" data-role="issue" value="' + (item.targetIssue||"") + '" placeholder="期号"><button class="btn-secondary btn-sm" data-role="save-issue">改期号</button><button class="btn-secondary btn-sm" data-role="load">加载条件</button><button class="btn-red btn-sm" data-role="delete">删除</button></div></div>';
+      var codePills = (item.code_filters || []).map(function(f) { return '<span class="pill" style="background:#fdf6ff;color:#8b2fc9;">' + f.code_len + '码=' + f.condition + '</span>'; }).join("");
+      return '<div class="history-item" data-id="' + item.id + '"><div class="history-meta"><span class="pill">' + (item.time||"") + '</span>' + statusPill(item) + (item.digits ? '<span class="pill">胆码 ' + item.digits + '</span>' : "") + (item.kill_digits ? '<span class="pill red">杀码 ' + item.kill_digits + '</span>' : "") + (item.advance_digits ? '<span class="pill">两码差 ' + item.advance_digits + '</span>' : "") + segPills + codePills + '</div><div class="history-preview">期号 ' + (item.targetIssue||"--") + ' | 总数 ' + item.total + ' | 命中 ' + item.count + ' | 占比 ' + item.percent + '% | ' + preview + '</div><div class="history-actions"><input class="inline-issue" data-role="issue" value="' + (item.targetIssue||"") + '" placeholder="期号"><button class="btn-secondary btn-sm" data-role="save-issue">改期号</button><button class="btn-secondary btn-sm" data-role="load">加载条件</button><button class="btn-red btn-sm" data-role="delete">删除</button></div></div>';
     }).join("");
     document.querySelectorAll(".history-item").forEach(function(el) {
       var id = Number(el.dataset.id);
@@ -703,8 +810,20 @@
   function restoreHistoryItem(item) {
     $("filterDigits").value = item.digits || ""; $("advanceDigits").value = item.advance_digits || ""; $("killDigits").value = item.kill_digits || "";
     renderSegmentGroups(item.segment_filters || itemToSegmentFilters(item));
-    displayFilterResults({total:item.total, count:item.count, percent:item.percent, filtered:item.filtered||[]}, item.digits||"", item.advance_digits||"", item.kill_digits||"", item.segment||"", item.segment_filters||[]);
+    renderCodeCardsFromFilters(item.code_filters || []);
+    displayFilterResults({total:item.total, count:item.count, percent:item.percent, filtered:item.filtered||[]}, item.digits||"", item.advance_digits||"", item.kill_digits||"", item.segment||"", item.segment_filters||[], item.code_filters||[]);
     toast("已加载历史：" + item.count + "组");
+  }
+  function renderCodeCardsFromFilters(savedFilters) {
+    codeCards = []; codeCardIdCounter = 0;
+    if (savedFilters && savedFilters.length) {
+      savedFilters.forEach(function(item) {
+        if (item && item.code_len && item.digits) {
+          codeCards.push({ id: ++codeCardIdCounter, codeLen: item.code_len, condition: item.condition || "012", digits: item.digits });
+        }
+      });
+    }
+    renderCodeCards();
   }
   function itemToSegmentFilters(item) { if (item.segment_filters && item.segment_filters.length) return item.segment_filters; if (item.segment_mode && item.groups) return [{mode:item.segment_mode, groups:item.groups}]; return null; }
   async function saveToHistory() {
@@ -730,21 +849,23 @@
   function copyResult() { if (!currentResult.length) return toast("无结果可复制"); navigator.clipboard.writeText($("resultBox").textContent).then(function() { toast("已复制"); }).catch(function() { toast("复制失败"); }); }
   function exportToFile() {
     if (!currentResult.length) return toast("无结果可保存");
-    var content = "筛选结果\n自动期号:" + autoIssueName() + " 数字:" + (currentDigits||"--") + " 杀码:" + (currentKillDigits||"--") + " 两码差:" + (currentAdvanceDigits||"--") + " 段组:" + (currentSegment||"--") + "\n总数:" + currentTotal + " 命中:" + currentResult.length + " 占比:" + currentPercent + "%\n" + "=".repeat(50) + "\n" + $("resultBox").textContent + "\n";
+    var codeDesc = (currentCodeFilters||[]).map(function(f) { return f.code_len + "码=" + f.condition + "[" + f.digits + "]"; }).join(", ") || "--";
+    var content = "筛选结果\n自动期号:" + autoIssueName() + " 数字:" + (currentDigits||"--") + " 杀码:" + (currentKillDigits||"--") + " 两码差:" + (currentAdvanceDigits||"--") + " 段组:" + (currentSegment||"--") + " N码:" + codeDesc + "\n总数:" + currentTotal + " 命中:" + currentResult.length + " 占比:" + currentPercent + "%\n" + "=".repeat(50) + "\n" + $("resultBox").textContent + "\n";
     var blob = new Blob([content], {type:"text/plain;charset=utf-8"}), a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = "筛号_" + new Date().toISOString().slice(0,19).replace(/:/g,"-") + ".txt"; a.click(); URL.revokeObjectURL(a.href);
     toast("文件已保存");
   }
   function clearAll() {
     $("inputArea").value = ""; $("filterDigits").value = ""; $("advanceDigits").value = ""; $("killDigits").value = "";
-    segmentCards = []; renderSegmentCards(); qimaCodes = []; renderQimaList(); $("qimaInput").value = "";
+    segmentCards = []; renderSegmentCards(); codeCards = []; renderCodeCards(); qimaCodes = []; renderQimaList(); $("qimaInput").value = "";
     $("statsArea").style.display = "none"; $("resultArea").style.display = "none"; $("emptyState").style.display = "block";
     currentResult = []; lastResultObj = null;
   }
   function loadDemo() {
     $("inputArea").value = demoRaw; $("filterDigits").value = "357"; $("advanceDigits").value = ""; $("killDigits").value = "4";
     renderSegmentGroups([{mode:"2-3-5", groups:SEGMENT_DEMOS["2-3-5"]}, {mode:"5-5", groups:SEGMENT_DEMOS["5-5"]}]);
-    toast("示例数据已填入，2-3-5 和 5-5 段组已添加");
+    renderCodeCardsFromFilters([{code_len:5, condition:"012", digits:"01234"}]);
+    toast("示例数据已填入，2-3-5、5-5段组和5码=012已添加");
   }
   async function clearHistory() {
     if (!historyItems.length) return;
@@ -754,6 +875,7 @@
   }
 
   $("segmentAddBtn").addEventListener("click", function() { addSegmentCard($("segmentTypeSelect").value); });
+  $("codeAddBtn").addEventListener("click", addCodeCard);
   $("qimaAddBtn").addEventListener("click", addQima);
   $("qimaGenerateBtn").addEventListener("click", generateFromQima);
   $("qimaInput").addEventListener("keydown", function(e) { if (e.key==="Enter") { e.preventDefault(); addQima(); } });
@@ -767,7 +889,7 @@
   $("updateDrawBtn").addEventListener("click", updateDrawRecords);
   $("clearHistoryBtn").addEventListener("click", clearHistory);
   ["filterDigits","advanceDigits","killDigits"].forEach(function(id) { $(id).addEventListener("keydown", function(e) { if (e.key==="Enter") startFilter(); }); });
-  loadDraws(); renderSegmentCards(); loadHistory();
+  loadDraws(); renderSegmentCards(); renderCodeCards(); loadHistory();
 })();
 </script>
 </body>
