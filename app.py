@@ -397,7 +397,7 @@ def check_history_items(items):
 
 
 class ReusableTCPServer(socketserver.TCPServer):
-    allow_reuse_address = True if os.name != "nt" else False
+    allow_reuse_address = True
 
 
 def open_browser():
@@ -407,8 +407,8 @@ def open_browser():
 def _free_port(port):
     """Kill any process occupying the given port."""
     try:
+        import subprocess
         if os.name == "nt":
-            import subprocess
             out = subprocess.check_output(
                 ["netstat", "-ano"], text=True, timeout=10
             )
