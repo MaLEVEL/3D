@@ -621,7 +621,7 @@
     if (!qimaCodes.length) return toast("请先添加七码");
     var all = new Set();
     qimaCodes.forEach(function(code) { generateSevenCodeCombos(code).forEach(function(n) { all.add(n); }); });
-    var merged = [].slice.call(all).sort(), existing = $("inputArea").value.trim();
+    var merged = Array.from(all).sort(), existing = $("inputArea").value.trim();
     $("inputArea").value = existing ? existing + "\n" + merged.join(" ") : merged.join(" ");
     toast("已生成 " + merged.length + " 组号码（" + qimaCodes.length + " 组七码合并去重）");
   }
