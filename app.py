@@ -64,31 +64,9 @@ def load_history_records():
 def save_history_records(items):
     records = items if isinstance(items, list) else []
     records = records[:MAX_HISTORY]
-    json_str = json.dumps(records, ensure_ascii=False, indent=2)
-    json_str = _compact_filtered_arrays(json_str)
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-        f.write(json_str)
+        json.dump(records, f, ensure_ascii=False, indent=2)
     return records
-
-
-def _compact_filtered_arrays(json_str):
-    def compact(match):
-        key = match.group(1)
-        items = re.findall(r'"(\d+)"', match.group(0))
-        if len(items) <= 10:
-            return match.group(0)
-        lines = []
-        for i in range(0, len(items), 10):
-            chunk = items[i:i + 10]
-            lines.append("          " + ", ".join(f'"{n}"' for n in chunk))
-        return f'"{key}": [\n' + ",\n".join(lines) + "\n        ]"
-
-    return re.sub(
-        r'"(filtered)":\s*\[\s*(?:[^[]*?)\s*\]',
-        compact,
-        json_str,
-        flags=re.DOTALL,
-    )
 
 
 def fetch_latest_draw():
@@ -419,14 +397,42 @@ def check_history_items(items):
 
 
 class ReusableTCPServer(socketserver.TCPServer):
-    allow_reuse_address = True
+    allow_reuse_address = True if os.name != "nt" else False
 
 
 def open_browser():
     webbrowser.open("http://127.0.0.1:5000/")
 
 
+def _free_port(port):
+    """Kill any process occupying the given port."""
+    try:
+        if os.name == "nt":
+            import subprocess
+            out = subprocess.check_output(
+                ["netstat", "-ano"], text=True, timeout=10
+            )
+            for line in out.splitlines():
+                if f":{port}" in line and "LISTENING" in line:
+                    parts = line.strip().split()
+                    pid = parts[-1]
+                    subprocess.run(
+                        ["taskkill", "/F", "/PID", pid],
+                        capture_output=True, timeout=10,
+                    )
+                    print(f"  [auto] Killed old process PID {pid} on port {port}")
+        else:
+            import signal
+            out = subprocess.check_output(["lsof", "-ti", f":{port}"], text=True)
+            for pid in out.strip().splitlines():
+                os.kill(int(pid), signal.SIGTERM)
+                print(f"  [auto] Killed old process PID {pid} on port {port}")
+    except Exception:
+        pass
+
+
 if __name__ == "__main__":
+    _free_port(PORT)
     print("=" * 60)
     print("  FC3D local filter service")
     print("  URL: http://127.0.0.1:5000")
@@ -434,5 +440,12 @@ if __name__ == "__main__":
     print("=" * 60)
     if AUTO_OPEN_BROWSER:
         threading.Timer(1.0, open_browser).start()
-    with ReusableTCPServer(("", PORT), RequestHandler) as httpd:
-        httpd.serve_forever()
+    for _ in range(5):
+        try:
+            with ReusableTCPServer(("", PORT), RequestHandler) as httpd:
+                httpd.serve_forever()
+        except OSError:
+            import time
+            time.sleep(0.5)
+        else:
+            break

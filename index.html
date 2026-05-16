@@ -5,327 +5,492 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>福彩3D组选筛号工具</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #f5f7fb; --panel: rgba(255,255,255,.88); --line: #dce3ee;
-    --text: #172033; --muted: #66758c; --blue: #2563eb; --blue2: #1d4ed8;
-    --green: #059669; --amber: #d97706; --red: #dc2626; --radius: 12px;
-    --mono: "Cascadia Code", "Consolas", monospace;
+    --bg: #f0f3f8;
+    --panel: #ffffff;
+    --panel-hover: #fafbfc;
+    --border: #e2e6ed;
+    --border-light: #eef1f5;
+    --text: #1a1d26;
+    --text-dim: #5a6072;
+    --text-muted: #949bac;
+    --blue: #1e6df2;
+    --blue-bg: #eef4ff;
+    --blue-border: #c5d8fc;
+    --green: #1a9c5e;
+    --green-bg: #edfaf3;
+    --green-border: #b8e6cc;
+    --amber: #e68a00;
+    --red: #e0313b;
+    --red-bg: #fef0f1;
+    --red-border: #fcccd0;
+    --purple: #6c5ce7;
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 16px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.04), 0 1px 2px rgba(0,0,0,.06);
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
+    --shadow-lg: 0 4px 24px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
+    --mono: "Cascadia Code", "Consolas", "JetBrains Mono", monospace;
+    --sans: "Microsoft YaHei UI", "PingFang SC", "Segoe UI", sans-serif;
   }
-  *:focus-visible { outline: 3px solid rgba(37,99,235,.25); outline-offset: 2px; }
+  html { scroll-behavior: smooth; }
   body {
-    min-height: 100vh; padding: 32px 18px; color: var(--text);
-    font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
-    background:
-      linear-gradient(135deg, rgba(37,99,235,.08), transparent 35%),
-      linear-gradient(315deg, rgba(5,150,105,.08), transparent 32%),
-      var(--bg);
+    min-height: 100vh; padding: 28px 18px 40px; color: var(--text);
+    font-family: var(--sans); font-size: 14px; line-height: 1.6;
+    background: var(--bg);
   }
-  .app { max-width: 1120px; margin: 0 auto; }
-  .hero { margin-bottom: 24px; }
-  .hero h1 { font-size: clamp(30px, 5vw, 46px); letter-spacing: 0; margin-bottom: 8px; }
-  .hero p { color: var(--muted); font-size: 15px; }
-  .shell { max-width: 1360px; margin: 0 auto; display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 20px; align-items: start; }
-  .sidebar { position: sticky; top: 20px; display: grid; gap: 18px; }
-  .brand { display: grid; gap: 10px; }
-  .brand-mark { width: 54px; height: 54px; border-radius: 14px; display: grid; place-items: center; color: #fff; font: 800 18px/1 var(--mono); background: linear-gradient(135deg, var(--blue), var(--blue2)); box-shadow: 0 14px 28px rgba(37,99,235,.22); }
-  .card {
-    background: var(--panel); border: 1px solid rgba(220,227,238,.9);
-    border-radius: 16px; box-shadow: 0 16px 40px rgba(17,24,39,.08);
-    padding: 24px; margin-bottom: 20px; backdrop-filter: blur(12px);
+  *:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  .app { max-width: 1160px; margin: 0 auto; }
+  .hero { margin-bottom: 24px; display: flex; align-items: center; gap: 14px; }
+  .hero-logo {
+    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+    display: grid; place-items: center; color: #fff;
+    font: 800 20px/1 var(--mono);
+    background: var(--blue);
+    box-shadow: 0 4px 12px rgba(30,109,242,.2);
   }
-  h2 { font-size: 20px; margin-bottom: 18px; }
-  label { display: block; font-weight: 700; margin-bottom: 8px; }
-  .form-group { margin-bottom: 18px; }
-  textarea, input {
-    width: 100%; border: 1.5px solid var(--line); border-radius: var(--radius);
-    padding: 13px 14px; background: #fff; color: var(--text); font-size: 14px;
-    font-family: var(--mono); outline: none;
+  .hero h1 { font-size: clamp(22px, 4vw, 30px); letter-spacing: 0; font-weight: 800; }
+  .hero p { color: var(--text-dim); font-size: 13px; margin-top: 2px; }
+
+  .shell { margin: 0 auto; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 20px; align-items: start; }
+  .sidebar { position: sticky; top: 20px; display: grid; gap: 16px; }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow);
+    padding: 20px;
   }
-  textarea { min-height: 190px; resize: vertical; line-height: 1.65; }
-  textarea:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(37,99,235,.12); }
-  .helper { display: block; color: var(--muted); font-size: 12px; margin-top: 7px; }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+  .panel-header h2 { font-size: 15px; margin: 0; font-weight: 800; }
+
+  .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .metric {
+    background: #fafbfc; border: 1px solid var(--border-light);
+    border-radius: var(--radius); padding: 14px;
+  }
+  .metric-label { color: var(--text-muted); font-size: 11px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: .04em; }
+  .metric-value { font: 800 20px/1.2 var(--mono); word-break: break-word; color: var(--blue); }
+
+  .draw-list { display: grid; gap: 8px; max-height: 460px; overflow: auto; }
+  .draw-item {
+    display: grid; gap: 7px; background: #fafbfc;
+    border: 1px solid var(--border-light); border-radius: var(--radius); padding: 12px 14px;
+  }
+  .draw-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .draw-issue { font: 800 13px/1 var(--mono); color: var(--text); }
+  .draw-date { color: var(--text-muted); font-size: 11px; }
+  .draw-balls { display: flex; gap: 7px; }
+  .ball {
+    width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--blue); color: #fff; font: 800 15px/1 var(--mono);
+    box-shadow: 0 2px 8px rgba(30,109,242,.18);
+  }
+  .empty-side {
+    color: var(--text-muted); border: 1.5px dashed var(--border);
+    border-radius: var(--radius); padding: 16px; font-size: 12px; text-align: center;
+  }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px; border-radius: 999px;
+    padding: 3px 10px; font: 800 11px var(--mono);
+    background: var(--blue-bg); color: var(--blue);
+  }
+
+  /* 数据输入 / 筛选条件 分区卡片 */
+  .section-card {
+    background: var(--panel); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px;
+  }
+  .input-card { border: 1px solid var(--blue-border); }
+  .filter-card { border: 1px solid var(--green-border); }
+
+  .card-head {
+    display: flex; align-items: center; gap: 10px; padding: 13px 20px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .input-card .card-head { background: var(--blue-bg); }
+  .filter-card .card-head { background: var(--green-bg); }
+  .card-head-num {
+    width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center;
+    font: 800 12px var(--mono); flex-shrink: 0; color: #fff;
+  }
+  .input-card .card-head-num { background: var(--blue); }
+  .filter-card .card-head-num { background: var(--green); }
+  .card-head-title { font-weight: 800; font-size: 14px; }
+  .input-card .card-head-title { color: var(--blue); }
+  .filter-card .card-head-title { color: var(--green); }
+  .card-head-sub { color: var(--text-muted); font-size: 11px; }
+
+  .card-body { padding: 18px 20px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group:last-child { margin-bottom: 0; }
+  label {
+    display: block; font-weight: 700; font-size: 13px; margin-bottom: 6px;
+    color: var(--text-dim);
+  }
+  textarea, input, select {
+    width: 100%; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    padding: 11px 13px; background: #fff; color: var(--text);
+    font-size: 13px; font-family: var(--mono); outline: none; transition: border-color .15s;
+  }
+  textarea { min-height: 130px; resize: vertical; line-height: 1.7; }
+  textarea:focus, input:focus, select:focus { border-color: var(--blue); }
+
+  select {
+    cursor: pointer; font-family: var(--sans); appearance: none;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23949bac' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;
+    padding-right: 32px;
+  }
+  .helper { display: block; color: var(--text-muted); font-size: 11px; margin-top: 5px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* 七码 */
+  .qima-selector { display: flex; gap: 8px; margin-bottom: 8px; }
+  .qima-selector input { flex: 1; }
+  .qima-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; min-height: 0; }
+  .qima-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--blue-bg); color: var(--blue);
+    border-radius: 999px; padding: 5px 11px; font: 800 12px var(--mono);
+  }
+  .qima-tag button {
+    width: 17px; height: 17px; border: none; border-radius: 50%;
+    background: rgba(30,109,242,.15); color: var(--blue);
+    cursor: pointer; display: grid; place-items: center; font-size: 11px;
+    padding: 0; min-height: auto; line-height: 1;
+  }
+  .qima-tag button:hover { background: rgba(30,109,242,.28); }
+
+  /* 段组 */
+  .segment-selector { display: flex; gap: 8px; margin-bottom: 10px; }
+  .segment-select { flex: 1; }
+  .segment-stack { display: grid; gap: 10px; }
+  .segment-card {
+    background: var(--green-bg); border: 1px solid var(--green-border);
+    border-radius: var(--radius); padding: 13px;
+  }
+  .segment-card-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .segment-card-title { font-weight: 800; font-size: 12px; display: flex; align-items: center; gap: 7px; color: var(--green); }
+  .segment-card-badge {
+    background: rgba(26,156,94,.12); color: var(--green);
+    font: 800 9px var(--mono); padding: 1px 7px; border-radius: 999px;
+  }
+  .segment-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+  .segment-row:last-child { margin-bottom: 0; }
+  .segment-label { width: 82px; flex-shrink: 0; color: var(--text-muted); font-weight: 700; font-size: 11px; }
+  .segment-digits { display: flex; flex-wrap: wrap; gap: 4px; }
+  .seg-digit {
+    width: 30px; height: 30px; border: 1.5px solid var(--border); border-radius: 6px;
+    display: grid; place-items: center; background: #fff; cursor: pointer;
+    font-family: var(--mono); font-weight: 700; user-select: none; font-size: 12px;
+    color: var(--text-dim); transition: all .12s;
+  }
+  .seg-digit:hover { border-color: var(--green); background: #f8fdf9; }
+  .seg-digit.active { background: var(--green); border-color: var(--green); color: #fff; }
+  .segment-delete-btn {
+    width: 24px; height: 24px; border: 1px solid var(--border); border-radius: 6px;
+    background: #fff; color: var(--red); font-size: 15px; cursor: pointer;
+    display: grid; place-items: center; padding: 0; min-height: auto; line-height: 1;
+    transition: all .12s;
+  }
+  .segment-delete-btn:hover { background: var(--red-bg); border-color: var(--red); }
+  .segment-empty { color: var(--text-muted); font-size: 12px; padding: 5px 0; }
+
+  /* 按钮 - 纯色，无渐变 */
+  button {
+    border: 0; border-radius: var(--radius-sm); min-height: 40px; padding: 0 18px;
+    font-weight: 700; font-size: 13px; cursor: pointer; transition: all .15s;
+    font-family: var(--sans); display: inline-flex; align-items: center; justify-content: center;
+    gap: 6px;
+  }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { background: #1a5cd4; }
+  .btn-primary:disabled { opacity: .5; cursor: wait; }
+  .btn-secondary { background: #fff; color: var(--text-dim); border: 1.5px solid var(--border); }
+  .btn-secondary:hover { background: #f6f8fa; border-color: #c8cdd6; }
+  .btn-green { background: var(--green); color: #fff; }
+  .btn-green:hover { background: #16804d; }
+  .btn-amber { background: var(--amber); color: #fff; }
+  .btn-amber:hover { background: #c77800; }
+  .btn-red { background: var(--red); color: #fff; }
+  .btn-red:hover { background: #c52933; }
+  .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid transparent; }
+  .btn-ghost:hover { border-color: var(--border); color: var(--text-dim); }
+  .btn-full { width: 100%; }
+  .btn-sm { min-height: 32px; font-size: 12px; padding: 0 12px; }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .hidden { display: none !important; }
+
+  /* 统计 */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow-sm);
+  }
+  .stat strong { display: block; font: 800 32px/1 var(--mono); margin-bottom: 6px; color: var(--blue); }
+  .stat span { color: var(--text-muted); font-size: 12px; }
+
+  .result-head, .history-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .result-head h2, .history-head h2 { margin: 0; font-size: 15px; }
+
+  .output {
+    background: #fafbfc; border: 1px solid var(--border-light); border-radius: var(--radius-sm);
+    padding: 16px; min-height: 80px; max-height: 420px; overflow: auto;
+    white-space: pre-wrap; word-break: break-all; font: 13px/1.75 var(--mono);
+    color: var(--text);
+  }
+
+  /* 历史 */
+  .history-list { display: grid; gap: 10px; max-height: 540px; overflow: auto; }
+  .history-item {
+    background: #fafbfc; border: 1px solid var(--border-light);
+    border-radius: var(--radius); padding: 14px;
+  }
+  .history-meta { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; margin-bottom: 9px; }
+  .pill {
+    border-radius: 999px; padding: 3px 9px; font: 800 11px var(--mono);
+    background: #f3f0ff; color: #6c5ce7;
+  }
+  .pill.green { background: var(--green-bg); color: var(--green); }
+  .pill.red { background: var(--red-bg); color: var(--red); }
+  .pill.amber { background: #fff9ed; color: var(--amber); }
+  .history-preview { color: var(--text-dim); font: 12px var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-actions { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 11px; }
+  .inline-issue {
+    width: 110px; height: 34px; padding: 5px 8px; font-size: 12px;
+    border: 1.5px solid var(--border); border-radius: 6px;
+    color: var(--text); font-family: var(--mono); outline: none;
+  }
+  .inline-issue:focus { border-color: var(--blue); }
+
+  .empty {
+    text-align: center; color: var(--text-muted); border: 1.5px dashed var(--border);
+    border-radius: var(--radius-lg); padding: 36px 20px; font-size: 13px;
+  }
+
+  /* Toast */
+  .toast-box { position: fixed; right: 18px; top: 18px; display: grid; gap: 8px; z-index: 100; }
+  .toast {
+    background: #1a1d26; color: #fff; padding: 12px 16px; border-radius: var(--radius);
+    box-shadow: 0 8px 28px rgba(0,0,0,.18); font-size: 13px;
+  }
+
   @media (max-width: 1080px) {
     .shell { grid-template-columns: 1fr; }
     .sidebar { position: static; order: -1; }
-    .sidebar-grid { grid-template-columns: repeat(3, 1fr); }
   }
   @media (max-width: 760px) {
-    body { padding: 20px 12px; }
-    .grid-2, .stats, .sidebar-grid { grid-template-columns: 1fr; }
-    .segment-row { flex-direction: column; align-items: flex-start; }
-    .segment-label { width: auto; }
+    body { padding: 16px 10px 30px; }
+    .grid-2, .stats { grid-template-columns: 1fr; }
     .history-actions { flex-direction: column; align-items: stretch; }
     .inline-issue { width: 100%; }
   }
-  .segment-stack { display: grid; gap: 12px; }
-  .segment-selector { display: flex; gap: 8px; margin-bottom: 2px; }
-  .segment-select {
-    flex: 1; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px;
-    font-size: 13px; background: #fff; color: var(--text); outline: none; cursor: pointer;
-    font-family: inherit;
-  }
-  .segment-select:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(37,99,235,.12); }
-  .segment-add-btn {
-    width: 40px; height: 40px; border: none; border-radius: 10px; background: var(--blue);
-    color: #fff; font-size: 22px; cursor: pointer; display: grid; place-items: center;
-    flex-shrink: 0; padding: 0; min-height: auto; line-height: 1;
-  }
-  .segment-add-btn:hover { filter: brightness(.96); transform: translateY(-1px); }
-  .segment-card { background: #fff; border: 1.5px solid var(--blue); border-radius: 14px; padding: 14px; position: relative; }
-  .segment-card-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
-  .segment-card-title { font-weight: 900; font-size: 13px; display: flex; align-items: center; gap: 8px; }
-  .segment-card-badge { background: var(--blue); color: #fff; font: 800 10px var(--mono); padding: 2px 8px; border-radius: 999px; }
-  .segment-delete-btn {
-    width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 7px;
-    background: #fff; color: var(--red); font-size: 16px; cursor: pointer;
-    display: grid; place-items: center; padding: 0; min-height: auto; line-height: 1;
-  }
-  .segment-delete-btn:hover { background: #fef2f2; border-color: var(--red); }
-  .segment-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .segment-row:last-child { margin-bottom: 0; }
-  .segment-label { width: 90px; flex: 0 0 auto; color: var(--muted); font-weight: 700; font-size: 12px; }
-  .segment-digits { display: flex; flex-wrap: wrap; gap: 5px; }
-  .seg-digit {
-    width: 34px; height: 34px; border: 2px solid var(--line); border-radius: 8px;
-    display: grid; place-items: center; background: #fff; cursor: pointer;
-    font-family: var(--mono); font-weight: 800; user-select: none; font-size: 13px;
-    transition: all .12s;
-  }
-  .seg-digit:hover { border-color: var(--blue); }
-  .seg-digit.active { background: var(--blue); border-color: var(--blue2); color: #fff; }
-  .segment-card.disabled { opacity: .55; border-color: var(--line); }
-  .segment-card.disabled .seg-digit { cursor: default; }
-  .segment-card.disabled .seg-digit:hover { border-color: var(--line); }
-  .segment-empty { color: var(--muted); font-size: 12px; padding: 6px 0; }
-  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-  button {
-    border: 0; border-radius: 11px; min-height: 42px; padding: 0 16px;
-    font-weight: 800; cursor: pointer; color: #fff; background: var(--blue);
-  }
-  button:hover { filter: brightness(.96); transform: translateY(-1px); }
-  button:disabled { opacity: .6; cursor: wait; transform: none; }
-  .secondary { background: #fff; color: var(--text); border: 1px solid var(--line); }
-  .green { background: var(--green); }
-  .amber { background: var(--amber); }
-  .red { background: var(--red); }
-  .ghost { background: transparent; color: var(--muted); border: 1px solid transparent; }
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
-  .stat { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
-  .stat strong { display: block; font: 800 34px/1 var(--mono); margin-bottom: 6px; }
-  .stat span { color: var(--muted); font-size: 13px; }
-  .sidebar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .metric { background: #f8faff; border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
-  .metric-label { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
-  .metric-value { font: 800 18px/1.2 var(--mono); word-break: break-word; }
-  .sidebar-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-  .sidebar-head h2 { margin: 0; font-size: 16px; }
-  .draw-list { display: grid; gap: 10px; max-height: 520px; overflow: auto; padding-right: 2px; }
-  .draw-item { display: grid; gap: 8px; background: #fbfdff; border: 1px solid var(--line); border-radius: 14px; padding: 13px 14px; }
-  .draw-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .draw-issue { font: 800 14px/1 var(--mono); }
-  .draw-date { color: var(--muted); font-size: 12px; }
-  .draw-balls { display: flex; gap: 8px; }
-  .ball { width: 38px; height: 38px; border-radius: 999px; display: grid; place-items: center; background: linear-gradient(135deg, var(--blue), var(--blue2)); color: #fff; font: 800 16px/1 var(--mono); box-shadow: 0 10px 18px rgba(37,99,235,.18); }
-  .empty-side { color: var(--muted); border: 1px dashed var(--line); border-radius: 14px; padding: 18px; font-size: 13px; text-align: center; }
-  .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
-  .section-head h2 { margin: 0; }
-  .hidden { display: none !important; }
-  .result-head, .history-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
-  .badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 10px; background: #dbeafe; color: #1d4ed8; font: 800 12px var(--mono); }
-  .output {
-    background: #f8fafc; border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 16px; min-height: 90px; max-height: 430px; overflow: auto;
-    white-space: pre-wrap; word-break: break-all; font: 14px/1.75 var(--mono);
-  }
-  .history-list { display: grid; gap: 12px; max-height: 560px; overflow: auto; padding-right: 4px; }
-  .history-item { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
-  .history-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
-  .pill { border-radius: 999px; padding: 3px 9px; font: 800 12px var(--mono); background: #eef2ff; color: #3730a3; }
-  .pill.green { background: #dcfce7; color: #166534; }
-  .pill.red { background: #fee2e2; color: #991b1b; }
-  .pill.amber { background: #fef3c7; color: #92400e; }
-  .history-preview { color: var(--muted); font: 13px var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .history-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-  .inline-issue { width: 116px; height: 34px; padding: 6px 9px; }
-  .empty { text-align: center; color: var(--muted); border: 1.5px dashed var(--line); border-radius: 16px; padding: 34px; }
-  .toast-box { position: fixed; right: 18px; top: 18px; display: grid; gap: 10px; z-index: 20; }
-  .toast { background: #172033; color: #fff; padding: 12px 14px; border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,.2); }
 </style>
 </head>
 <body>
-<div class="shell">
-  <aside class="sidebar">
-    <div class="card">
-      <div class="brand">
-        <div class="brand-mark">3D</div>
-        <div>
-          <h1 style="font-size:22px;margin:0 0 6px">福彩3D组选筛号</h1>
-          <p style="color:var(--muted);font-size:13px;line-height:1.6;margin:0">段组可多选同时生效；按日期生成期号保存在历史。</p>
+<div class="app">
+  <div class="hero">
+    <div class="hero-logo">3D</div>
+    <div>
+      <h1>福彩3D组选筛号</h1>
+      <p>段组可多选同时生效 · 按日期生成期号保存在历史</p>
+    </div>
+  </div>
+
+  <div class="shell">
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>开奖概览</h2>
+          <button class="btn-secondary btn-sm" id="refreshDrawBtn">更新开奖</button>
+        </div>
+        <div class="metric-grid">
+          <div class="metric"><div class="metric-label">最新期号</div><div class="metric-value" id="latestIssue">--</div></div>
+          <div class="metric"><div class="metric-label">下一期号</div><div class="metric-value" id="nextIssue">--</div></div>
+          <div class="metric"><div class="metric-label">开奖号</div><div class="metric-value" id="latestDraw">---</div></div>
+          <div class="metric"><div class="metric-label">本地条数</div><div class="metric-value" id="drawCount">0</div></div>
+        </div>
+        <span class="helper" id="drawStatus" style="margin-top:10px;display:block;">读取本地开奖记录。</span>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><h2>近10期开奖</h2></div>
+        <div class="draw-list" id="drawList"></div>
+        <div class="empty-side hidden" id="drawEmpty">本地还没有开奖记录。<br>点"更新开奖"获取。</div>
+      </div>
+    </aside>
+
+    <!-- 主区域 -->
+    <main class="main">
+      <!-- 数据输入 -->
+      <div class="section-card input-card">
+        <div class="card-head">
+          <span class="card-head-num">1</span>
+          <span class="card-head-title">数据输入</span>
+          <span class="card-head-sub">— 号码池 & 七码复式</span>
+          <span class="badge" id="saveIssueBadge" style="margin-left:auto;">保存期号 --</span>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>号码池</label>
+            <textarea id="inputArea" placeholder="粘贴任意文本，系统会自动提取所有三位数字"></textarea>
+            <span class="helper">自动识别所有 000-999 格式的三位号码，并去重保留原顺序。</span>
+          </div>
+          <div class="form-group">
+            <label>七码复式 <span style="font-weight:400;color:var(--text-muted);font-size:11px;">（可选）</span></label>
+            <div class="qima-selector">
+              <input id="qimaInput" placeholder="输入7个数字，如 0123456" maxlength="10">
+              <button class="btn-secondary" id="qimaAddBtn" style="flex-shrink:0;">添加</button>
+            </div>
+            <div class="qima-list" id="qimaList"></div>
+            <button class="btn-secondary btn-full" id="qimaGenerateBtn">生成并填入号码池</button>
+            <span class="helper">输入7个不同数字，自动生成所有组六 + 组三组合。可添加多组七码，生成后合并去重填入上方号码池。</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="sidebar-head">
-        <h2>开奖概览</h2>
-        <button class="secondary" id="refreshDrawBtn" style="min-height:36px;font-size:13px">更新开奖</button>
+      <!-- 筛选条件 -->
+      <div class="section-card filter-card">
+        <div class="card-head">
+          <span class="card-head-num">2</span>
+          <span class="card-head-title">筛选条件</span>
+          <span class="card-head-sub">— 胆码 · 杀码 · 两码差 · 段组</span>
+        </div>
+        <div class="card-body">
+          <div class="grid-2">
+            <div class="form-group">
+              <label>胆码筛选</label>
+              <input id="filterDigits" placeholder="例：357" maxlength="10">
+              <span class="helper">号码中包含任意一个所填数字即保留。</span>
+            </div>
+            <div class="form-group">
+              <label style="color:var(--red);">杀码筛选</label>
+              <input id="killDigits" placeholder="例：48" maxlength="10" style="border-color:var(--red-border);">
+              <span class="helper">号码中包含任意一个杀码即排除（优先级最高）。</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>两码差数字</label>
+            <input id="advanceDigits" placeholder="例：523" maxlength="10">
+            <span class="helper">百十、百个、十个任意一个差值命中即保留。</span>
+          </div>
+          <div class="form-group">
+            <label>段组条件</label>
+            <div class="segment-selector">
+              <select class="segment-select" id="segmentTypeSelect">
+                <option value="">选择段组类型添加...</option>
+                <option value="2-2-6">2-2-6 段组</option>
+                <option value="2-3-5">2-3-5 段组</option>
+                <option value="5-5">5-5 段组</option>
+              </select>
+              <button class="btn-green" id="segmentAddBtn" title="添加段组条件" style="width:40px;height:40px;padding:0;font-size:20px;min-height:auto;">+</button>
+            </div>
+            <div class="segment-stack" id="segmentGroups"></div>
+            <span class="helper">选择段组类型后点击 + 添加条件。可添加多个，筛选结果必须同时通过所有段组。</span>
+          </div>
+        </div>
       </div>
-      <div class="sidebar-grid">
-        <div class="metric"><div class="metric-label">最新期号</div><div class="metric-value" id="latestIssue">--</div></div>
-        <div class="metric"><div class="metric-label">下一期号</div><div class="metric-value" id="nextIssue">--</div></div>
-        <div class="metric"><div class="metric-label">开奖号</div><div class="metric-value" id="latestDraw">---</div></div>
-        <div class="metric"><div class="metric-label">本地条数</div><div class="metric-value" id="drawCount">0</div></div>
-      </div>
-      <span class="helper" id="drawStatus">读取本地开奖记录。</span>
-    </div>
 
-    <div class="card">
-      <div class="sidebar-head"><h2>近10期开奖</h2></div>
-      <div class="draw-list" id="drawList"></div>
-      <div class="empty-side hidden" id="drawEmpty">本地还没有开奖记录。<br>点"更新开奖"获取。</div>
-    </div>
-  </aside>
+      <!-- 操作栏 -->
+      <div class="toolbar" style="margin-bottom:20px;">
+        <button class="btn-primary" id="filterBtn" style="flex:1;min-height:46px;font-size:14px;">开始筛选</button>
+        <button class="btn-secondary" id="demoBtn">示例数据</button>
+        <button class="btn-ghost" id="clearBtn">清空</button>
+      </div>
 
-  <main class="main">
-  <div class="card">
-    <div class="section-head">
-      <h2>筛选配置</h2>
-      <span class="badge" id="saveIssueBadge">保存期号 --</span>
-    </div>
-    <div class="form-group">
-      <label>号码池</label>
-      <textarea id="inputArea" placeholder="粘贴任意文本，系统会自动提取所有三位数字，例如：012 013 014 001 112"></textarea>
-      <span class="helper">自动识别所有 000-999 格式的三位号码，并去重保留原顺序。</span>
-    </div>
-    <div class="grid-2">
-      <div class="form-group">
-        <label>胆码筛选</label>
-        <input id="filterDigits" placeholder="例：357" maxlength="10">
-        <span class="helper">号码中包含任意一个所填数字即保留。</span>
+      <div id="statsArea" style="display:none;">
+        <div class="stats">
+          <div class="stat"><strong id="totalCount">0</strong><span>号码池总数</span></div>
+          <div class="stat"><strong id="filteredCount">0</strong><span>筛选命中</span></div>
+          <div class="stat"><strong id="percent">0%</strong><span>命中占比</span></div>
+        </div>
       </div>
-      <div class="form-group">
-        <label>杀码筛选</label>
-        <input id="killDigits" placeholder="例：48" maxlength="10">
-        <span class="helper">号码中包含任意一个杀码即排除（优先级最高）。</span>
+
+      <div id="resultArea" class="panel" style="display:none;">
+        <div class="result-head">
+          <h2>筛选结果 <span class="badge" id="resultBadge">0组</span></h2>
+          <div class="toolbar">
+            <button class="btn-green btn-sm" id="copyResultBtn">复制</button>
+            <button class="btn-secondary btn-sm" id="saveHistoryBtn">保存历史</button>
+            <button class="btn-amber btn-sm" id="exportFileBtn">保存文件</button>
+          </div>
+        </div>
+        <div class="output" id="resultBox">等待筛选</div>
       </div>
-    </div>
-    <div class="form-group">
-      <label>两码差数字</label>
-      <input id="advanceDigits" placeholder="例：523" maxlength="10">
-      <span class="helper">百十、百个、十个任意一个差值命中即保留。</span>
-    </div>
-    <div class="form-group">
-      <label>段组条件</label>
-      <div class="segment-selector">
-        <select class="segment-select" id="segmentTypeSelect">
-          <option value="">选择段组类型添加...</option>
-          <option value="2-2-6">2-2-6 段组</option>
-          <option value="2-3-5">2-3-5 段组</option>
-          <option value="5-5">5-5 段组</option>
-        </select>
-        <button class="segment-add-btn" id="segmentAddBtn" title="添加段组条件">+</button>
+
+      <div id="historyArea" class="panel" style="display:none;">
+        <div class="history-head">
+          <h2>筛选历史 <span class="badge" id="historyCount">0</span></h2>
+          <div class="toolbar">
+            <button class="btn-green btn-sm" id="updateDrawBtn">更新中奖记录</button>
+            <button class="btn-red btn-sm" id="clearHistoryBtn">清空历史</button>
+          </div>
+        </div>
+        <div class="history-list" id="historyList"></div>
       </div>
-      <div class="segment-stack" id="segmentGroups"></div>
-      <span class="helper">选择段组类型后点击 + 添加条件。可添加多个，筛选结果必须同时通过所有段组。</span>
-    </div>
-    <div class="toolbar">
-      <button id="filterBtn">开始筛选</button>
-      <button class="secondary" id="demoBtn">示例数据</button>
-      <button class="ghost" id="clearBtn">清空</button>
-    </div>
+
+      <div id="emptyState" class="empty">输入号码池并设置筛选条件后开始筛选。</div>
+    </main>
   </div>
-
-  <div id="statsArea" style="display:none">
-    <div class="stats">
-      <div class="stat"><strong id="totalCount">0</strong><span>号码池总数</span></div>
-      <div class="stat"><strong id="filteredCount">0</strong><span>筛选命中</span></div>
-      <div class="stat"><strong id="percent">0%</strong><span>命中占比</span></div>
-    </div>
-  </div>
-
-  <div id="resultArea" class="card" style="display:none">
-    <div class="result-head">
-      <h2 style="margin:0">筛选结果 <span class="badge" id="resultBadge">0组</span></h2>
-      <div class="toolbar">
-        <button class="green" id="copyResultBtn">复制</button>
-        <button class="secondary" id="saveHistoryBtn">保存历史</button>
-        <button class="amber" id="exportFileBtn">保存文件</button>
-      </div>
-    </div>
-    <div class="output" id="resultBox">等待筛选</div>
-  </div>
-
-  <div id="historyArea" class="card" style="display:none">
-    <div class="history-head">
-      <h2 style="margin:0">筛选历史 <span class="badge" id="historyCount">0</span></h2>
-      <div class="toolbar">
-        <button class="green" id="updateDrawBtn">更新中奖记录</button>
-        <button class="red" id="clearHistoryBtn">清空历史</button>
-      </div>
-    </div>
-    <div class="history-list" id="historyList"></div>
-  </div>
-
-  <div id="emptyState" class="empty">输入号码池并设置筛选条件后开始。</div>
-  </main>
 </div>
 <div class="toast-box" id="toastContainer"></div>
 
 <script>
 (function(){
-  const HISTORY_KEY = "lottery_filter_history_v3";
-  const OLD_KEYS = ["lottery_filter_history_v2", "lottery_filter_history"];
-  const MAX_HISTORY = 80;
-  const SEGMENT_SIZES = {"2-2-6":[2,2,6], "2-3-5":[2,3,5], "5-5":[5,5]};
-  const SEGMENT_LABELS = {"2-2-6":"2-2-6 段组", "2-3-5":"2-3-5 段组", "5-5":"5-5 段组"};
-  const SEGMENT_DEMOS = {"2-2-6":["01","23","456789"], "2-3-5":["01","234","56789"], "5-5":["01234","56789"]};
-  let currentResult = [], currentDigits = "", currentAdvanceDigits = "", currentKillDigits = "", currentSegment = "";
-  let currentSegmentFilters = [], currentTotal = 0, currentPercent = 0, lastResultObj = null;
-  let drawRecords = [], latestIssue = "", latestDraw = "", nextIssue = "";
-  let historyItems = [];
-  let segmentCards = [], segmentCardIdCounter = 0;
+  var HISTORY_KEY = "lottery_filter_history_v3";
+  var OLD_KEYS = ["lottery_filter_history_v2", "lottery_filter_history"];
+  var MAX_HISTORY = 80;
+  var SEGMENT_SIZES = {"2-2-6":[2,2,6], "2-3-5":[2,3,5], "5-5":[5,5]};
+  var SEGMENT_LABELS = {"2-2-6":"2-2-6 段组", "2-3-5":"2-3-5 段组", "5-5":"5-5 段组"};
+  var SEGMENT_DEMOS = {"2-2-6":["01","23","456789"], "2-3-5":["01","234","56789"], "5-5":["01234","56789"]};
+  var currentResult = [], currentDigits = "", currentAdvanceDigits = "", currentKillDigits = "", currentSegment = "";
+  var currentSegmentFilters = [], currentTotal = 0, currentPercent = 0, lastResultObj = null;
+  var drawRecords = [], latestIssue = "", latestDraw = "", nextIssue = "";
+  var historyItems = [];
+  var segmentCards = [], segmentCardIdCounter = 0;
+  var qimaCodes = [];
 
-  const demoRaw = `组六：
-012 013 014 015 016 017 018 019 023 024
+  var demoRaw = "组六：\n012 013 014 015 016 017 018 019 023 024\n\n\n组三：\n001 002 005 006 007 008 009 011 022\n";
 
-
-组三：
-001 002 005 006 007 008 009 011 022
-`;
-
-  const $ = id => document.getElementById(id);
+  var $ = function(id) { return document.getElementById(id); };
   function toast(msg) {
-    const el = document.createElement("div");
+    var el = document.createElement("div");
     el.className = "toast";
     el.textContent = msg;
     $("toastContainer").appendChild(el);
-    setTimeout(() => el.remove(), 3200);
+    setTimeout(function() { el.style.opacity = "0"; el.style.transition = "opacity .3s"; setTimeout(function() { el.remove(); }, 300); }, 2800);
   }
-  function nowText() {
-    return new Date().toISOString().slice(0,19).replace("T", " ");
-  }
+  function nowText() { return new Date().toISOString().slice(0,19).replace("T", " "); }
   function autoIssueName() {
-    const d = new Date();
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    return `${yyyy}${mm}${dd}`;
+    var d = new Date();
+    return "" + d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0");
   }
   function cleanDigits(value) {
-    return String(value || "").replace(/\D/g, "").split("").filter((v, i, a) => a.indexOf(v) === i).join("");
+    return String(value || "").replace(/\D/g, "").split("").filter(function(v, i, a) { return a.indexOf(v) === i; }).join("");
   }
+
   async function apiGet(path) {
-    const res = await fetch(path, {cache: "no-store"});
-    const data = await res.json();
+    var res = await fetch(path, {cache: "no-store"});
+    var data = await res.json();
+    if (!res.ok || data.ok === false) throw new Error(data.error || "请求失败");
+    return data;
+  }
+  async function api(path, body) {
+    var res = await fetch(path, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body || {}) });
+    var data = await res.json();
     if (!res.ok || data.ok === false) throw new Error(data.error || "请求失败");
     return data;
   }
 
-  function updateSaveIssueBadge() {
-    $("saveIssueBadge").textContent = `保存期号 ${nextIssue || autoIssueName()}`;
-  }
+  function updateSaveIssueBadge() { $("saveIssueBadge").textContent = "保存期号 " + (nextIssue || autoIssueName()); }
 
   function renderDrawSidebar() {
     $("latestIssue").textContent = latestIssue || "--";
@@ -333,458 +498,265 @@
     $("latestDraw").textContent = latestDraw || "---";
     $("drawCount").textContent = String(drawRecords.length);
     updateSaveIssueBadge();
-
     if (!drawRecords.length) {
       $("drawList").innerHTML = "";
       $("drawEmpty").classList.remove("hidden");
       $("drawStatus").textContent = "本地还没有开奖记录。";
       return;
     }
-
     $("drawEmpty").classList.add("hidden");
-    $("drawStatus").textContent = `显示最近 ${Math.min(10, drawRecords.length)} 期，下一期号 ${nextIssue || "--"}。`;
-    $("drawList").innerHTML = drawRecords.slice(0, 10).map(item => {
-      const balls = String(item.draw || "").padStart(3, "0").split("").map(d => `<span class="ball">${d}</span>`).join("");
-      return `<div class="draw-item">
-        <div class="draw-top"><span class="draw-issue">${item.issue || "--"}</span><span class="draw-date">${item.date || ""}</span></div>
-        <div class="draw-balls">${balls}</div>
-      </div>`;
+    $("drawStatus").textContent = "显示最近 " + Math.min(10, drawRecords.length) + " 期，下一期号 " + (nextIssue || "--") + "。";
+    $("drawList").innerHTML = drawRecords.slice(0, 10).map(function(item) {
+      var balls = String(item.draw || "").padStart(3, "0").split("").map(function(d) { return '<span class="ball">' + d + '</span>'; }).join("");
+      return '<div class="draw-item"><div class="draw-top"><span class="draw-issue">' + (item.issue || "--") + '</span><span class="draw-date">' + (item.date || "") + '</span></div><div class="draw-balls">' + balls + '</div></div>';
     }).join("");
   }
 
   async function loadDraws() {
-    try {
-      const data = await apiGet("/api/draws");
-      drawRecords = data.records || [];
-      latestIssue = data.latest ? data.latest.issue : "";
-      latestDraw = data.latest ? data.latest.draw : "";
-      nextIssue = data.nextIssue || "";
-    } catch (e) {
-      // 无本地记录时静默处理
-    }
+    try { var data = await apiGet("/api/draws"); drawRecords = data.records || []; latestIssue = data.latest ? data.latest.issue : ""; latestDraw = data.latest ? data.latest.draw : ""; nextIssue = data.nextIssue || ""; } catch(e) {}
     renderDrawSidebar();
   }
 
   async function refreshDraws() {
-    $("refreshDrawBtn").disabled = true;
-    $("updateDrawBtn").disabled = true;
+    $("refreshDrawBtn").disabled = true; $("updateDrawBtn").disabled = true;
     try {
-      const updated = await api("/api/update_draws", {});
+      var updated = await api("/api/update_draws", {});
       drawRecords = (updated.records || []).slice(0, 50);
       latestIssue = updated.latest ? updated.latest.issue : "";
       latestDraw = updated.latest ? updated.latest.draw : "";
       nextIssue = updated.nextIssue || "";
       renderDrawSidebar();
-      toast(`已更新开奖：${latestIssue || "--"}期 ${latestDraw || "---"}`);
-    } catch (e) {
-      toast(e.message);
-    } finally {
-      $("refreshDrawBtn").disabled = false;
-      $("updateDrawBtn").disabled = false;
-    }
+      toast("已更新开奖：" + (latestIssue || "--") + "期 " + (latestDraw || "---"));
+    } catch(e) { toast(e.message); }
+    finally { $("refreshDrawBtn").disabled = false; $("updateDrawBtn").disabled = false; }
   }
 
   function addSegmentCard(mode) {
     if (!mode || !SEGMENT_SIZES[mode]) return;
-    const card = {
-      id: ++segmentCardIdCounter,
-      mode,
-      groups: SEGMENT_DEMOS[mode].map(g => g)
-    };
-    segmentCards.push(card);
+    segmentCards.push({ id: ++segmentCardIdCounter, mode: mode, groups: SEGMENT_DEMOS[mode].map(function(g) { return g; }) });
     renderSegmentCards();
     $("segmentTypeSelect").value = "";
   }
-  function removeSegmentCard(cardId) {
-    segmentCards = segmentCards.filter(c => c.id !== cardId);
-    renderSegmentCards();
-  }
+  function removeSegmentCard(cardId) { segmentCards = segmentCards.filter(function(c) { return c.id !== cardId; }); renderSegmentCards(); }
   function renderSegmentCards() {
-    if (!segmentCards.length) {
-      $("segmentGroups").innerHTML = `<div class="segment-empty">暂未添加段组条件。</div>`;
-      return;
-    }
-    $("segmentGroups").innerHTML = segmentCards.map(card => {
-      const sizes = SEGMENT_SIZES[card.mode];
-      const hint = card.mode === "5-5" ? "必须跨两段" : "不能落满三段";
-      const rows = sizes.map((size, i) => {
-        const digits = Array.from({length: 10}, (_, d) => {
-          const active = (card.groups[i] || "").includes(String(d));
-          return `<div class="seg-digit${active ? " active" : ""}" data-digit="${d}" data-card="${card.id}" data-row="${i}">${d}</div>`;
+    if (!segmentCards.length) { $("segmentGroups").innerHTML = '<div class="segment-empty">暂未添加段组条件。</div>'; return; }
+    $("segmentGroups").innerHTML = segmentCards.map(function(card) {
+      var sizes = SEGMENT_SIZES[card.mode];
+      var hint = card.mode === "5-5" ? "必须跨两段" : "不能落满三段";
+      var rows = sizes.map(function(size, i) {
+        var digits = Array.from({length:10}, function(_, d) {
+          var active = (card.groups[i] || "").indexOf(String(d)) !== -1;
+          return '<div class="seg-digit' + (active ? " active" : "") + '" data-digit="' + d + '" data-card="' + card.id + '" data-row="' + i + '">' + d + '</div>';
         }).join("");
-        return `<div class="segment-row"><span class="segment-label">第${i + 1}组 ${size}码</span><div class="segment-digits">${digits}</div></div>`;
+        return '<div class="segment-row"><span class="segment-label">第' + (i+1) + '组 ' + size + '码</span><div class="segment-digits">' + digits + '</div></div>';
       }).join("");
-      return `<div class="segment-card" data-card="${card.id}">
-        <div class="segment-card-header">
-          <div class="segment-card-title">${SEGMENT_LABELS[card.mode]}<span class="segment-card-badge">#${card.id}</span><span style="color:var(--muted);font:700 11px var(--mono);">${hint}</span></div>
-          <button class="segment-delete-btn" data-action="remove" data-card="${card.id}" title="删除此段组">×</button>
-        </div>
-        ${rows}
-      </div>`;
+      return '<div class="segment-card" data-card="' + card.id + '"><div class="segment-card-header"><div class="segment-card-title">' + SEGMENT_LABELS[card.mode] + '<span class="segment-card-badge">#' + card.id + '</span><span style="color:var(--text-muted);font:700 10px var(--mono);">' + hint + '</span></div><button class="segment-delete-btn" data-action="remove" data-card="' + card.id + '" title="删除">×</button></div>' + rows + '</div>';
     }).join("");
-
-    document.querySelectorAll(".seg-digit").forEach(el => {
-      el.addEventListener("click", () => toggleDigit(Number(el.dataset.card), Number(el.dataset.row), el));
-    });
-    document.querySelectorAll("[data-action='remove']").forEach(btn => {
-      btn.addEventListener("click", () => removeSegmentCard(Number(btn.dataset.card)));
-    });
+    document.querySelectorAll(".seg-digit").forEach(function(el) { el.addEventListener("click", function() { toggleDigit(Number(el.dataset.card), Number(el.dataset.row), el); }); });
+    document.querySelectorAll("[data-action='remove']").forEach(function(btn) { btn.addEventListener("click", function() { removeSegmentCard(Number(btn.dataset.card)); }); });
   }
   function renderSegmentGroups(savedFilters) {
-    segmentCards = [];
-    segmentCardIdCounter = 0;
+    segmentCards = []; segmentCardIdCounter = 0;
     if (savedFilters && savedFilters.length) {
-      savedFilters.forEach(item => {
+      savedFilters.forEach(function(item) {
         if (item && item.mode && SEGMENT_SIZES[item.mode]) {
-          const groups = (item.groups && item.groups.length === SEGMENT_SIZES[item.mode].length)
-            ? item.groups.map(g => g)
-            : SEGMENT_DEMOS[item.mode].map(g => g);
-          segmentCards.push({ id: ++segmentCardIdCounter, mode: item.mode, groups });
+          var groups = (item.groups && item.groups.length === SEGMENT_SIZES[item.mode].length) ? item.groups.map(function(g) { return g; }) : SEGMENT_DEMOS[item.mode].map(function(g) { return g; });
+          segmentCards.push({ id: ++segmentCardIdCounter, mode: item.mode, groups: groups });
         }
       });
     }
     renderSegmentCards();
   }
   function toggleDigit(cardId, rowIndex, el) {
-    if (el.classList.contains("active")) {
-      el.classList.remove("active");
-    } else {
-      const cardEl = document.querySelector(`.segment-card[data-card="${cardId}"]`);
-      cardEl.querySelectorAll(`.seg-digit[data-row="${rowIndex}"][data-digit="${el.dataset.digit}"]`).forEach(x => x.classList.remove("active"));
+    if (el.classList.contains("active")) { el.classList.remove("active"); }
+    else {
+      var cardEl = document.querySelector('.segment-card[data-card="' + cardId + '"]');
+      cardEl.querySelectorAll('.seg-digit[data-row="' + rowIndex + '"][data-digit="' + el.dataset.digit + '"]').forEach(function(x) { x.classList.remove("active"); });
       el.classList.add("active");
     }
     syncCardGroups(cardId);
   }
   function syncCardGroups(cardId) {
-    const card = segmentCards.find(c => c.id === cardId);
+    var card = segmentCards.find(function(c) { return c.id === cardId; });
     if (!card) return;
-    const cardEl = document.querySelector(`.segment-card[data-card="${cardId}"]`);
-    card.groups = [...cardEl.querySelectorAll(".segment-row")].map(row =>
-      [...row.querySelectorAll(".seg-digit.active")].map(el => el.dataset.digit).join("")
-    );
+    var cardEl = document.querySelector('.segment-card[data-card="' + cardId + '"]');
+    card.groups = [].map.call(cardEl.querySelectorAll(".segment-row"), function(row) { return [].map.call(row.querySelectorAll(".seg-digit.active"), function(el) { return el.dataset.digit; }).join(""); });
   }
   function getSegmentFilters() {
-    document.querySelectorAll(".segment-card").forEach(cardEl => {
-      syncCardGroups(Number(cardEl.dataset.card));
-    });
-    return segmentCards.map(card => ({
-      mode: card.mode,
-      enabled: true,
-      groups: card.groups
-    }));
+    document.querySelectorAll(".segment-card").forEach(function(cardEl) { syncCardGroups(Number(cardEl.dataset.card)); });
+    return segmentCards.map(function(card) { return { mode: card.mode, enabled: true, groups: card.groups }; });
   }
   function validateSegmentFilters() {
-    if (!segmentCards.length) return {ok: true, filters: []};
-    for (const card of segmentCards) {
-      const sizes = SEGMENT_SIZES[card.mode];
-      const used = new Set();
-      for (let i = 0; i < sizes.length; i++) {
-        if ((card.groups[i] || "").length !== sizes[i]) return {ok:false, msg:`${card.mode} #${card.id} 第${i + 1}组需要 ${sizes[i]} 个数字`};
-        for (const d of card.groups[i]) {
-          if (used.has(d)) return {ok:false, msg:`${card.mode} #${card.id} 段组数字不能重复`};
-          used.add(d);
-        }
+    if (!segmentCards.length) return {ok:true, filters:[]};
+    for (var i = 0; i < segmentCards.length; i++) {
+      var card = segmentCards[i], sizes = SEGMENT_SIZES[card.mode], used = new Set();
+      for (var j = 0; j < sizes.length; j++) {
+        if ((card.groups[j] || "").length !== sizes[j]) return {ok:false, msg: card.mode + " #" + card.id + " 第" + (j+1) + "组需要 " + sizes[j] + " 个数字"};
+        for (var k = 0; k < card.groups[j].length; k++) { if (used.has(card.groups[j][k])) return {ok:false, msg: card.mode + " #" + card.id + " 段组数字不能重复"}; used.add(card.groups[j][k]); }
       }
-      if (used.size !== 10) return {ok:false, msg:`${card.mode} #${card.id} 必须覆盖 0-9 全部数字`};
+      if (used.size !== 10) return {ok:false, msg: card.mode + " #" + card.id + " 必须覆盖 0-9 全部数字"};
     }
     return {ok:true, filters: getSegmentFilters()};
   }
 
-  async function api(path, body) {
-    const res = await fetch(path, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify(body || {})
-    });
-    const data = await res.json();
-    if (!res.ok || data.ok === false) throw new Error(data.error || "请求失败");
-    return data;
+  function addQima() {
+    var raw = $("qimaInput").value.replace(/\s/g, "");
+    var digits = [].filter.call(raw, function(v,i,a) { return a.indexOf(v) === i; }).join("");
+    if (digits.length < 3) return toast("七码至少需要3个不同数字");
+    if (qimaCodes.indexOf(digits) !== -1) return toast("该七码已添加");
+    qimaCodes.push(digits); $("qimaInput").value = ""; renderQimaList();
   }
+  function removeQima(idx) { qimaCodes.splice(idx, 1); renderQimaList(); }
+  function renderQimaList() {
+    $("qimaList").innerHTML = qimaCodes.map(function(code, i) { return '<span class="qima-tag">' + code + ' <button data-action="remove-qima" data-idx="' + i + '">×</button></span>'; }).join("");
+    document.querySelectorAll("[data-action='remove-qima']").forEach(function(btn) { btn.addEventListener("click", function() { removeQima(Number(btn.dataset.idx)); }); });
+  }
+  function generateSevenCodeCombos(digits) {
+    var arr = digits.split(""), result = [];
+    for (var i = 0; i < arr.length; i++) for (var j = i+1; j < arr.length; j++) for (var k = j+1; k < arr.length; k++) result.push(arr[i] + arr[j] + arr[k]);
+    for (var i = 0; i < arr.length; i++) for (var j = 0; j < arr.length; j++) if (i !== j) result.push(arr[i] + arr[i] + arr[j]);
+    return result;
+  }
+  function generateFromQima() {
+    if (!qimaCodes.length) return toast("请先添加七码");
+    var all = new Set();
+    qimaCodes.forEach(function(code) { generateSevenCodeCombos(code).forEach(function(n) { all.add(n); }); });
+    var merged = [].slice.call(all).sort(), existing = $("inputArea").value.trim();
+    $("inputArea").value = existing ? existing + "\n" + merged.join(" ") : merged.join(" ");
+    toast("已生成 " + merged.length + " 组号码（" + qimaCodes.length + " 组七码合并去重）");
+  }
+
   function resultText(filtered) {
-    return filtered.length
-      ? filtered.reduce((lines, n, i) => {
-          if (i % 10 === 0) lines.push([]);
-          lines[lines.length - 1].push(n);
-          return lines;
-        }, []).map(line => line.join("  ")).join("\n")
-      : "没有匹配的号码";
+    if (!filtered.length) return "没有匹配的号码";
+    return filtered.reduce(function(lines, n, i) { if (i%10===0) lines.push([]); lines[lines.length-1].push(n); return lines; }, []).map(function(line) { return line.join("  "); }).join("\n");
   }
-  function renderResult(filtered) {
-    $("resultBadge").textContent = `${filtered.length}组`;
-    $("resultBox").textContent = resultText(filtered);
-  }
+  function renderResult(filtered) { $("resultBadge").textContent = filtered.length + "组"; $("resultBox").textContent = resultText(filtered); }
   function displayFilterResults(data, digits, advanceDigits, killDigits, segment, filters) {
-    currentResult = data.filtered || [];
-    currentDigits = digits;
-    currentAdvanceDigits = advanceDigits;
-    currentKillDigits = killDigits || "";
-    currentSegment = segment || "";
+    currentResult = data.filtered || []; currentDigits = digits; currentAdvanceDigits = advanceDigits;
+    currentKillDigits = killDigits || ""; currentSegment = segment || "";
     currentSegmentFilters = filters || data.segment_filters || [];
-    currentTotal = data.total || 0;
-    currentPercent = data.percent || 0;
-    $("totalCount").textContent = currentTotal;
-    $("filteredCount").textContent = currentResult.length;
+    currentTotal = data.total || 0; currentPercent = data.percent || 0;
+    $("totalCount").textContent = currentTotal; $("filteredCount").textContent = currentResult.length;
     $("percent").textContent = currentPercent + "%";
     renderResult(currentResult);
-    $("statsArea").style.display = "block";
-    $("resultArea").style.display = "block";
-    $("emptyState").style.display = "none";
-    lastResultObj = {
-      id: Date.now(),
-      time: nowText(),
-      targetIssue: nextIssue || autoIssueName(),
-      digits,
-      advance_digits: advanceDigits,
-      kill_digits: currentKillDigits,
-      segment,
-      segment_filters: currentSegmentFilters,
-      total: currentTotal,
-      count: currentResult.length,
-      percent: currentPercent,
-      filtered: currentResult,
-      actualDraw: null,
-      hit: null
-    };
+    $("statsArea").style.display = "block"; $("resultArea").style.display = "block"; $("emptyState").style.display = "none";
+    lastResultObj = { id: Date.now(), time: nowText(), targetIssue: nextIssue || autoIssueName(), digits: digits, advance_digits: advanceDigits, kill_digits: currentKillDigits, segment: segment, segment_filters: currentSegmentFilters, total: currentTotal, count: currentResult.length, percent: currentPercent, filtered: currentResult, actualDraw: null, hit: null };
   }
   async function startFilter() {
-    const text = $("inputArea").value.trim();
-    const digits = cleanDigits($("filterDigits").value);
-    const advanceDigits = cleanDigits($("advanceDigits").value);
-    const killDigits = cleanDigits($("killDigits").value);
-    $("filterDigits").value = digits;
-    $("advanceDigits").value = advanceDigits;
-    $("killDigits").value = killDigits;
-    const seg = validateSegmentFilters();
+    var text = $("inputArea").value.trim(), digits = cleanDigits($("filterDigits").value), advanceDigits = cleanDigits($("advanceDigits").value), killDigits = cleanDigits($("killDigits").value);
+    $("filterDigits").value = digits; $("advanceDigits").value = advanceDigits; $("killDigits").value = killDigits;
+    var seg = validateSegmentFilters();
     if (!text) return toast("请填写号码池");
     if (!seg.ok) return toast(seg.msg);
     if (!digits && !advanceDigits && !killDigits && !seg.filters.length) return toast("请至少输入一个筛选条件");
     $("filterBtn").disabled = true;
-    try {
-      const data = await api("/api/filter", {
-        text,
-        digits,
-        advance_digits: advanceDigits,
-        kill_digits: killDigits,
-        segment_filters: seg.filters
-      });
-      displayFilterResults(data, digits, advanceDigits, killDigits, data.segment || "", seg.filters);
-      toast(`筛选完成：${data.count}组`);
-    } catch(e) {
-      toast(e.message);
-    } finally {
-      $("filterBtn").disabled = false;
-    }
+    try { var data = await api("/api/filter", {text:text, digits:digits, advance_digits:advanceDigits, kill_digits:killDigits, segment_filters:seg.filters}); displayFilterResults(data, digits, advanceDigits, killDigits, data.segment || "", seg.filters); toast("筛选完成：" + data.count + "组"); }
+    catch(e) { toast(e.message); }
+    finally { $("filterBtn").disabled = false; }
   }
 
   function getLocalHistory() {
     try {
-      const current = localStorage.getItem(HISTORY_KEY);
-      if (current) return JSON.parse(current);
-      for (const key of OLD_KEYS) {
-        const old = localStorage.getItem(key);
-        if (old) return JSON.parse(old);
-      }
+      var current = localStorage.getItem(HISTORY_KEY); if (current) return JSON.parse(current);
+      for (var i = 0; i < OLD_KEYS.length; i++) { var old = localStorage.getItem(OLD_KEYS[i]); if (old) return JSON.parse(old); }
       return [];
-    } catch { return []; }
+    } catch(e) { return []; }
   }
   async function loadHistory() {
     try {
-      const data = await apiGet("/api/history");
-      historyItems = data.items || [];
-      if (!historyItems.length) {
-        const localItems = getLocalHistory();
-        if (localItems.length) {
-          await setHistory(localItems);
-          toast("已导入本机历史到服务器");
-          return;
-        }
-      }
-    } catch (e) {
-      toast(e.message);
-    }
+      var data = await apiGet("/api/history"); historyItems = data.items || [];
+      if (!historyItems.length) { var localItems = getLocalHistory(); if (localItems.length) { await setHistory(localItems); toast("已导入本机历史到服务器"); return; } }
+    } catch(e) { toast(e.message); }
     renderHistory();
   }
-  async function setHistory(items) {
-    const data = await api("/api/history", {items: (items || []).slice(0, MAX_HISTORY)});
-    historyItems = data.items || [];
-    renderHistory();
-    return historyItems;
-  }
+  async function setHistory(items) { var data = await api("/api/history", {items: (items||[]).slice(0, MAX_HISTORY)}); historyItems = data.items || []; renderHistory(); return historyItems; }
   function statusPill(item) {
-    if (item.hit === true) return `<span class="pill green">中奖 ${item.actualDraw}</span>`;
-    if (item.hit === false) return `<span class="pill red">未中 ${item.actualDraw}</span>`;
-    return `<span class="pill amber">待开奖</span>`;
+    if (item.hit === true) return '<span class="pill green">中奖 ' + item.actualDraw + '</span>';
+    if (item.hit === false) return '<span class="pill red">未中 ' + item.actualDraw + '</span>';
+    return '<span class="pill amber">待开奖</span>';
   }
   function renderHistory() {
-    const history = historyItems || [];
+    var history = historyItems || [];
     $("historyCount").textContent = history.length;
     $("historyArea").style.display = history.length ? "block" : "none";
-    if (!history.length) {
-      $("historyList").innerHTML = "";
-      return;
-    }
-    $("historyList").innerHTML = history.map(item => {
-      const preview = (item.filtered || []).slice(0, 10).join(" ") + ((item.filtered || []).length > 10 ? ` ...等${item.count}组` : "");
-      return `<div class="history-item" data-id="${item.id}">
-        <div class="history-meta">
-          <span class="pill">${item.time || ""}</span>
-          ${statusPill(item)}
-          ${item.digits ? `<span class="pill">三胆码 ${item.digits}</span>` : ""}
-          ${item.advance_digits ? `<span class="pill">两码差 ${item.advance_digits}</span>` : ""}
-        </div>
-        <div class="history-preview">期号 ${item.targetIssue || "--"} | 总数 ${item.total} | 命中 ${item.count} | 占比 ${item.percent}% | ${preview}</div>
-        <div class="history-actions">
-          <input class="inline-issue" data-role="issue" value="${item.targetIssue || ""}" placeholder="期号">
-          <button class="secondary" data-role="save-issue">改期号</button>
-          <button class="secondary" data-role="load">加载条件</button>
-          <button class="red" data-role="delete">删除</button>
-        </div>
-      </div>`;
+    if (!history.length) { $("historyList").innerHTML = ""; return; }
+    $("historyList").innerHTML = history.map(function(item) {
+      var preview = (item.filtered || []).slice(0, 10).join(" ") + ((item.filtered||[]).length > 10 ? " ...等" + item.count + "组" : "");
+      var segPills = (item.segment_filters || []).map(function(f) { return '<span class="pill green">' + f.mode + ' 段组</span>'; }).join("");
+      return '<div class="history-item" data-id="' + item.id + '"><div class="history-meta"><span class="pill">' + (item.time||"") + '</span>' + statusPill(item) + (item.digits ? '<span class="pill">胆码 ' + item.digits + '</span>' : "") + (item.kill_digits ? '<span class="pill red">杀码 ' + item.kill_digits + '</span>' : "") + (item.advance_digits ? '<span class="pill">两码差 ' + item.advance_digits + '</span>' : "") + segPills + '</div><div class="history-preview">期号 ' + (item.targetIssue||"--") + ' | 总数 ' + item.total + ' | 命中 ' + item.count + ' | 占比 ' + item.percent + '% | ' + preview + '</div><div class="history-actions"><input class="inline-issue" data-role="issue" value="' + (item.targetIssue||"") + '" placeholder="期号"><button class="btn-secondary btn-sm" data-role="save-issue">改期号</button><button class="btn-secondary btn-sm" data-role="load">加载条件</button><button class="btn-red btn-sm" data-role="delete">删除</button></div></div>';
     }).join("");
-    document.querySelectorAll(".history-item").forEach(el => {
-      const id = Number(el.dataset.id);
-      el.querySelector('[data-role="save-issue"]').addEventListener("click", () => updateHistoryIssue(id, el.querySelector('[data-role="issue"]').value.trim()));
-      el.querySelector('[data-role="load"]').addEventListener("click", () => {
-        const item = historyItems.find(x => Number(x.id) === id);
-        if (item) restoreHistoryItem(item);
-      });
-      el.querySelector('[data-role="delete"]').addEventListener("click", () => deleteHistoryItem(id));
-      el.querySelector('[data-role="issue"]').addEventListener("keydown", e => {
-        if (e.key === "Enter") updateHistoryIssue(id, e.currentTarget.value.trim());
-      });
+    document.querySelectorAll(".history-item").forEach(function(el) {
+      var id = Number(el.dataset.id);
+      el.querySelector('[data-role="save-issue"]').addEventListener("click", function() { updateHistoryIssue(id, el.querySelector('[data-role="issue"]').value.trim()); });
+      el.querySelector('[data-role="load"]').addEventListener("click", function() { var item = historyItems.find(function(x) { return Number(x.id) === id; }); if (item) restoreHistoryItem(item); });
+      el.querySelector('[data-role="delete"]').addEventListener("click", function() { deleteHistoryItem(id); });
+      el.querySelector('[data-role="issue"]').addEventListener("keydown", function(e) { if (e.key==="Enter") updateHistoryIssue(id, e.currentTarget.value.trim()); });
     });
   }
   async function updateHistoryIssue(id, issue) {
-    const hist = [...historyItems];
-    const item = hist.find(x => Number(x.id) === id);
+    var hist = historyItems.slice(), item = hist.find(function(x) { return Number(x.id) === id; });
     if (!item) return;
-    item.targetIssue = issue || autoIssueName();
-    item.actualIssue = null;
-    item.actualDraw = null;
-    item.hit = null;
-    try {
-      await setHistory(hist);
-      toast("期号已更新");
-    } catch (e) {
-      toast(e.message);
-    }
+    item.targetIssue = issue || autoIssueName(); item.actualIssue = null; item.actualDraw = null; item.hit = null;
+    try { await setHistory(hist); toast("期号已更新"); } catch(e) { toast(e.message); }
   }
-  async function deleteHistoryItem(id) {
-    try {
-      await setHistory(historyItems.filter(x => Number(x.id) !== id));
-      toast("已删除");
-    } catch (e) {
-      toast(e.message);
-    }
-  }
+  async function deleteHistoryItem(id) { try { await setHistory(historyItems.filter(function(x) { return Number(x.id) !== id; })); toast("已删除"); } catch(e) { toast(e.message); } }
   function restoreHistoryItem(item) {
-    $("filterDigits").value = item.digits || "";
-    $("advanceDigits").value = item.advance_digits || "";
-    $("killDigits").value = item.kill_digits || "";
+    $("filterDigits").value = item.digits || ""; $("advanceDigits").value = item.advance_digits || ""; $("killDigits").value = item.kill_digits || "";
     renderSegmentGroups(item.segment_filters || itemToSegmentFilters(item));
-    displayFilterResults({total:item.total, count:item.count, percent:item.percent, filtered:item.filtered || []}, item.digits || "", item.advance_digits || "", item.kill_digits || "", item.segment || "", item.segment_filters || []);
-    toast(`已加载历史：${item.count}组`);
+    displayFilterResults({total:item.total, count:item.count, percent:item.percent, filtered:item.filtered||[]}, item.digits||"", item.advance_digits||"", item.kill_digits||"", item.segment||"", item.segment_filters||[]);
+    toast("已加载历史：" + item.count + "组");
   }
-  function itemToSegmentFilters(item) {
-    if (item.segment_filters && item.segment_filters.length) return item.segment_filters;
-    if (item.segment_mode && item.groups) {
-      return [{mode:item.segment_mode, groups:item.groups}];
-    }
-    return null;
-  }
+  function itemToSegmentFilters(item) { if (item.segment_filters && item.segment_filters.length) return item.segment_filters; if (item.segment_mode && item.groups) return [{mode:item.segment_mode, groups:item.groups}]; return null; }
   async function saveToHistory() {
     if (!lastResultObj) return toast("请先筛选");
-    const hist = [...historyItems];
-    if (hist.some(h => h.id === lastResultObj.id)) return toast("这条结果已经保存");
+    var hist = historyItems.slice();
+    if (hist.some(function(h) { return h.id === lastResultObj.id; })) return toast("这条结果已经保存");
     hist.unshift(lastResultObj);
-    try {
-      await setHistory(hist);
-      toast(`已保存历史，期号 ${lastResultObj.targetIssue}`);
-    } catch (e) {
-      toast(e.message);
-    }
+    try { await setHistory(hist); toast("已保存历史，期号 " + lastResultObj.targetIssue); } catch(e) { toast(e.message); }
   }
   async function updateDrawRecords() {
-    const hist = historyItems;
-    if (!hist.length) return toast("暂无历史记录");
-    $("updateDrawBtn").disabled = true;
-    $("refreshDrawBtn").disabled = true;
+    if (!historyItems.length) return toast("暂无历史记录");
+    $("updateDrawBtn").disabled = true; $("refreshDrawBtn").disabled = true;
     try {
-      const updated = await api("/api/update_draws", {});
-      drawRecords = (updated.records || []).slice(0, 50);
-      latestIssue = updated.latest ? updated.latest.issue : "";
-      latestDraw = updated.latest ? updated.latest.draw : "";
-      nextIssue = updated.nextIssue || "";
+      var updated = await api("/api/update_draws", {});
+      drawRecords = (updated.records || []).slice(0, 50); latestIssue = updated.latest ? updated.latest.issue : ""; latestDraw = updated.latest ? updated.latest.draw : ""; nextIssue = updated.nextIssue || "";
       renderDrawSidebar();
-      const checked = await api("/api/check_history", {items: hist});
-      await setHistory(checked.items || hist);
-      toast(`已更新开奖：${latestIssue}期 ${latestDraw}`);
-    } catch(e) {
-      toast(e.message);
-    } finally {
-      $("updateDrawBtn").disabled = false;
-      $("refreshDrawBtn").disabled = false;
-    }
+      var checked = await api("/api/check_history", {items: historyItems.slice()});
+      await setHistory(checked.items || historyItems);
+      toast("已更新开奖：" + latestIssue + "期 " + latestDraw);
+    } catch(e) { toast(e.message); }
+    finally { $("updateDrawBtn").disabled = false; $("refreshDrawBtn").disabled = false; }
   }
-
-  function copyResult() {
-    if (!currentResult.length) return toast("无结果可复制");
-    navigator.clipboard.writeText($("resultBox").textContent).then(() => toast("已复制")).catch(() => toast("复制失败"));
-  }
+  function copyResult() { if (!currentResult.length) return toast("无结果可复制"); navigator.clipboard.writeText($("resultBox").textContent).then(function() { toast("已复制"); }).catch(function() { toast("复制失败"); }); }
   function exportToFile() {
     if (!currentResult.length) return toast("无结果可保存");
-    const content = `筛选结果\n自动期号:${autoIssueName()} 数字:${currentDigits || "--"} 杀码:${currentKillDigits || "--"} 两码差:${currentAdvanceDigits || "--"} 段组:${currentSegment || "--"}\n总数:${currentTotal} 命中:${currentResult.length} 占比:${currentPercent}%\n${"=".repeat(50)}\n${$("resultBox").textContent}\n`;
-    const blob = new Blob([content], {type:"text/plain;charset=utf-8"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `筛号_${new Date().toISOString().slice(0,19).replace(/:/g,"-")}.txt`;
-    a.click();
-    URL.revokeObjectURL(a.href);
+    var content = "筛选结果\n自动期号:" + autoIssueName() + " 数字:" + (currentDigits||"--") + " 杀码:" + (currentKillDigits||"--") + " 两码差:" + (currentAdvanceDigits||"--") + " 段组:" + (currentSegment||"--") + "\n总数:" + currentTotal + " 命中:" + currentResult.length + " 占比:" + currentPercent + "%\n" + "=".repeat(50) + "\n" + $("resultBox").textContent + "\n";
+    var blob = new Blob([content], {type:"text/plain;charset=utf-8"}), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "筛号_" + new Date().toISOString().slice(0,19).replace(/:/g,"-") + ".txt"; a.click(); URL.revokeObjectURL(a.href);
     toast("文件已保存");
   }
   function clearAll() {
-    $("inputArea").value = "";
-    $("filterDigits").value = "";
-    $("advanceDigits").value = "";
-    $("killDigits").value = "";
-    segmentCards = [];
-    renderSegmentCards();
-    $("statsArea").style.display = "none";
-    $("resultArea").style.display = "none";
-    $("emptyState").style.display = "block";
-    currentResult = [];
-    lastResultObj = null;
+    $("inputArea").value = ""; $("filterDigits").value = ""; $("advanceDigits").value = ""; $("killDigits").value = "";
+    segmentCards = []; renderSegmentCards(); qimaCodes = []; renderQimaList(); $("qimaInput").value = "";
+    $("statsArea").style.display = "none"; $("resultArea").style.display = "none"; $("emptyState").style.display = "block";
+    currentResult = []; lastResultObj = null;
   }
   function loadDemo() {
-    $("inputArea").value = demoRaw;
-    $("filterDigits").value = "357";
-    $("advanceDigits").value = "";
-    $("killDigits").value = "4";
-    renderSegmentGroups([
-      {mode:"2-3-5", groups:SEGMENT_DEMOS["2-3-5"]},
-      {mode:"5-5", groups:SEGMENT_DEMOS["5-5"]}
-    ]);
+    $("inputArea").value = demoRaw; $("filterDigits").value = "357"; $("advanceDigits").value = ""; $("killDigits").value = "4";
+    renderSegmentGroups([{mode:"2-3-5", groups:SEGMENT_DEMOS["2-3-5"]}, {mode:"5-5", groups:SEGMENT_DEMOS["5-5"]}]);
     toast("示例数据已填入，2-3-5 和 5-5 段组已添加");
   }
   async function clearHistory() {
     if (!historyItems.length) return;
     if (confirm("清空所有历史记录？")) {
-      try {
-        const res = await fetch("/api/history", {method: "DELETE"});
-        const data = await res.json();
-        if (!res.ok || data.ok === false) throw new Error(data.error || "请求失败");
-        historyItems = [];
-        localStorage.removeItem(HISTORY_KEY);
-        OLD_KEYS.forEach(key => localStorage.removeItem(key));
-        renderHistory();
-        toast("历史已清空");
-      } catch (e) {
-        toast(e.message);
-      }
+      try { var res = await fetch("/api/history", {method:"DELETE"}); var data = await res.json(); if (!res.ok || data.ok===false) throw new Error(data.error||"请求失败"); historyItems = []; localStorage.removeItem(HISTORY_KEY); OLD_KEYS.forEach(function(k) { localStorage.removeItem(k); }); renderHistory(); toast("历史已清空"); } catch(e) { toast(e.message); }
     }
   }
 
-  $("segmentAddBtn").addEventListener("click", () => addSegmentCard($("segmentTypeSelect").value));
+  $("segmentAddBtn").addEventListener("click", function() { addSegmentCard($("segmentTypeSelect").value); });
+  $("qimaAddBtn").addEventListener("click", addQima);
+  $("qimaGenerateBtn").addEventListener("click", generateFromQima);
+  $("qimaInput").addEventListener("keydown", function(e) { if (e.key==="Enter") { e.preventDefault(); addQima(); } });
   $("refreshDrawBtn").addEventListener("click", refreshDraws);
   $("filterBtn").addEventListener("click", startFilter);
   $("demoBtn").addEventListener("click", loadDemo);
@@ -794,10 +766,8 @@
   $("exportFileBtn").addEventListener("click", exportToFile);
   $("updateDrawBtn").addEventListener("click", updateDrawRecords);
   $("clearHistoryBtn").addEventListener("click", clearHistory);
-  ["filterDigits","advanceDigits","killDigits"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") startFilter(); }));
-  loadDraws();
-  renderSegmentCards();
-  loadHistory();
+  ["filterDigits","advanceDigits","killDigits"].forEach(function(id) { $(id).addEventListener("keydown", function(e) { if (e.key==="Enter") startFilter(); }); });
+  loadDraws(); renderSegmentCards(); loadHistory();
 })();
 </script>
 </body>
