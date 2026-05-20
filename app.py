@@ -152,6 +152,29 @@ def group_hit(filtered, draw):
     return any("".join(sorted(str(n).zfill(3))) == draw_key for n in filtered)
 
 
+def generate_code_combos(digits):
+    """Generate all 组六 + 组三 combos from N unique digits (N=3~8)."""
+    digits = str(digits)
+    if len(digits) < 3:
+        raise ValueError("至少需要3个不同数字")
+    if len(set(digits)) != len(digits) or not digits.isdigit():
+        raise ValueError("数字必须是不重复的0-9数字")
+    arr = list(digits)
+    n = len(arr)
+    result = []
+    # 组六: C(n,3) — three different digits
+    for i in range(n):
+        for j in range(i + 1, n):
+            for k in range(j + 1, n):
+                result.append(arr[i] + arr[j] + arr[k])
+    # 组三: n * (n-1) — pair + another digit
+    for i in range(n):
+        for j in range(n):
+            if i != j:
+                result.append(arr[i] + arr[i] + arr[j])
+    return result
+
+
 def segment_index(digit, groups):
     for idx, group in enumerate(groups):
         if digit in group:
