@@ -152,6 +152,58 @@ def group_hit(filtered, draw):
     return any("".join(sorted(str(n).zfill(3))) == draw_key for n in filtered)
 
 
+def generate_code_combos(digits):
+    """Generate all 组六 + 组三 combos from N unique digits (N=3~8)."""
+    digits = str(digits)
+    if len(digits) < 3:
+        raise ValueError("至少需要3个不同数字")
+    if len(digits) > 8:
+        raise ValueError("最多支持8个不同数字")
+    if len(set(digits)) != len(digits) or not digits.isdigit():
+        raise ValueError("数字必须是不重复的0-9数字")
+    arr = list(digits)
+    n = len(arr)
+    result = []
+    # 组六: C(n,3) — three different digits
+    for i in range(n):
+        for j in range(i + 1, n):
+            for k in range(j + 1, n):
+                result.append(arr[i] + arr[j] + arr[k])
+    # 组三: n * (n-1) — pair + another digit
+    for i in range(n):
+        for j in range(n):
+            if i != j:
+                result.append(arr[i] + arr[i] + arr[j])
+    return result
+
+
+def process_generate_codes(codes):
+    """Process a list of code specs and return (result_dict, status_code)."""
+    if not isinstance(codes, list):
+        return {"ok": False, "error": "codes must be a list"}, 400
+    if not codes:
+        return {"ok": False, "error": "请提供复式码列表"}, 400
+    all_generated = set()
+    for item in codes:
+        digits = str(item.get("digits", ""))
+        if not digits:
+            continue
+        try:
+            combos = generate_code_combos(digits)
+        except ValueError as e:
+            return {"ok": False, "error": str(e)}, 400
+        all_generated.update(combos)
+    if not all_generated:
+        return {"ok": False, "error": "没有有效的复式码"}, 400
+    generated = sorted(all_generated)
+    return {
+        "ok": True,
+        "generated": generated,
+        "count": len(generated),
+        "codes": [{"digits": c.get("digits", ""), "len": c.get("len", len(c.get("digits", "")))} for c in codes],
+    }, 200
+
+
 def segment_index(digit, groups):
     for idx, group in enumerate(groups):
         if digit in group:
@@ -320,6 +372,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         try:
+            if self.path == "/api/generate_codes":
+                return self._api_generate_codes()
             if self.path == "/api/filter":
                 return self._api_filter()
             if self.path == "/api/update_draws":
@@ -391,6 +445,12 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                 for cf in code_filters
             ],
         })
+
+    def _api_generate_codes(self):
+        data = self._read_json_body()
+        codes = data.get("codes", [])
+        result, status = process_generate_codes(codes)
+        self._send_json(result, status)
 
     def _api_update_draws(self):
         try:
