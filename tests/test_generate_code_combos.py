@@ -51,5 +51,27 @@ class GenerateCodeCombosTest(unittest.TestCase):
             app.generate_code_combos("01123")
 
 
+class GenerateCodesEndpointLogicTest(unittest.TestCase):
+    def test_generate_and_merge_5_code(self):
+        from app import generate_code_combos
+        result = generate_code_combos("01234")
+        self.assertEqual(30, len(result))
+
+    def test_generate_multiple_and_merge_dedup(self):
+        from app import generate_code_combos
+        merged = set()
+        for digits in ["01234", "56789"]:
+            merged.update(generate_code_combos(digits))
+        self.assertEqual(60, len(merged))
+
+    def test_merged_result_is_sorted(self):
+        from app import generate_code_combos
+        merged = set()
+        merged.update(generate_code_combos("01234"))
+        merged.update(generate_code_combos("56789"))
+        sorted_result = sorted(merged)
+        self.assertEqual(sorted_result, sorted_result)
+
+
 if __name__ == "__main__":
     unittest.main()

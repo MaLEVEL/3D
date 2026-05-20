@@ -345,6 +345,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         try:
+            if self.path == "/api/generate_codes":
+                return self._api_generate_codes()
             if self.path == "/api/filter":
                 return self._api_filter()
             if self.path == "/api/update_draws":
@@ -415,6 +417,31 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                 {"code_len": cf["code_len"], "condition": cf["condition"], "digits": cf["digits"]}
                 for cf in code_filters
             ],
+        })
+
+    def _api_generate_codes(self):
+        data = self._read_json_body()
+        codes = data.get("codes", [])
+        if not codes:
+            self._send_json({"ok": False, "error": "请提供复式码列表"}, 400)
+            return
+        all_generated = set()
+        for item in codes:
+            digits = str(item.get("digits", ""))
+            if not digits:
+                continue
+            try:
+                combos = generate_code_combos(digits)
+            except ValueError as e:
+                self._send_json({"ok": False, "error": str(e)}, 400)
+                return
+            all_generated.update(combos)
+        generated = sorted(all_generated)
+        self._send_json({
+            "ok": True,
+            "generated": generated,
+            "count": len(generated),
+            "codes": [{"digits": c.get("digits", ""), "len": c.get("len", len(c.get("digits", "")))} for c in codes],
         })
 
     def _api_update_draws(self):
