@@ -711,7 +711,7 @@
   function addQima() {
     var raw = $("qimaInput").value.replace(/\s/g, "");
     var digits = [].filter.call(raw, function(v,i,a) { return a.indexOf(v) === i; }).join("");
-    if (digits.length < currentQimaLen) return toast(currentQimaLen + "码至少需要" + currentQimaLen + "个不同数字");
+    if (digits.length !== currentQimaLen) return toast("请恰好输入" + currentQimaLen + "个不同的数字");
     var exists = qimaCodes.some(function(item) { return item.digits === digits; });
     if (exists) return toast("该复式码已添加");
     qimaCodes.push({digits: digits, len: currentQimaLen});
@@ -898,6 +898,7 @@
   $("codeAddBtn").addEventListener("click", addCodeCard);
   $("qimaLenSelect").addEventListener("change", function() {
     currentQimaLen = Number(this.value);
+    $("qimaInput").value = "";
     $("qimaInput").placeholder = "输入" + currentQimaLen + "个数字，如 " + "0123456789".slice(0, currentQimaLen);
     $("qimaInput").maxLength = currentQimaLen;
   });
