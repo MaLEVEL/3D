@@ -371,7 +371,7 @@
         <div class="card-head">
           <span class="card-head-num">1</span>
           <span class="card-head-title">数据输入</span>
-          <span class="card-head-sub">— 号码池 & 七码复式</span>
+          <span class="card-head-sub">— 号码池 & 复式码生成</span>
           <span class="badge" id="saveIssueBadge" style="margin-left:auto;">保存期号 --</span>
         </div>
         <div class="card-body">
@@ -381,14 +381,19 @@
             <span class="helper">自动识别所有 000-999 格式的三位号码，并去重保留原顺序。</span>
           </div>
           <div class="form-group">
-            <label>七码复式 <span style="font-weight:400;color:var(--text-muted);font-size:11px;">（可选）</span></label>
+            <label>复式码生成 <span style="font-weight:400;color:var(--text-muted);font-size:11px;">（可选）</span></label>
             <div class="qima-selector">
-              <input id="qimaInput" placeholder="输入7个数字，如 0123456" maxlength="10">
+              <select id="qimaLenSelect" style="width:80px;flex-shrink:0;">
+                <option value="5">5码</option>
+                <option value="6">6码</option>
+                <option value="7">7码</option>
+              </select>
+              <input id="qimaInput" placeholder="输入5个数字，如 01234" maxlength="5">
               <button class="btn-secondary" id="qimaAddBtn" style="flex-shrink:0;">添加</button>
             </div>
             <div class="qima-list" id="qimaList"></div>
             <button class="btn-secondary btn-full" id="qimaGenerateBtn">生成并填入号码池</button>
-            <span class="helper">输入7个不同数字，自动生成所有组六 + 组三组合。可添加多组七码，生成后合并去重填入上方号码池。</span>
+            <span class="helper">选择码数并输入对应数量的不同数字，自动生成所有组六 + 组三组合。可添加多组不同码数，生成后合并去重填入上方号码池。</span>
           </div>
         </div>
       </div>
@@ -512,6 +517,7 @@
   var segmentCards = [], segmentCardIdCounter = 0;
   var codeCards = [], codeCardIdCounter = 0;
   var qimaCodes = [];
+  var currentQimaLen = 5;
 
   var demoRaw = "组六：\n012 013 014 015 016 017 018 019 023 024\n\n\n组三：\n001 002 005 006 007 008 009 011 022\n";
 
@@ -705,28 +711,37 @@
   function addQima() {
     var raw = $("qimaInput").value.replace(/\s/g, "");
     var digits = [].filter.call(raw, function(v,i,a) { return a.indexOf(v) === i; }).join("");
-    if (digits.length < 3) return toast("七码至少需要3个不同数字");
-    if (qimaCodes.indexOf(digits) !== -1) return toast("该七码已添加");
-    qimaCodes.push(digits); $("qimaInput").value = ""; renderQimaList();
+    if (digits.length < currentQimaLen) return toast(currentQimaLen + "码至少需要" + currentQimaLen + "个不同数字");
+    var exists = qimaCodes.some(function(item) { return item.digits === digits; });
+    if (exists) return toast("该复式码已添加");
+    qimaCodes.push({digits: digits, len: currentQimaLen});
+    $("qimaInput").value = "";
+    renderQimaList();
   }
   function removeQima(idx) { qimaCodes.splice(idx, 1); renderQimaList(); }
   function renderQimaList() {
-    $("qimaList").innerHTML = qimaCodes.map(function(code, i) { return '<span class="qima-tag">' + code + ' <button data-action="remove-qima" data-idx="' + i + '">×</button></span>'; }).join("");
-    document.querySelectorAll("[data-action='remove-qima']").forEach(function(btn) { btn.addEventListener("click", function() { removeQima(Number(btn.dataset.idx)); }); });
+    $("qimaList").innerHTML = qimaCodes.map(function(item, i) {
+      return '<span class="qima-tag">' + item.digits + ' <span style="font-size:10px;opacity:0.7">[' + item.len + '码]</span> <button data-action="remove-qima" data-idx="' + i + '">×</button></span>';
+    }).join("");
+    document.querySelectorAll("[data-action='remove-qima']").forEach(function(btn) {
+      btn.addEventListener("click", function() { removeQima(Number(btn.dataset.idx)); });
+    });
   }
-  function generateSevenCodeCombos(digits) {
+  function generateCodeCombos(digits) {
     var arr = digits.split(""), result = [];
     for (var i = 0; i < arr.length; i++) for (var j = i+1; j < arr.length; j++) for (var k = j+1; k < arr.length; k++) result.push(arr[i] + arr[j] + arr[k]);
     for (var i = 0; i < arr.length; i++) for (var j = 0; j < arr.length; j++) if (i !== j) result.push(arr[i] + arr[i] + arr[j]);
     return result;
   }
   function generateFromQima() {
-    if (!qimaCodes.length) return toast("请先添加七码");
+    if (!qimaCodes.length) return toast("请先添加复式码");
     var all = new Set();
-    qimaCodes.forEach(function(code) { generateSevenCodeCombos(code).forEach(function(n) { all.add(n); }); });
+    qimaCodes.forEach(function(item) {
+      generateCodeCombos(item.digits).forEach(function(n) { all.add(n); });
+    });
     var merged = Array.from(all).sort(), existing = $("inputArea").value.trim();
     $("inputArea").value = existing ? existing + "\n" + merged.join(" ") : merged.join(" ");
-    toast("已生成 " + merged.length + " 组号码（" + qimaCodes.length + " 组七码合并去重）");
+    toast("已生成 " + merged.length + " 组号码（" + qimaCodes.length + " 组复式码合并去重）");
   }
 
   function resultText(filtered) {
@@ -858,6 +873,7 @@
   function clearAll() {
     $("inputArea").value = ""; $("filterDigits").value = ""; $("advanceDigits").value = ""; $("killDigits").value = "";
     segmentCards = []; renderSegmentCards(); codeCards = []; renderCodeCards(); qimaCodes = []; renderQimaList(); $("qimaInput").value = "";
+    currentQimaLen = 5; $("qimaLenSelect").value = "5"; $("qimaInput").placeholder = "输入5个数字，如 01234"; $("qimaInput").maxLength = 5;
     $("statsArea").style.display = "none"; $("resultArea").style.display = "none"; $("emptyState").style.display = "block";
     currentResult = []; lastResultObj = null;
   }
@@ -865,7 +881,11 @@
     $("inputArea").value = demoRaw; $("filterDigits").value = "357"; $("advanceDigits").value = ""; $("killDigits").value = "4";
     renderSegmentGroups([{mode:"2-3-5", groups:SEGMENT_DEMOS["2-3-5"]}, {mode:"5-5", groups:SEGMENT_DEMOS["5-5"]}]);
     renderCodeCardsFromFilters([{code_len:5, condition:"012", digits:"01234"}]);
-    toast("示例数据已填入，2-3-5、5-5段组和5码=012已添加");
+    qimaCodes = [{digits: "01234", len: 5}, {digits: "123456", len: 6}];
+    renderQimaList();
+    currentQimaLen = 5; $("qimaLenSelect").value = "5";
+    $("qimaInput").placeholder = "输入5个数字，如 01234"; $("qimaInput").maxLength = 5;
+    toast("示例数据已填入，复式码5码+6码、段组和N码条件已添加");
   }
   async function clearHistory() {
     if (!historyItems.length) return;
@@ -876,6 +896,11 @@
 
   $("segmentAddBtn").addEventListener("click", function() { addSegmentCard($("segmentTypeSelect").value); });
   $("codeAddBtn").addEventListener("click", addCodeCard);
+  $("qimaLenSelect").addEventListener("change", function() {
+    currentQimaLen = Number(this.value);
+    $("qimaInput").placeholder = "输入" + currentQimaLen + "个数字，如 " + "0123456789".slice(0, currentQimaLen);
+    $("qimaInput").maxLength = currentQimaLen;
+  });
   $("qimaAddBtn").addEventListener("click", addQima);
   $("qimaGenerateBtn").addEventListener("click", generateFromQima);
   $("qimaInput").addEventListener("keydown", function(e) { if (e.key==="Enter") { e.preventDefault(); addQima(); } });
