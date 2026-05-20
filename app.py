@@ -157,6 +157,8 @@ def generate_code_combos(digits):
     digits = str(digits)
     if len(digits) < 3:
         raise ValueError("至少需要3个不同数字")
+    if len(digits) > 8:
+        raise ValueError("最多支持8个不同数字")
     if len(set(digits)) != len(digits) or not digits.isdigit():
         raise ValueError("数字必须是不重复的0-9数字")
     arr = list(digits)
