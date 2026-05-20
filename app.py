@@ -177,6 +177,33 @@ def generate_code_combos(digits):
     return result
 
 
+def process_generate_codes(codes):
+    """Process a list of code specs and return (result_dict, status_code)."""
+    if not isinstance(codes, list):
+        return {"ok": False, "error": "codes must be a list"}, 400
+    if not codes:
+        return {"ok": False, "error": "请提供复式码列表"}, 400
+    all_generated = set()
+    for item in codes:
+        digits = str(item.get("digits", ""))
+        if not digits:
+            continue
+        try:
+            combos = generate_code_combos(digits)
+        except ValueError as e:
+            return {"ok": False, "error": str(e)}, 400
+        all_generated.update(combos)
+    if not all_generated:
+        return {"ok": False, "error": "没有有效的复式码"}, 400
+    generated = sorted(all_generated)
+    return {
+        "ok": True,
+        "generated": generated,
+        "count": len(generated),
+        "codes": [{"digits": c.get("digits", ""), "len": c.get("len", len(c.get("digits", "")))} for c in codes],
+    }, 200
+
+
 def segment_index(digit, groups):
     for idx, group in enumerate(groups):
         if digit in group:
@@ -422,27 +449,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
     def _api_generate_codes(self):
         data = self._read_json_body()
         codes = data.get("codes", [])
-        if not codes:
-            self._send_json({"ok": False, "error": "请提供复式码列表"}, 400)
-            return
-        all_generated = set()
-        for item in codes:
-            digits = str(item.get("digits", ""))
-            if not digits:
-                continue
-            try:
-                combos = generate_code_combos(digits)
-            except ValueError as e:
-                self._send_json({"ok": False, "error": str(e)}, 400)
-                return
-            all_generated.update(combos)
-        generated = sorted(all_generated)
-        self._send_json({
-            "ok": True,
-            "generated": generated,
-            "count": len(generated),
-            "codes": [{"digits": c.get("digits", ""), "len": c.get("len", len(c.get("digits", "")))} for c in codes],
-        })
+        result, status = process_generate_codes(codes)
+        self._send_json(result, status)
 
     def _api_update_draws(self):
         try:

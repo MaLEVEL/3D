@@ -53,24 +53,38 @@ class GenerateCodeCombosTest(unittest.TestCase):
 
 class GenerateCodesEndpointLogicTest(unittest.TestCase):
     def test_generate_and_merge_5_code(self):
-        from app import generate_code_combos
-        result = generate_code_combos("01234")
+        result = app.generate_code_combos("01234")
         self.assertEqual(30, len(result))
 
     def test_generate_multiple_and_merge_dedup(self):
-        from app import generate_code_combos
         merged = set()
         for digits in ["01234", "56789"]:
-            merged.update(generate_code_combos(digits))
+            merged.update(app.generate_code_combos(digits))
         self.assertEqual(60, len(merged))
 
     def test_merged_result_is_sorted(self):
-        from app import generate_code_combos
         merged = set()
-        merged.update(generate_code_combos("01234"))
-        merged.update(generate_code_combos("56789"))
+        merged.update(app.generate_code_combos("01234"))
+        merged.update(app.generate_code_combos("56789"))
         sorted_result = sorted(merged)
         self.assertEqual(sorted_result, sorted(sorted_result))
+
+    def test_empty_codes_list_returns_error(self):
+        result, status = app.process_generate_codes([])
+        self.assertFalse(result.get("ok"))
+        self.assertIn("error", result)
+        self.assertEqual(400, status)
+
+    def test_all_empty_digits_returns_error(self):
+        result, status = app.process_generate_codes([{"digits": ""}, {"digits": ""}])
+        self.assertFalse(result.get("ok"))
+        self.assertIn("error", result)
+        self.assertEqual(400, status)
+
+    def test_codes_not_a_list_returns_error(self):
+        result, status = app.process_generate_codes("not-a-list")
+        self.assertFalse(result.get("ok"))
+        self.assertEqual(400, status)
 
 
 if __name__ == "__main__":
