@@ -70,7 +70,7 @@ class GenerateCodesEndpointLogicTest(unittest.TestCase):
         merged.update(generate_code_combos("01234"))
         merged.update(generate_code_combos("56789"))
         sorted_result = sorted(merged)
-        self.assertEqual(sorted_result, sorted_result)
+        self.assertEqual(sorted_result, sorted(sorted_result))
 
 
 if __name__ == "__main__":
