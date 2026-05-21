@@ -7,6 +7,7 @@ import json
 import os
 import re
 import socketserver
+import subprocess
 import threading
 import urllib.error
 import urllib.request
@@ -19,10 +20,31 @@ DATA_FILE = os.path.join(ROOT, "draw_records.json")
 HISTORY_FILE = os.path.join(ROOT, "history_records.json")
 MAX_HISTORY = 80
 OFFICIAL_PAGE_SIZE = 30
+OFFICIAL_FETCH_PAGES = 10
+DRAW_LIST_LIMIT = 50
+IP138_3D_URL = "https://caipiao.ip138.com/3d/"
 SEGMENT_PATTERNS = {
     "2-2-6": [2, 2, 6],
     "2-3-5": [2, 3, 5],
     "5-5": [5, 5],
+}
+ADVANCED_CONDITION_TYPES = {
+    "sum",
+    "sum_tail",
+    "odd_even",
+    "big_small",
+    "span",
+    "mod012",
+    "size_area",
+}
+ADVANCED_CONDITION_LABELS = {
+    "sum": "和值",
+    "sum_tail": "和尾",
+    "odd_even": "奇偶比",
+    "big_small": "大小比",
+    "span": "跨度",
+    "mod012": "012路比",
+    "size_area": "大中小",
 }
 
 try:
@@ -69,12 +91,44 @@ def save_history_records(items):
     return records
 
 
+def http_get_text(url, headers=None, timeout=20):
+    headers = headers or {}
+    req = urllib.request.Request(url)
+    for key, value in headers.items():
+        req.add_header(key, value)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            raw = resp.read()
+        charset = resp.headers.get_content_charset() or "utf-8"
+        return raw.decode(charset, "ignore")
+    except Exception as first_error:
+        if os.name != "nt":
+            raise
+        ps_script = (
+            "[Console]::OutputEncoding=[System.Text.Encoding]::UTF8; "
+            "$ProgressPreference='SilentlyContinue'; "
+            "$headers=@{'User-Agent'='Mozilla/5.0'; 'Referer'='https://caipiao.ip138.com/'}; "
+            f"$r=Invoke-WebRequest -Uri $args[0] -UseBasicParsing -TimeoutSec {int(timeout)} -Headers $headers; "
+            "[Console]::Write($r.Content)"
+        )
+        try:
+            completed = subprocess.run(
+                ["powershell", "-NoProfile", "-Command", ps_script, url],
+                capture_output=True,
+                timeout=timeout + 10,
+            )
+        except (OSError, subprocess.SubprocessError) as ps_error:
+            raise RuntimeError(f"request failed: {first_error}; powershell fallback failed: {ps_error}") from ps_error
+        if completed.returncode != 0 or not completed.stdout:
+            stderr = completed.stderr.decode("utf-8", "ignore").strip()
+            raise RuntimeError(f"request failed: {first_error}; powershell fallback failed: {stderr}")
+        return completed.stdout.decode("utf-8", "ignore")
+
+
 def fetch_latest_draw():
     url = "https://cn.apihz.cn/api/caipiao/fucai3d.php?id=88888888&key=88888888"
-    req = urllib.request.Request(url)
-    req.add_header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
+    text = http_get_text(url, {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}, timeout=30)
+    data = json.loads(text)
     if data.get("code") != 200:
         raise RuntimeError(data.get("msg") or "draw api returned an error")
     draw = str(data.get("number", "")).replace("|", "").replace(",", "").replace(" ", "").strip()
@@ -87,12 +141,12 @@ def fetch_latest_draw():
 
 def fetch_official_recent(page=1, size=OFFICIAL_PAGE_SIZE):
     url = f"https://www.cwl.gov.cn/ygkj/fc3d/kjgg/?json=1&page={page}&size={size}"
-    req = urllib.request.Request(url)
-    req.add_header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-    req.add_header("Referer", "https://www.cwl.gov.cn/ygkj/fc3d/kjgg/")
-    req.add_header("X-Requested-With", "XMLHttpRequest")
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
+    text = http_get_text(url, {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Referer": "https://www.cwl.gov.cn/ygkj/fc3d/kjgg/",
+        "X-Requested-With": "XMLHttpRequest",
+    }, timeout=30)
+    data = json.loads(text)
 
     items = data if isinstance(data, list) else data.get("data", [])
     if isinstance(items, dict):
@@ -113,6 +167,64 @@ def fetch_official_recent(page=1, size=OFFICIAL_PAGE_SIZE):
             records.append({"issue": issue, "draw": draw, "date": date})
     if not records:
         raise RuntimeError("official draw api returned no valid records")
+    return records
+
+
+def parse_ip138_draw_records(html):
+    records = []
+    table_match = re.search(r"<h3>\s*历史开奖\s*</h3>.*?<tbody>(.*?)</tbody>", html, re.S)
+    body = table_match.group(1) if table_match else html
+    row_pattern = re.compile(
+        r"<tr>\s*<td>\s*<span>(?P<date>\d{4}-\d{2}-\d{2})</span>\s*</td>\s*"
+        r"<td>\s*<span>(?P<issue>\d{5,})</span>\s*</td>\s*"
+        r"<td[^>]*class=\"award\"[^>]*>(?P<award>.*?)</td>",
+        re.S,
+    )
+    for match in row_pattern.finditer(body):
+        award_html = match.group("award")
+        digits = re.findall(r'data-value="(\d)"', award_html)
+        if len(digits) < 3:
+            digits = re.findall(r">\s*(\d)\s*</span>", award_html)
+        draw = "".join(digits[:3])
+        issue = match.group("issue")
+        if issue.isdigit() and len(draw) == 3:
+            records.append({"issue": issue, "draw": draw, "date": match.group("date")})
+    if not records:
+        raise RuntimeError("ip138 draw page returned no valid records")
+    return records
+
+
+def fetch_ip138_recent():
+    html = http_get_text(IP138_3D_URL, {"User-Agent": "Mozilla/5.0"}, timeout=20)
+    return parse_ip138_draw_records(html)
+
+
+def fetch_official_recent_pages(pages=OFFICIAL_FETCH_PAGES, size=OFFICIAL_PAGE_SIZE):
+    ip138_error_msg = ""
+    try:
+        return fetch_ip138_recent()
+    except Exception as ip138_error:
+        ip138_error_msg = str(ip138_error)
+
+    records = []
+    seen = set()
+    try:
+        for page in range(1, pages + 1):
+            page_records = fetch_official_recent(page=page, size=size)
+            new_count = 0
+            for record in page_records:
+                issue = str(record.get("issue", ""))
+                if issue in seen:
+                    continue
+                seen.add(issue)
+                records.append(record)
+                new_count += 1
+            if new_count == 0:
+                break
+    except Exception as official_error:
+        raise RuntimeError(f"all draw sources failed; ip138: {ip138_error_msg}; official: {official_error}") from official_error
+    if not records:
+        raise RuntimeError(f"all draw sources returned no valid records; ip138: {ip138_error_msg}")
     return records
 
 
@@ -313,6 +425,146 @@ def code_filter_desc(code_filters):
     )
 
 
+def _range_values(values, low, high, label):
+    result = []
+    for raw in values:
+        value = str(raw).strip()
+        if not value:
+            continue
+        if not value.isdigit():
+            raise ValueError(f"{label}只能选择数字")
+        number = int(value)
+        if number < low or number > high:
+            raise ValueError(f"{label}必须在{low}-{high}之间")
+        result.append(str(number))
+    return sorted(set(result), key=lambda x: int(x))
+
+
+def _ratio_values(values, parts, label):
+    result = []
+    for raw in values:
+        value = str(raw).strip()
+        nums = value.split(":")
+        if len(nums) != parts or any(not n.isdigit() for n in nums):
+            raise ValueError(f"{label}格式应为{':'.join(['0'] * parts)}")
+        counts = [int(n) for n in nums]
+        if sum(counts) != 3:
+            raise ValueError(f"{label}三位计数合计必须为3")
+        result.append(":".join(str(n) for n in counts))
+    return sorted(set(result))
+
+
+def normalize_advanced_condition_values(kind, values):
+    if not isinstance(values, list):
+        values = [values]
+    if kind == "sum":
+        return _range_values(values, 0, 27, "和值")
+    if kind in ("sum_tail", "span"):
+        label = "和尾" if kind == "sum_tail" else "跨度"
+        return _range_values(values, 0, 9, label)
+    if kind in ("odd_even", "big_small"):
+        label = "奇偶比" if kind == "odd_even" else "大小比"
+        return _ratio_values(values, 2, label)
+    if kind in ("mod012", "size_area"):
+        label = "012路比" if kind == "mod012" else "大中小"
+        return _ratio_values(values, 3, label)
+    raise ValueError(f"未知高级条件: {kind}")
+
+
+def normalize_advanced_filter(data):
+    raw = data.get("advanced_filter")
+    if not isinstance(raw, dict):
+        return {"enabled": False, "conditions": [], "miss_min": 0, "miss_max": 0}
+
+    conditions = []
+    raw_conditions = raw.get("conditions", raw.get("condition_filters", []))
+    if isinstance(raw_conditions, list):
+        for item in raw_conditions:
+            if not isinstance(item, dict) or not item.get("enabled", True):
+                continue
+            kind = str(item.get("type", "")).strip()
+            if kind not in ADVANCED_CONDITION_TYPES:
+                raise ValueError(f"未知高级条件: {kind}")
+            values = normalize_advanced_condition_values(kind, item.get("values", []))
+            if values:
+                conditions.append({"type": kind, "values": values})
+
+    miss_min = int(raw.get("miss_min", 0) or 0)
+    miss_max = int(raw.get("miss_max", 0) or 0)
+    if miss_min < 0 or miss_max < 0:
+        raise ValueError("容错个数不能小于0")
+    if miss_min > miss_max:
+        raise ValueError("容错下限不能大于上限")
+    if conditions and miss_max > len(conditions):
+        raise ValueError("容错上限不能超过高级条件数量")
+    if not conditions:
+        miss_min = 0
+        miss_max = 0
+
+    enabled = bool(conditions)
+    return {
+        "enabled": enabled,
+        "conditions": conditions,
+        "miss_min": miss_min,
+        "miss_max": miss_max,
+    }
+
+
+def advanced_condition_value(number, kind):
+    digits = [int(d) for d in number]
+    if kind == "sum":
+        return str(sum(digits))
+    if kind == "sum_tail":
+        return str(sum(digits) % 10)
+    if kind == "odd_even":
+        odd = sum(1 for d in digits if d % 2 == 1)
+        return f"{odd}:{3 - odd}"
+    if kind == "big_small":
+        big = sum(1 for d in digits if d >= 5)
+        return f"{big}:{3 - big}"
+    if kind == "span":
+        return str(max(digits) - min(digits))
+    if kind == "mod012":
+        counts = [0, 0, 0]
+        for d in digits:
+            counts[d % 3] += 1
+        return ":".join(str(n) for n in counts)
+    if kind == "size_area":
+        small = sum(1 for d in digits if d <= 2)
+        middle = sum(1 for d in digits if 3 <= d <= 6)
+        big = sum(1 for d in digits if d >= 7)
+        return f"{small}:{middle}:{big}"
+    return ""
+
+
+def passes_advanced_filter(number, advanced_filter):
+    if not advanced_filter.get("enabled"):
+        return True
+
+    conditions = advanced_filter.get("conditions", [])
+    if not conditions:
+        return True
+
+    miss_count = 0
+    for condition in conditions:
+        actual = advanced_condition_value(number, condition["type"])
+        if actual not in condition["values"]:
+            miss_count += 1
+    return advanced_filter["miss_min"] <= miss_count <= advanced_filter["miss_max"]
+
+
+def advanced_filter_desc(advanced_filter):
+    if not advanced_filter.get("enabled"):
+        return ""
+    parts = []
+    for condition in advanced_filter.get("conditions", []):
+        label = ADVANCED_CONDITION_LABELS.get(condition["type"], condition["type"])
+        parts.append(f"{label}={','.join(condition['values'])}")
+    if advanced_filter.get("conditions"):
+        parts.append(f"容错{advanced_filter['miss_min']}-{advanced_filter['miss_max']}")
+    return "; ".join(parts)
+
+
 def segment_desc(segment_filters):
     return "; ".join(
         f"{item['mode']} segment [" + " | ".join(item["groups_data"]) + "]"
@@ -394,6 +646,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         kill_digits = data.get("kill_digits", "")
         segment_filters = normalize_segment_filters(data)
         code_filters = normalize_code_filters(data)
+        advanced_filter = normalize_advanced_filter(data)
 
         matches = re.findall(r"\b\d{3}\b", text)
         seen = set()
@@ -407,12 +660,21 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         target_advance = set(advance_digits) if advance_digits else set()
         target_kill = set(kill_digits) if kill_digits else set()
 
-        if not target_include and not target_advance and not target_kill and not segment_filters and not code_filters:
+        if (
+            not target_include
+            and not target_advance
+            and not target_kill
+            and not segment_filters
+            and not code_filters
+            and not advanced_filter["enabled"]
+        ):
             self._send_json({"error": "please enter at least one filter condition"}, 400)
             return
 
         filtered = []
         for n in unique:
+            if advanced_filter["enabled"] and not passes_advanced_filter(n, advanced_filter):
+                continue
             if target_kill and any(d in n for d in target_kill):
                 continue
             if target_include and not any(d in n for d in target_include):
@@ -444,6 +706,12 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                 {"code_len": cf["code_len"], "condition": cf["condition"], "digits": cf["digits"]}
                 for cf in code_filters
             ],
+            "advanced_desc": advanced_filter_desc(advanced_filter),
+            "advanced_filter": {
+                "conditions": advanced_filter["conditions"],
+                "miss_min": advanced_filter["miss_min"],
+                "miss_max": advanced_filter["miss_max"],
+            },
         })
 
     def _api_generate_codes(self):
@@ -454,25 +722,34 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 
     def _api_update_draws(self):
         try:
-            try:
-                new_records = fetch_official_recent()
-            except Exception:
-                new_records = [fetch_latest_draw()]
+            new_records = fetch_official_recent_pages()
             records, added = merge_draw_records(new_records)
             records.sort(key=lambda r: str(r.get("issue", "")), reverse=True)
             self._send_json({
                 "ok": True,
                 "added": added,
+                "fetched": len(new_records),
                 "latest": records[0] if records else None,
                 "nextIssue": next_issue(records),
                 "count": len(records),
-                "records": records[:50],
+                "records": records[:DRAW_LIST_LIMIT],
             })
-        except urllib.error.URLError as e:
-            self._send_json({"ok": False, "error": f"draw api request failed: {e}"}, 500)
+        except (RuntimeError, urllib.error.URLError, TimeoutError, OSError) as e:
+            records = recent_draw_records(DRAW_LIST_LIMIT)
+            self._send_json({
+                "ok": True,
+                "updated": False,
+                "error": f"批量开奖更新失败，已保留本地已有开奖，未写入最新一期以避免跳期：{e}",
+                "added": 0,
+                "fetched": 0,
+                "latest": records[0] if records else None,
+                "nextIssue": next_issue(load_draw_records()),
+                "count": len(load_draw_records()),
+                "records": records,
+            })
 
     def _api_draws(self):
-        records = recent_draw_records(10)
+        records = recent_draw_records(DRAW_LIST_LIMIT)
         self._send_json({
             "ok": True,
             "records": records,

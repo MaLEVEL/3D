@@ -7,31 +7,33 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #f0f3f8;
+    --bg: #eef2f7;
     --panel: #ffffff;
     --panel-hover: #fafbfc;
-    --border: #e2e6ed;
+    --border: #dbe2ec;
     --border-light: #eef1f5;
-    --text: #1a1d26;
-    --text-dim: #5a6072;
-    --text-muted: #949bac;
-    --blue: #1e6df2;
-    --blue-bg: #eef4ff;
-    --blue-border: #c5d8fc;
-    --green: #1a9c5e;
-    --green-bg: #edfaf3;
-    --green-border: #b8e6cc;
-    --amber: #e68a00;
-    --red: #e0313b;
-    --red-bg: #fef0f1;
-    --red-border: #fcccd0;
-    --purple: #6c5ce7;
+    --text: #131722;
+    --text-dim: #4d5668;
+    --text-muted: #8a94a7;
+    --blue: #205fd4;
+    --blue-bg: #edf4ff;
+    --blue-border: #b9cff7;
+    --green: #16825a;
+    --green-bg: #eefaf4;
+    --green-border: #a8dec4;
+    --amber: #d9780b;
+    --red: #d92f3c;
+    --red-bg: #fff1f2;
+    --red-border: #f8c7ce;
+    --purple: #7048d8;
+    --ink: #111827;
+    --rail: #222b3a;
     --radius-sm: 8px;
     --radius: 12px;
     --radius-lg: 16px;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,.04), 0 1px 2px rgba(0,0,0,.06);
-    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
-    --shadow-lg: 0 4px 24px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
+    --shadow-sm: 0 1px 2px rgba(15,23,42,.06), 0 1px 1px rgba(15,23,42,.04);
+    --shadow: 0 10px 30px rgba(15,23,42,.07), 0 1px 2px rgba(15,23,42,.05);
+    --shadow-lg: 0 18px 50px rgba(15,23,42,.12), 0 2px 4px rgba(15,23,42,.05);
     --mono: "Cascadia Code", "Consolas", "JetBrains Mono", monospace;
     --sans: "Microsoft YaHei UI", "PingFang SC", "Segoe UI", sans-serif;
   }
@@ -39,27 +41,42 @@
   body {
     min-height: 100vh; padding: 28px 18px 40px; color: var(--text);
     font-family: var(--sans); font-size: 14px; line-height: 1.6;
-    background: var(--bg);
+    background:
+      linear-gradient(180deg, rgba(32,95,212,.08), rgba(255,255,255,0) 300px),
+      repeating-linear-gradient(90deg, rgba(19,23,34,.035) 0 1px, transparent 1px 72px),
+      var(--bg);
   }
   *:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 
   .app { max-width: 1160px; margin: 0 auto; }
-  .hero { margin-bottom: 24px; display: flex; align-items: center; gap: 14px; }
+  .hero {
+    position: relative; margin-bottom: 24px; display: flex; align-items: center; gap: 16px;
+    padding: 18px 20px; border-radius: 18px; overflow: hidden;
+    background: linear-gradient(135deg, #131722, #273244 70%, #3a2f2f);
+    box-shadow: var(--shadow-lg); color: #fff;
+  }
+  .hero::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(135deg, rgba(255,255,255,.08) 0 1px, transparent 1px 18px);
+    opacity: .28;
+  }
   .hero-logo {
     width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
     display: grid; place-items: center; color: #fff;
     font: 800 20px/1 var(--mono);
-    background: var(--blue);
-    box-shadow: 0 4px 12px rgba(30,109,242,.2);
+    background: var(--red);
+    box-shadow: 0 10px 24px rgba(217,47,60,.32);
+    position: relative; z-index: 1;
   }
+  .hero > div:last-child { position: relative; z-index: 1; }
   .hero h1 { font-size: clamp(22px, 4vw, 30px); letter-spacing: 0; font-weight: 800; }
-  .hero p { color: var(--text-dim); font-size: 13px; margin-top: 2px; }
+  .hero p { color: rgba(255,255,255,.72); font-size: 13px; margin-top: 2px; }
 
   .shell { margin: 0 auto; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 20px; align-items: start; }
   .sidebar { position: sticky; top: 20px; display: grid; gap: 16px; }
 
   .panel {
-    background: var(--panel); border: 1px solid var(--border);
+    background: rgba(255,255,255,.96); border: 1px solid rgba(219,226,236,.9);
     border-radius: var(--radius-lg); box-shadow: var(--shadow);
     padding: 20px;
   }
@@ -101,7 +118,7 @@
 
   /* 数据输入 / 筛选条件 分区卡片 */
   .section-card {
-    background: var(--panel); border-radius: var(--radius-lg);
+    background: rgba(255,255,255,.98); border-radius: var(--radius-lg);
     box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px;
   }
   .input-card { border: 1px solid var(--blue-border); }
@@ -111,8 +128,8 @@
     display: flex; align-items: center; gap: 10px; padding: 13px 20px;
     border-bottom: 1px solid var(--border-light);
   }
-  .input-card .card-head { background: var(--blue-bg); }
-  .filter-card .card-head { background: var(--green-bg); }
+  .input-card .card-head { background: linear-gradient(90deg, var(--blue-bg), #fff); }
+  .filter-card .card-head { background: linear-gradient(90deg, var(--green-bg), #fff); }
   .card-head-num {
     width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center;
     font: 800 12px var(--mono); flex-shrink: 0; color: #fff;
@@ -235,6 +252,58 @@
   .code-empty { color: var(--text-muted); font-size: 12px; padding: 5px 0; }
   .code-hint { display: block; color: var(--text-muted); font-size: 10px; margin-top: 4px; }
 
+  /* 高级缩水 */
+  .advanced-panel {
+    background: #fffafa; border: 1px solid #ffd6d8;
+    border-radius: var(--radius); padding: 14px; display: grid; gap: 14px;
+  }
+  .advanced-top {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .logic-block {
+    border: 1px solid var(--border-light); border-radius: var(--radius);
+    padding: 14px; background: #fff;
+  }
+  .logic-title {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    margin-bottom: 12px; color: var(--text); font-weight: 800; font-size: 13px;
+  }
+  .logic-title span { color: var(--text-muted); font-weight: 600; font-size: 11px; }
+  .advanced-grid { display: grid; gap: 12px; }
+  .advanced-condition-card {
+    background: #fff; border: 1px solid var(--border-light);
+    border-radius: var(--radius); padding: 12px;
+  }
+  .value-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .condition-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .condition-chip {
+    background: #fff1ec; color: #96323a; border: 1px solid #ffd7ca;
+    border-radius: 999px; min-height: 36px; padding: 0 16px;
+  }
+  .condition-chip.active { background: var(--red); border-color: var(--red); color: #fff; }
+  .advanced-condition-card { display: grid; gap: 10px; }
+  .advanced-condition-title { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+  .advanced-condition-title strong { font-size: 13px; }
+  .value-btn {
+    min-height: 32px; border-radius: 999px; padding: 0 12px;
+    background: #fff; color: var(--text-dim); border: 1px solid var(--border);
+    font-family: var(--mono); font-size: 12px;
+  }
+  .value-btn.active { background: #1a1d26; border-color: #1a1d26; color: #fff; }
+  .tolerance-row {
+    display: grid; grid-template-columns: minmax(90px, 1fr) auto minmax(90px, 1fr);
+    gap: 10px; align-items: center;
+  }
+  .tolerance-row input { text-align: center; }
+  .advanced-empty {
+    color: var(--text-muted); border: 1px dashed var(--border);
+    border-radius: var(--radius); padding: 12px; font-size: 12px; background: #fff;
+  }
+  .filter-divider {
+    height: 1px; background: var(--border-light); margin: 18px 0;
+  }
+
   /* 按钮 - 纯色，无渐变 */
   button {
     border: 0; border-radius: var(--radius-sm); min-height: 40px; padding: 0 18px;
@@ -244,6 +313,7 @@
   }
   .btn-primary { background: var(--blue); color: #fff; }
   .btn-primary:hover { background: #1a5cd4; }
+  button:disabled { opacity: .52; cursor: wait; transform: none !important; }
   .btn-primary:disabled { opacity: .5; cursor: wait; }
   .btn-secondary { background: #fff; color: var(--text-dim); border: 1.5px solid var(--border); }
   .btn-secondary:hover { background: #f6f8fa; border-color: #c8cdd6; }
@@ -320,13 +390,22 @@
 
   @media (max-width: 1080px) {
     .shell { grid-template-columns: 1fr; }
-    .sidebar { position: static; order: -1; }
+    .sidebar { position: static; }
   }
   @media (max-width: 760px) {
-    body { padding: 16px 10px 30px; }
+    body { padding: 16px 10px 92px; }
     .grid-2, .stats { grid-template-columns: 1fr; }
     .history-actions { flex-direction: column; align-items: stretch; }
     .inline-issue { width: 100%; }
+    .sticky-action { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; padding: 10px; background: rgba(255,255,255,.94); border-top: 1px solid var(--border); box-shadow: 0 -8px 24px rgba(26,29,38,.08); }
+    .sticky-action .btn-primary { border-radius: 999px; min-height: 50px; }
+    .qima-selector, .segment-selector, .code-selector { flex-wrap: wrap; }
+    .qima-selector input, .segment-select { flex-basis: 100%; }
+    .code-select { width: calc(50% - 4px); flex: 1 1 calc(50% - 4px); }
+    .seg-digit, .code-digit { width: 36px; height: 36px; }
+    .tolerance-row { grid-template-columns: 1fr; }
+    .tolerance-row span { display: none; }
+    .history-preview { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   }
 </style>
 </head>
@@ -358,7 +437,7 @@
       </div>
 
       <div class="panel">
-        <div class="panel-header"><h2>近10期开奖</h2></div>
+        <div class="panel-header"><h2>近50期开奖</h2></div>
         <div class="draw-list" id="drawList"></div>
         <div class="empty-side hidden" id="drawEmpty">本地还没有开奖记录。<br>点"更新开奖"获取。</div>
       </div>
@@ -403,26 +482,32 @@
         <div class="card-head">
           <span class="card-head-num">2</span>
           <span class="card-head-title">筛选条件</span>
-          <span class="card-head-sub">— 胆码 · 杀码 · 两码差 · 段组 · N码</span>
+          <span class="card-head-sub">— 胆码 · 杀码 · 两码差 · 段组 · N码 · 高级缩水</span>
         </div>
         <div class="card-body">
-          <div class="grid-2">
-            <div class="form-group">
-              <label>胆码筛选</label>
-              <input id="filterDigits" placeholder="例：357" maxlength="10">
-              <span class="helper">号码中包含任意一个所填数字即保留。</span>
+          <div class="logic-block">
+            <div class="logic-title">号码条件 <span>输入类条件集中在这里，只作为号码保留/排除规则</span></div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>胆码筛选</label>
+                <input id="filterDigits" placeholder="例：357" maxlength="10">
+                <span class="helper">号码中包含任意一个所填数字即保留。</span>
+              </div>
+              <div class="form-group">
+                <label style="color:var(--red);">杀码筛选</label>
+                <input id="killDigits" placeholder="例：48" maxlength="10" style="border-color:var(--red-border);">
+                <span class="helper">号码中包含任意一个杀码即排除（优先级最高）。</span>
+              </div>
             </div>
-            <div class="form-group">
-              <label style="color:var(--red);">杀码筛选</label>
-              <input id="killDigits" placeholder="例：48" maxlength="10" style="border-color:var(--red-border);">
-              <span class="helper">号码中包含任意一个杀码即排除（优先级最高）。</span>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>两码差数字</label>
+              <input id="advanceDigits" placeholder="例：523" maxlength="10">
+              <span class="helper">百十、百个、十个任意一个差值命中即保留。</span>
             </div>
           </div>
-          <div class="form-group">
-            <label>两码差数字</label>
-            <input id="advanceDigits" placeholder="例：523" maxlength="10">
-            <span class="helper">百十、百个、十个任意一个差值命中即保留。</span>
-          </div>
+
+          <div class="filter-divider"></div>
+          <div class="logic-title">过滤规则 <span>以下条件可组合，容错只作用于高级过滤规则</span></div>
           <div class="form-group">
             <label>段组条件</label>
             <div class="segment-selector">
@@ -455,11 +540,28 @@
             <div class="code-stack" id="codeCards"></div>
             <span class="helper">选择码数N和条件后点击+添加。可添加多个，筛选结果必须同时通过所有N码条件。</span>
           </div>
+          <div class="form-group">
+            <label>3D缩水高级过滤 <span style="font-weight:400;color:var(--text-muted);font-size:11px;">（可选）</span></label>
+            <div class="advanced-panel">
+              <div class="advanced-top">
+                <strong>条件按钮</strong>
+                <button class="btn-secondary btn-sm" id="advancedPresetBtn" type="button">使用常用条件</button>
+              </div>
+              <div class="condition-chip-row" id="advancedConditionChips"></div>
+              <div class="advanced-grid" id="advancedConditionCards"></div>
+              <div class="tolerance-row">
+                <input id="advancedMissMin" type="number" min="0" max="7" value="0" aria-label="容错下限">
+                <strong>≤ 容错个数 ≤</strong>
+                <input id="advancedMissMax" type="number" min="0" max="7" value="0" aria-label="容错上限">
+              </div>
+            </div>
+            <span class="helper">和值、和尾、奇偶比、大小比、跨度、012路比、大中小属于过滤规则；容错不影响胆码、杀码、两码差、段组或N码。</span>
+          </div>
         </div>
       </div>
 
       <!-- 操作栏 -->
-      <div class="toolbar" style="margin-bottom:20px;">
+      <div class="toolbar sticky-action" style="margin-bottom:20px;">
         <button class="btn-primary" id="filterBtn" style="flex:1;min-height:46px;font-size:14px;">开始筛选</button>
         <button class="btn-secondary" id="demoBtn">示例数据</button>
         <button class="btn-ghost" id="clearBtn">清空</button>
@@ -500,7 +602,7 @@
     </main>
   </div>
 </div>
-<div class="toast-box" id="toastContainer"></div>
+<div class="toast-box" id="toastContainer" aria-live="polite"></div>
 
 <script>
 (function(){
@@ -510,12 +612,23 @@
   var SEGMENT_SIZES = {"2-2-6":[2,2,6], "2-3-5":[2,3,5], "5-5":[5,5]};
   var SEGMENT_LABELS = {"2-2-6":"2-2-6 段组", "2-3-5":"2-3-5 段组", "5-5":"5-5 段组"};
   var SEGMENT_DEMOS = {"2-2-6":["01","23","456789"], "2-3-5":["01","234","56789"], "5-5":["01234","56789"]};
+  var ADVANCED_META = {
+    sum: {label:"和值", values:Array.from({length:28}, function(_, i) { return String(i); })},
+    sum_tail: {label:"和尾", values:Array.from({length:10}, function(_, i) { return String(i); })},
+    odd_even: {label:"奇偶比", values:["0:3","1:2","2:1","3:0"]},
+    big_small: {label:"大小比", values:["0:3","1:2","2:1","3:0"]},
+    span: {label:"跨度", values:Array.from({length:10}, function(_, i) { return String(i); })},
+    mod012: {label:"012路比", values:["3:0:0","2:1:0","2:0:1","1:2:0","1:1:1","1:0:2","0:3:0","0:2:1","0:1:2","0:0:3"]},
+    size_area: {label:"大中小", values:["3:0:0","2:1:0","2:0:1","1:2:0","1:1:1","1:0:2","0:3:0","0:2:1","0:1:2","0:0:3"]}
+  };
+  var ADVANCED_ORDER = ["sum","sum_tail","odd_even","big_small","span","mod012","size_area"];
   var currentResult = [], currentDigits = "", currentAdvanceDigits = "", currentKillDigits = "", currentSegment = "";
-  var currentSegmentFilters = [], currentCodeFilters = [], currentTotal = 0, currentPercent = 0, lastResultObj = null;
+  var currentSegmentFilters = [], currentCodeFilters = [], currentAdvancedFilter = null, currentTotal = 0, currentPercent = 0, lastResultObj = null;
   var drawRecords = [], latestIssue = "", latestDraw = "", nextIssue = "";
   var historyItems = [];
   var segmentCards = [], segmentCardIdCounter = 0;
   var codeCards = [], codeCardIdCounter = 0;
+  var advancedState = {conditions:{}};
   var qimaCodes = [];
   var currentQimaLen = 5;
 
@@ -536,6 +649,97 @@
   }
   function cleanDigits(value) {
     return String(value || "").replace(/\D/g, "").split("").filter(function(v, i, a) { return a.indexOf(v) === i; }).join("");
+  }
+  function escapeHtml(value) {
+    return String(value || "").replace(/[&<>"']/g, function(ch) {
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch];
+    });
+  }
+  function toggleConditionType(type) {
+    if (advancedState.conditions[type]) delete advancedState.conditions[type];
+    else advancedState.conditions[type] = [];
+    renderAdvancedFilter();
+  }
+  function toggleConditionValue(type, value) {
+    var values = advancedState.conditions[type] || [];
+    value = String(value);
+    if (values.indexOf(value) >= 0) values = values.filter(function(v) { return v !== value; });
+    else values = values.concat(value);
+    advancedState.conditions[type] = values;
+    renderAdvancedFilter();
+  }
+  function renderAdvancedFilter() {
+    $("advancedConditionChips").innerHTML = ADVANCED_ORDER.map(function(type) {
+      var active = !!advancedState.conditions[type];
+      return '<button type="button" class="condition-chip' + (active ? " active" : "") + '" data-type="' + type + '">' + ADVANCED_META[type].label + '</button>';
+    }).join("");
+    var activeTypes = ADVANCED_ORDER.filter(function(type) { return advancedState.conditions[type]; });
+    $("advancedConditionCards").innerHTML = activeTypes.length ? activeTypes.map(function(type) {
+      var meta = ADVANCED_META[type], selected = advancedState.conditions[type] || [];
+      var values = meta.values.map(function(value) {
+        var active = selected.indexOf(value) >= 0;
+        return '<button type="button" class="value-btn' + (active ? " active" : "") + '" data-type="' + type + '" data-value="' + escapeHtml(value) + '">' + escapeHtml(value) + '</button>';
+      }).join("");
+      return '<div class="advanced-condition-card"><div class="advanced-condition-title"><strong>' + meta.label + '</strong><span class="helper" style="margin:0;">已选 ' + selected.length + ' 项</span></div><div class="value-grid">' + values + '</div></div>';
+    }).join("") : '<div class="advanced-empty">暂未启用高级过滤规则。</div>';
+    document.querySelectorAll(".condition-chip").forEach(function(btn) {
+      btn.addEventListener("click", function() { toggleConditionType(btn.dataset.type); });
+    });
+    document.querySelectorAll(".value-btn").forEach(function(btn) {
+      btn.addEventListener("click", function() { toggleConditionValue(btn.dataset.type, btn.dataset.value); });
+    });
+  }
+  function advancedConditionList() {
+    return ADVANCED_ORDER.filter(function(type) { return advancedState.conditions[type]; }).map(function(type) {
+      return {type:type, values:(advancedState.conditions[type] || []).slice(), enabled:true};
+    }).filter(function(item) { return item.values.length; });
+  }
+  function hasAdvancedState() {
+    return Object.keys(advancedState.conditions).length > 0;
+  }
+  function validateAdvancedFilter() {
+    var enabledTypes = ADVANCED_ORDER.filter(function(type) { return advancedState.conditions[type]; });
+    for (var i = 0; i < enabledTypes.length; i++) {
+      var type = enabledTypes[i], values = advancedState.conditions[type] || [];
+      if (!values.length) return {ok:false, msg:"高级条件「" + ADVANCED_META[type].label + "」至少选择一项"};
+    }
+    var conditions = advancedConditionList();
+    var missMin = Number($("advancedMissMin").value || 0), missMax = Number($("advancedMissMax").value || 0);
+    if (missMin < 0 || missMax < 0 || missMin > missMax) return {ok:false, msg:"容错个数范围不正确"};
+    if (conditions.length && missMax > conditions.length) return {ok:false, msg:"容错上限不能超过已启用高级条件数量"};
+    if (!conditions.length) { missMin = 0; missMax = 0; $("advancedMissMin").value = "0"; $("advancedMissMax").value = "0"; }
+    return {ok:true, filter:{conditions:conditions, miss_min:missMin, miss_max:missMax}};
+  }
+  function restoreAdvancedFilter(saved) {
+    saved = saved || {};
+    advancedState = {conditions: {}};
+    (saved.conditions || []).forEach(function(item) {
+      if (item && ADVANCED_META[item.type]) advancedState.conditions[item.type] = (item.values || []).map(String);
+    });
+    $("advancedMissMin").value = saved.miss_min || 0;
+    $("advancedMissMax").value = saved.miss_max || 0;
+    renderAdvancedFilter();
+  }
+  function advancedDesc(filter) {
+    if (!filter) return "";
+    var parts = [];
+    (filter.conditions || []).forEach(function(item) {
+      if (ADVANCED_META[item.type]) parts.push(ADVANCED_META[item.type].label + "=" + item.values.join(","));
+    });
+    if (filter.conditions && filter.conditions.length) parts.push("容错" + filter.miss_min + "-" + filter.miss_max);
+    return parts.join("; ");
+  }
+  function applyAdvancedPreset() {
+    advancedState.conditions = {
+      sum: ["6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21"],
+      span: ["2","3","4","5","6","7","8"],
+      odd_even: ["1:2","2:1"],
+      big_small: ["1:2","2:1"]
+    };
+    $("advancedMissMin").value = "0";
+    $("advancedMissMax").value = "1";
+    renderAdvancedFilter();
+    toast("已套用常用高级条件");
   }
 
   async function apiGet(path) {
@@ -566,8 +770,8 @@
       return;
     }
     $("drawEmpty").classList.add("hidden");
-    $("drawStatus").textContent = "显示最近 " + Math.min(10, drawRecords.length) + " 期，下一期号 " + (nextIssue || "--") + "。";
-    $("drawList").innerHTML = drawRecords.slice(0, 10).map(function(item) {
+    $("drawStatus").textContent = "显示最近 " + Math.min(50, drawRecords.length) + " 期，下一期号 " + (nextIssue || "--") + "。";
+    $("drawList").innerHTML = drawRecords.slice(0, 50).map(function(item) {
       var balls = String(item.draw || "").padStart(3, "0").split("").map(function(d) { return '<span class="ball">' + d + '</span>'; }).join("");
       return '<div class="draw-item"><div class="draw-top"><span class="draw-issue">' + (item.issue || "--") + '</span><span class="draw-date">' + (item.date || "") + '</span></div><div class="draw-balls">' + balls + '</div></div>';
     }).join("");
@@ -580,6 +784,7 @@
 
   async function refreshDraws() {
     $("refreshDrawBtn").disabled = true; $("updateDrawBtn").disabled = true;
+    var oldText = $("refreshDrawBtn").textContent; $("refreshDrawBtn").textContent = "更新中...";
     try {
       var updated = await api("/api/update_draws", {});
       drawRecords = (updated.records || []).slice(0, 50);
@@ -587,9 +792,10 @@
       latestDraw = updated.latest ? updated.latest.draw : "";
       nextIssue = updated.nextIssue || "";
       renderDrawSidebar();
-      toast("已更新开奖：" + (latestIssue || "--") + "期 " + (latestDraw || "---"));
+      if (updated.updated === false) toast(updated.error || "批量开奖更新失败，已保留本地已有开奖");
+      else toast("已补全开奖：" + (updated.added || 0) + "期，已拉取" + (updated.fetched || 0) + "期");
     } catch(e) { toast(e.message); }
-    finally { $("refreshDrawBtn").disabled = false; $("updateDrawBtn").disabled = false; }
+    finally { $("refreshDrawBtn").disabled = false; $("updateDrawBtn").disabled = false; $("refreshDrawBtn").textContent = oldText; }
   }
 
   function addSegmentCard(mode) {
@@ -749,31 +955,36 @@
     return filtered.reduce(function(lines, n, i) { if (i%10===0) lines.push([]); lines[lines.length-1].push(n); return lines; }, []).map(function(line) { return line.join("  "); }).join("\n");
   }
   function renderResult(filtered) { $("resultBadge").textContent = filtered.length + "组"; $("resultBox").textContent = resultText(filtered); }
-  function displayFilterResults(data, digits, advanceDigits, killDigits, segment, filters, codeFilters) {
+  function displayFilterResults(data, digits, advanceDigits, killDigits, segment, filters, codeFilters, advancedFilter) {
     currentResult = data.filtered || []; currentDigits = digits; currentAdvanceDigits = advanceDigits;
     currentKillDigits = killDigits || ""; currentSegment = segment || "";
     currentSegmentFilters = filters || data.segment_filters || [];
     currentCodeFilters = codeFilters || data.code_filters || [];
+    currentAdvancedFilter = advancedFilter || data.advanced_filter || null;
     currentTotal = data.total || 0; currentPercent = data.percent || 0;
     $("totalCount").textContent = currentTotal; $("filteredCount").textContent = currentResult.length;
     $("percent").textContent = currentPercent + "%";
     renderResult(currentResult);
     $("statsArea").style.display = "block"; $("resultArea").style.display = "block"; $("emptyState").style.display = "none";
-    lastResultObj = { id: Date.now(), time: nowText(), targetIssue: nextIssue || autoIssueName(), digits: digits, advance_digits: advanceDigits, kill_digits: currentKillDigits, segment: segment, segment_filters: currentSegmentFilters, code_filters: currentCodeFilters, total: currentTotal, count: currentResult.length, percent: currentPercent, filtered: currentResult, actualDraw: null, hit: null };
+    lastResultObj = { id: Date.now(), time: nowText(), targetIssue: nextIssue || autoIssueName(), digits: digits, advance_digits: advanceDigits, kill_digits: currentKillDigits, segment: segment, segment_filters: currentSegmentFilters, code_filters: currentCodeFilters, advanced_filter: currentAdvancedFilter, total: currentTotal, count: currentResult.length, percent: currentPercent, filtered: currentResult, actualDraw: null, hit: null };
+    $("resultArea").scrollIntoView({behavior:"smooth", block:"start"});
   }
   async function startFilter() {
     var text = $("inputArea").value.trim(), digits = cleanDigits($("filterDigits").value), advanceDigits = cleanDigits($("advanceDigits").value), killDigits = cleanDigits($("killDigits").value);
     $("filterDigits").value = digits; $("advanceDigits").value = advanceDigits; $("killDigits").value = killDigits;
     var seg = validateSegmentFilters();
     var code = validateCodeFilters();
+    var advanced = validateAdvancedFilter();
     if (!text) return toast("请填写号码池");
     if (!seg.ok) return toast(seg.msg);
     if (!code.ok) return toast(code.msg);
-    if (!digits && !advanceDigits && !killDigits && !seg.filters.length && !code.filters.length) return toast("请至少输入一个筛选条件");
+    if (!advanced.ok) return toast(advanced.msg);
+    if (!digits && !advanceDigits && !killDigits && !seg.filters.length && !code.filters.length && !hasAdvancedState()) return toast("请至少输入一个筛选条件");
     $("filterBtn").disabled = true;
-    try { var data = await api("/api/filter", {text:text, digits:digits, advance_digits:advanceDigits, kill_digits:killDigits, segment_filters:seg.filters, code_filters:code.filters}); displayFilterResults(data, digits, advanceDigits, killDigits, data.segment || "", seg.filters, data.code_filters || []); toast("筛选完成：" + data.count + "组"); }
+    var oldText = $("filterBtn").textContent; $("filterBtn").textContent = "筛选中...";
+    try { var data = await api("/api/filter", {text:text, digits:digits, advance_digits:advanceDigits, kill_digits:killDigits, segment_filters:seg.filters, code_filters:code.filters, advanced_filter:advanced.filter}); displayFilterResults(data, digits, advanceDigits, killDigits, data.segment || "", seg.filters, data.code_filters || [], data.advanced_filter || advanced.filter); toast("筛选完成：" + data.count + "组"); }
     catch(e) { toast(e.message); }
-    finally { $("filterBtn").disabled = false; }
+    finally { $("filterBtn").disabled = false; $("filterBtn").textContent = oldText; }
   }
 
   function getLocalHistory() {
@@ -805,7 +1016,9 @@
       var preview = (item.filtered || []).slice(0, 10).join(" ") + ((item.filtered||[]).length > 10 ? " ...等" + item.count + "组" : "");
       var segPills = (item.segment_filters || []).map(function(f) { return '<span class="pill green">' + f.mode + ' 段组</span>'; }).join("");
       var codePills = (item.code_filters || []).map(function(f) { return '<span class="pill" style="background:#fdf6ff;color:#8b2fc9;">' + f.code_len + '码=' + f.condition + '</span>'; }).join("");
-      return '<div class="history-item" data-id="' + item.id + '"><div class="history-meta"><span class="pill">' + (item.time||"") + '</span>' + statusPill(item) + (item.digits ? '<span class="pill">胆码 ' + item.digits + '</span>' : "") + (item.kill_digits ? '<span class="pill red">杀码 ' + item.kill_digits + '</span>' : "") + (item.advance_digits ? '<span class="pill">两码差 ' + item.advance_digits + '</span>' : "") + segPills + codePills + '</div><div class="history-preview">期号 ' + (item.targetIssue||"--") + ' | 总数 ' + item.total + ' | 命中 ' + item.count + ' | 占比 ' + item.percent + '% | ' + preview + '</div><div class="history-actions"><input class="inline-issue" data-role="issue" value="' + (item.targetIssue||"") + '" placeholder="期号"><button class="btn-secondary btn-sm" data-role="save-issue">改期号</button><button class="btn-secondary btn-sm" data-role="load">加载条件</button><button class="btn-red btn-sm" data-role="delete">删除</button></div></div>';
+      var advText = advancedDesc(item.advanced_filter);
+      var advPill = advText ? '<span class="pill red">高级缩水</span>' : "";
+      return '<div class="history-item" data-id="' + item.id + '"><div class="history-meta"><span class="pill">' + (item.time||"") + '</span>' + statusPill(item) + (item.digits ? '<span class="pill">胆码 ' + item.digits + '</span>' : "") + (item.kill_digits ? '<span class="pill red">杀码 ' + item.kill_digits + '</span>' : "") + (item.advance_digits ? '<span class="pill">两码差 ' + item.advance_digits + '</span>' : "") + segPills + codePills + advPill + '</div><div class="history-preview">期号 ' + (item.targetIssue||"--") + ' | 总数 ' + item.total + ' | 命中 ' + item.count + ' | 占比 ' + item.percent + '% | ' + (advText ? advText + ' | ' : '') + preview + '</div><div class="history-actions"><input class="inline-issue" data-role="issue" value="' + (item.targetIssue||"") + '" placeholder="期号"><button class="btn-secondary btn-sm" data-role="save-issue">改期号</button><button class="btn-secondary btn-sm" data-role="load">加载条件</button><button class="btn-red btn-sm" data-role="delete">删除</button></div></div>';
     }).join("");
     document.querySelectorAll(".history-item").forEach(function(el) {
       var id = Number(el.dataset.id);
@@ -826,7 +1039,8 @@
     $("filterDigits").value = item.digits || ""; $("advanceDigits").value = item.advance_digits || ""; $("killDigits").value = item.kill_digits || "";
     renderSegmentGroups(item.segment_filters || itemToSegmentFilters(item));
     renderCodeCardsFromFilters(item.code_filters || []);
-    displayFilterResults({total:item.total, count:item.count, percent:item.percent, filtered:item.filtered||[]}, item.digits||"", item.advance_digits||"", item.kill_digits||"", item.segment||"", item.segment_filters||[], item.code_filters||[]);
+    restoreAdvancedFilter(item.advanced_filter || {});
+    displayFilterResults({total:item.total, count:item.count, percent:item.percent, filtered:item.filtered||[]}, item.digits||"", item.advance_digits||"", item.kill_digits||"", item.segment||"", item.segment_filters||[], item.code_filters||[], item.advanced_filter || null);
     toast("已加载历史：" + item.count + "组");
   }
   function renderCodeCardsFromFilters(savedFilters) {
@@ -851,21 +1065,24 @@
   async function updateDrawRecords() {
     if (!historyItems.length) return toast("暂无历史记录");
     $("updateDrawBtn").disabled = true; $("refreshDrawBtn").disabled = true;
+    var oldText = $("updateDrawBtn").textContent; $("updateDrawBtn").textContent = "更新中...";
     try {
       var updated = await api("/api/update_draws", {});
       drawRecords = (updated.records || []).slice(0, 50); latestIssue = updated.latest ? updated.latest.issue : ""; latestDraw = updated.latest ? updated.latest.draw : ""; nextIssue = updated.nextIssue || "";
       renderDrawSidebar();
       var checked = await api("/api/check_history", {items: historyItems.slice()});
       await setHistory(checked.items || historyItems);
-      toast("已更新开奖：" + latestIssue + "期 " + latestDraw);
+      if (updated.updated === false) toast("批量更新失败，仅按本地已有开奖回查历史");
+      else toast("已补全开奖并回查历史：" + (updated.added || 0) + "期");
     } catch(e) { toast(e.message); }
-    finally { $("updateDrawBtn").disabled = false; $("refreshDrawBtn").disabled = false; }
+    finally { $("updateDrawBtn").disabled = false; $("refreshDrawBtn").disabled = false; $("updateDrawBtn").textContent = oldText; }
   }
   function copyResult() { if (!currentResult.length) return toast("无结果可复制"); navigator.clipboard.writeText($("resultBox").textContent).then(function() { toast("已复制"); }).catch(function() { toast("复制失败"); }); }
   function exportToFile() {
     if (!currentResult.length) return toast("无结果可保存");
     var codeDesc = (currentCodeFilters||[]).map(function(f) { return f.code_len + "码=" + f.condition + "[" + f.digits + "]"; }).join(", ") || "--";
-    var content = "筛选结果\n自动期号:" + autoIssueName() + " 数字:" + (currentDigits||"--") + " 杀码:" + (currentKillDigits||"--") + " 两码差:" + (currentAdvanceDigits||"--") + " 段组:" + (currentSegment||"--") + " N码:" + codeDesc + "\n总数:" + currentTotal + " 命中:" + currentResult.length + " 占比:" + currentPercent + "%\n" + "=".repeat(50) + "\n" + $("resultBox").textContent + "\n";
+    var advDesc = advancedDesc(currentAdvancedFilter) || "--";
+    var content = "筛选结果\n自动期号:" + autoIssueName() + " 数字:" + (currentDigits||"--") + " 杀码:" + (currentKillDigits||"--") + " 两码差:" + (currentAdvanceDigits||"--") + " 段组:" + (currentSegment||"--") + " N码:" + codeDesc + " 高级缩水:" + advDesc + "\n总数:" + currentTotal + " 命中:" + currentResult.length + " 占比:" + currentPercent + "%\n" + "=".repeat(50) + "\n" + $("resultBox").textContent + "\n";
     var blob = new Blob([content], {type:"text/plain;charset=utf-8"}), a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = "筛号_" + new Date().toISOString().slice(0,19).replace(/:/g,"-") + ".txt"; a.click(); URL.revokeObjectURL(a.href);
     toast("文件已保存");
@@ -873,19 +1090,21 @@
   function clearAll() {
     $("inputArea").value = ""; $("filterDigits").value = ""; $("advanceDigits").value = ""; $("killDigits").value = "";
     segmentCards = []; renderSegmentCards(); codeCards = []; renderCodeCards(); qimaCodes = []; renderQimaList(); $("qimaInput").value = "";
+    restoreAdvancedFilter({});
     currentQimaLen = 5; $("qimaLenSelect").value = "5"; $("qimaInput").placeholder = "输入5个数字，如 01234"; $("qimaInput").maxLength = 5;
     $("statsArea").style.display = "none"; $("resultArea").style.display = "none"; $("emptyState").style.display = "block";
-    currentResult = []; lastResultObj = null;
+    currentResult = []; currentAdvancedFilter = null; lastResultObj = null;
   }
   function loadDemo() {
     $("inputArea").value = demoRaw; $("filterDigits").value = "357"; $("advanceDigits").value = ""; $("killDigits").value = "4";
     renderSegmentGroups([{mode:"2-3-5", groups:SEGMENT_DEMOS["2-3-5"]}, {mode:"5-5", groups:SEGMENT_DEMOS["5-5"]}]);
     renderCodeCardsFromFilters([{code_len:5, condition:"012", digits:"01234"}]);
+    restoreAdvancedFilter({conditions:[{type:"sum", values:["8","9","10","11","12","13","14","15","16","17","18"]}, {type:"span", values:["3","4","5","6","7"]}], miss_min:0, miss_max:1});
     qimaCodes = [{digits: "01234", len: 5}, {digits: "123456", len: 6}];
     renderQimaList();
     currentQimaLen = 5; $("qimaLenSelect").value = "5";
     $("qimaInput").placeholder = "输入5个数字，如 01234"; $("qimaInput").maxLength = 5;
-    toast("示例数据已填入，复式码5码+6码、段组和N码条件已添加");
+    toast("示例数据已填入，号码条件、段组、N码和高级过滤规则已添加");
   }
   async function clearHistory() {
     if (!historyItems.length) return;
@@ -894,6 +1113,7 @@
     }
   }
 
+  $("advancedPresetBtn").addEventListener("click", applyAdvancedPreset);
   $("segmentAddBtn").addEventListener("click", function() { addSegmentCard($("segmentTypeSelect").value); });
   $("codeAddBtn").addEventListener("click", addCodeCard);
   $("qimaLenSelect").addEventListener("change", function() {
@@ -915,7 +1135,7 @@
   $("updateDrawBtn").addEventListener("click", updateDrawRecords);
   $("clearHistoryBtn").addEventListener("click", clearHistory);
   ["filterDigits","advanceDigits","killDigits"].forEach(function(id) { $(id).addEventListener("keydown", function(e) { if (e.key==="Enter") startFilter(); }); });
-  loadDraws(); renderSegmentCards(); renderCodeCards(); loadHistory();
+  loadDraws(); renderSegmentCards(); renderCodeCards(); renderAdvancedFilter(); loadHistory();
 })();
 </script>
 </body>
