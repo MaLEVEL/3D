@@ -163,6 +163,102 @@
   }
   .helper { display: block; color: var(--text-muted); font-size: 11px; margin-top: 5px; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+  .compact-panel {
+    border: 1px solid var(--border-light); border-radius: var(--radius);
+    background: #fbfcfe; padding: 12px; display: grid; gap: 10px;
+  }
+  .compact-title {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    color: var(--text); font-weight: 800; font-size: 12px;
+  }
+  .mode-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .mode-option {
+    min-height: 38px; padding: 0 10px; border: 1.5px solid var(--border);
+    background: #fff; color: var(--text-dim); border-radius: 8px;
+  }
+  .mode-option.active { background: #1f2937; color: #fff; border-color: #1f2937; }
+  .digit-pad { display: flex; flex-wrap: wrap; gap: 5px; }
+  .digit-btn {
+    width: 30px; height: 30px; min-height: 30px; padding: 0; border-radius: 7px;
+    border: 1px solid var(--border); background: #fff; color: var(--text-dim);
+    font: 800 12px/1 var(--mono);
+  }
+  .digit-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .digit-btn.warn.active { background: var(--red); border-color: var(--red); color: #fff; }
+  .position-grid { display: grid; gap: 10px; }
+  .position-card, .pair-card, .shape-card {
+    border: 1px solid var(--border-light); background: #fff; border-radius: var(--radius);
+    padding: 12px; display: grid; gap: 9px;
+  }
+  .position-title { font-weight: 800; font-size: 12px; color: var(--text-dim); }
+  .mini-row { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 8px; align-items: start; }
+  .mini-label { color: var(--text-muted); font-size: 11px; font-weight: 800; padding-top: 6px; }
+  .segmented {
+    display: inline-flex; border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; background: #fff;
+  }
+  .segmented button {
+    min-height: 30px; padding: 0 12px; border-radius: 0; background: #fff;
+    color: var(--text-dim); border-right: 1px solid var(--border);
+  }
+  .segmented button:last-child { border-right: 0; }
+  .segmented button.active { background: #1f2937; color: #fff; }
+  .result-tools {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    padding: 10px; border: 1px solid var(--border-light); border-radius: var(--radius);
+    background: #fbfcfe; margin-bottom: 12px;
+  }
+  .tool-field { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 11px; font-weight: 800; }
+  .tool-field input, .tool-field select { width: auto; height: 32px; min-width: 76px; padding: 5px 9px; }
+
+  .caibao-board {
+    border: 1px solid #d8e5d9; border-radius: var(--radius);
+    background: #fbfefb; padding: 14px; display: grid; gap: 12px;
+  }
+  .caibao-board-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1px solid #e3efe4;
+  }
+  .caibao-board-title { display: grid; gap: 2px; }
+  .caibao-board-title strong { color: #193f2a; font-size: 14px; }
+  .caibao-board-title span { color: var(--text-muted); font-size: 11px; font-weight: 600; }
+  .caibao-rule-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .caibao-rule-card {
+    background: #fff; border: 1px solid #dde8df; border-radius: var(--radius-sm);
+    padding: 10px; display: grid; gap: 9px;
+  }
+  .caibao-rule-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .caibao-rule-name { font-weight: 800; color: #24382b; font-size: 12px; }
+  .caibao-rule-tools { display: inline-flex; gap: 5px; align-items: center; }
+  .mini-mode {
+    min-height: 26px; padding: 0 9px; border: 1px solid var(--border);
+    background: #fff; color: var(--text-muted); border-radius: 6px; font-size: 11px;
+  }
+  .mini-mode.active { background: #193f2a; border-color: #193f2a; color: #fff; }
+  .mini-clear {
+    width: 26px; height: 26px; min-height: 26px; padding: 0;
+    border: 1px solid var(--border); background: #fff; color: var(--text-muted);
+    border-radius: 6px; font-size: 13px;
+  }
+  .caibao-value-grid { display: flex; flex-wrap: wrap; gap: 5px; max-height: 132px; overflow: auto; }
+  .rule-section { display: grid; gap: 9px; }
+  .rule-section + .rule-section { margin-top: 14px; padding-top: 14px; border-top: 1px solid #e3efe4; }
+  .rule-section-title {
+    color: var(--green); font-weight: 900; font-size: 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .rule-section-title span { color: var(--text-muted); font-weight: 700; font-size: 11px; }
+  .caibao-value-btn {
+    min-height: 28px; padding: 0 9px; border: 1px solid var(--border);
+    border-radius: 7px; background: #fff; color: var(--text-dim);
+    font: 800 11px var(--mono);
+  }
+  .caibao-value-btn.active { background: var(--green); border-color: var(--green); color: #fff; }
+  .caibao-rule-card[data-mode="exclude"] .caibao-value-btn.active { background: var(--red); border-color: var(--red); }
 
   /* 七码 */
   .qima-selector { display: flex; gap: 8px; margin-bottom: 8px; }
@@ -184,6 +280,12 @@
   /* 段组 */
   .segment-selector { display: flex; gap: 8px; margin-bottom: 10px; }
   .segment-select { flex: 1; }
+  .segment-quick-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .segment-quick-btn {
+    min-height: 38px; border: 1px solid var(--green-border);
+    background: var(--green-bg); color: var(--green); border-radius: 8px;
+    padding: 0 10px; font-size: 12px;
+  }
   .segment-stack { display: grid; gap: 10px; }
   .segment-card {
     background: var(--green-bg); border: 1px solid var(--green-border);
@@ -252,14 +354,32 @@
   .code-empty { color: var(--text-muted); font-size: 12px; padding: 5px 0; }
   .code-hint { display: block; color: var(--text-muted); font-size: 10px; margin-top: 4px; }
 
-  /* 高级缩水 */
+  /* 容错缩水 */
   .advanced-panel {
-    background: #fffafa; border: 1px solid #ffd6d8;
-    border-radius: var(--radius); padding: 14px; display: grid; gap: 14px;
+    border: 1px solid #d7e1f0; border-radius: var(--radius);
+    background: #f7f9fc; padding: 12px; display: grid; gap: 12px;
   }
   .advanced-top {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    flex-wrap: wrap;
+    flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1px solid #e6edf5;
+  }
+  .advanced-title { display: grid; gap: 2px; }
+  .advanced-title strong { color: #233044; font-size: 13px; }
+  .advanced-title span { color: var(--text-muted); font-size: 11px; font-weight: 600; }
+  .advanced-layout {
+    display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 12px;
+    align-items: start;
+  }
+  .advanced-rule-bank {
+    border: 1px solid #e2e9f2; border-radius: var(--radius-sm);
+    background: #fff; padding: 10px; display: grid; gap: 8px;
+  }
+  .advanced-rule-bank-title {
+    color: var(--text-muted); font-size: 11px; font-weight: 800;
+  }
+  .advanced-workbench {
+    border: 1px solid #e2e9f2; border-radius: var(--radius-sm);
+    background: #fff; padding: 10px; display: grid; gap: 10px;
   }
   .logic-block {
     border: 1px solid var(--border-light); border-radius: var(--radius);
@@ -270,18 +390,19 @@
     margin-bottom: 12px; color: var(--text); font-weight: 800; font-size: 13px;
   }
   .logic-title span { color: var(--text-muted); font-weight: 600; font-size: 11px; }
-  .advanced-grid { display: grid; gap: 12px; }
+  .advanced-grid { display: grid; gap: 10px; }
   .advanced-condition-card {
-    background: #fff; border: 1px solid var(--border-light);
-    border-radius: var(--radius); padding: 12px;
+    background: #fbfcfe; border: 1px solid #e4ebf3;
+    border-radius: var(--radius-sm); padding: 10px;
   }
   .value-grid { display: flex; flex-wrap: wrap; gap: 6px; }
-  .condition-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .condition-chip-row { display: grid; gap: 6px; }
   .condition-chip {
-    background: #fff1ec; color: #96323a; border: 1px solid #ffd7ca;
-    border-radius: 999px; min-height: 36px; padding: 0 16px;
+    justify-content: flex-start; background: #fff; color: #344054;
+    border: 1px solid #d9e2ee; border-radius: 7px;
+    min-height: 34px; padding: 0 10px;
   }
-  .condition-chip.active { background: var(--red); border-color: var(--red); color: #fff; }
+  .condition-chip.active { background: #233044; border-color: #233044; color: #fff; }
   .advanced-condition-card { display: grid; gap: 10px; }
   .advanced-condition-title { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
   .advanced-condition-title strong { font-size: 13px; }
@@ -293,15 +414,74 @@
   .value-btn.active { background: #1a1d26; border-color: #1a1d26; color: #fff; }
   .tolerance-row {
     display: grid; grid-template-columns: minmax(90px, 1fr) auto minmax(90px, 1fr);
-    gap: 10px; align-items: center;
+    gap: 10px; align-items: center; padding-top: 10px; border-top: 1px solid #edf2f7;
   }
   .tolerance-row input { text-align: center; }
   .advanced-empty {
-    color: var(--text-muted); border: 1px dashed var(--border);
-    border-radius: var(--radius); padding: 12px; font-size: 12px; background: #fff;
+    color: var(--text-muted); border: 1px dashed #cfd9e6;
+    border-radius: var(--radius-sm); padding: 14px; font-size: 12px; background: #fbfcfe;
   }
   .filter-divider {
     height: 1px; background: var(--border-light); margin: 18px 0;
+  }
+  .condition-builder {
+    display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 14px; align-items: start;
+  }
+  .condition-library {
+    border: 1px solid var(--border-light); border-radius: var(--radius);
+    background: #f8fafc; padding: 12px; display: grid; gap: 12px;
+    position: sticky; top: 16px;
+  }
+  .library-group { display: grid; gap: 7px; }
+  .library-title {
+    color: var(--text-muted); font-size: 11px; font-weight: 800;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .condition-add-btn {
+    width: 100%; justify-content: space-between; min-height: 38px;
+    border: 1px solid #d9e2ee; background: #fff; color: var(--text-dim);
+    padding: 0 10px; border-radius: 8px; font-size: 12px;
+  }
+  .condition-add-btn::after {
+    content: "+"; width: 20px; height: 20px; border-radius: 50%;
+    display: grid; place-items: center; background: #eef2f7;
+    color: var(--green); font: 900 15px/1 var(--mono);
+  }
+  .condition-add-btn.active {
+    background: #193f2a; border-color: #193f2a; color: #fff;
+  }
+  .condition-add-btn.active::after { content: "✓"; background: rgba(255,255,255,.18); color: #fff; font-size: 12px; }
+  .condition-workbench {
+    border: 1px solid #d8e5d9; border-radius: var(--radius);
+    background: #fbfefb; padding: 14px; display: grid; gap: 12px;
+  }
+  .workbench-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1px solid #e3efe4;
+  }
+  .workbench-title { display: grid; gap: 2px; }
+  .workbench-title strong { color: #193f2a; font-size: 14px; }
+  .workbench-title span { color: var(--text-muted); font-size: 11px; font-weight: 600; }
+  .active-condition-stack { display: grid; gap: 12px; }
+  .active-condition-card {
+    border: 1px solid #dfe9e2; border-radius: var(--radius);
+    background: #fff; padding: 13px; display: grid; gap: 12px;
+  }
+  .active-condition-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--border-light);
+  }
+  .active-condition-title { display: grid; gap: 2px; }
+  .active-condition-title strong { font-size: 13px; color: var(--text); }
+  .active-condition-title span { color: var(--text-muted); font-size: 11px; font-weight: 600; }
+  .condition-remove {
+    min-height: 30px; padding: 0 10px; border: 1px solid var(--red-border);
+    color: var(--red); background: var(--red-bg); border-radius: 7px; font-size: 12px;
+  }
+  .condition-empty {
+    color: var(--text-muted); border: 1.5px dashed #c8d7cb;
+    border-radius: var(--radius); padding: 28px 18px; text-align: center;
+    background: rgba(255,255,255,.7); font-size: 13px;
   }
 
   /* 按钮 - 纯色，无渐变 */
@@ -339,6 +519,15 @@
   }
   .stat strong { display: block; font: 800 32px/1 var(--mono); margin-bottom: 6px; color: var(--blue); }
   .stat span { color: var(--text-muted); font-size: 12px; }
+  .step-strip {
+    display: flex; flex-wrap: wrap; gap: 8px; margin: -8px 0 20px;
+  }
+  .step-chip {
+    border: 1px solid var(--border-light); background: #fff;
+    border-radius: 999px; padding: 6px 10px;
+    color: var(--text-muted); font: 800 11px var(--mono);
+  }
+  .step-chip strong { color: var(--text-dim); }
 
   .result-head, .history-head {
     display: flex; justify-content: space-between; align-items: center; gap: 12px;
@@ -394,13 +583,17 @@
   }
   @media (max-width: 760px) {
     body { padding: 16px 10px 92px; }
-    .grid-2, .stats { grid-template-columns: 1fr; }
+    .grid-2, .grid-3, .stats, .mode-grid, .caibao-rule-grid, .condition-builder { grid-template-columns: 1fr; }
+    .condition-library { position: static; }
+    .advanced-layout { grid-template-columns: 1fr; }
+    .condition-chip-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .history-actions { flex-direction: column; align-items: stretch; }
     .inline-issue { width: 100%; }
     .sticky-action { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; padding: 10px; background: rgba(255,255,255,.94); border-top: 1px solid var(--border); box-shadow: 0 -8px 24px rgba(26,29,38,.08); }
     .sticky-action .btn-primary { border-radius: 999px; min-height: 50px; }
     .qima-selector, .segment-selector, .code-selector { flex-wrap: wrap; }
     .qima-selector input, .segment-select { flex-basis: 100%; }
+    .segment-quick-grid { grid-template-columns: 1fr; }
     .code-select { width: calc(50% - 4px); flex: 1 1 calc(50% - 4px); }
     .seg-digit, .code-digit { width: 36px; height: 36px; }
     .tolerance-row { grid-template-columns: 1fr; }
@@ -456,6 +649,18 @@
         <div class="card-body">
           <div class="form-group">
             <label>号码池</label>
+            <div class="compact-panel" style="margin-bottom:12px;">
+              <div class="compact-title"><span>大底模式</span><span class="helper" id="baseModeHint" style="margin:0;">输入模式会使用下方号码池；其它模式可直接请求后端生成。</span></div>
+              <div class="mode-grid" id="baseModeOptions">
+                <button type="button" class="mode-option active" data-base-mode="input">输入号码池</button>
+                <button type="button" class="mode-option" data-base-mode="direct">直选全量 000-999</button>
+                <button type="button" class="mode-option" data-base-mode="group">组选大底(不含豹子)</button>
+                <button type="button" class="mode-option" data-base-mode="group3">组三</button>
+                <button type="button" class="mode-option" data-base-mode="group6">组六</button>
+                <button type="button" class="mode-option" data-base-mode="baozi">豹子</button>
+              </div>
+              <button class="btn-secondary btn-sm" id="fillBasePoolBtn" type="button">一键填充当前大底</button>
+            </div>
             <textarea id="inputArea" placeholder="粘贴任意文本，系统会自动提取所有三位数字"></textarea>
             <span class="helper">自动识别所有 000-999 格式的三位号码，并去重保留原顺序。</span>
           </div>
@@ -466,6 +671,7 @@
                 <option value="5">5码</option>
                 <option value="6">6码</option>
                 <option value="7">7码</option>
+                <option value="8">8码</option>
               </select>
               <input id="qimaInput" placeholder="输入5个数字，如 01234" maxlength="5">
               <button class="btn-secondary" id="qimaAddBtn" style="flex-shrink:0;">添加</button>
@@ -482,80 +688,170 @@
         <div class="card-head">
           <span class="card-head-num">2</span>
           <span class="card-head-title">筛选条件</span>
-          <span class="card-head-sub">— 胆码 · 杀码 · 两码差 · 段组 · N码 · 高级缩水</span>
+          <span class="card-head-sub">— 胆码 · 杀码 · 定位 · 规则分组 · 段组 · N码</span>
         </div>
         <div class="card-body">
-          <div class="logic-block">
-            <div class="logic-title">号码条件 <span>输入类条件集中在这里，只作为号码保留/排除规则</span></div>
-            <div class="grid-2">
-              <div class="form-group">
-                <label>胆码筛选</label>
-                <input id="filterDigits" placeholder="例：357" maxlength="10">
-                <span class="helper">号码中包含任意一个所填数字即保留。</span>
+          <div class="condition-builder">
+            <aside class="condition-library">
+              <div class="library-group">
+                <div class="library-title"><span>号码条件</span><span>点一下添加</span></div>
+                <button type="button" class="condition-add-btn" data-condition-add="dan">胆码</button>
+                <button type="button" class="condition-add-btn" data-condition-add="kill">杀码</button>
+                <button type="button" class="condition-add-btn" data-condition-add="position">定位筛选</button>
+                <button type="button" class="condition-add-btn" data-condition-add="shape">形态条件</button>
               </div>
-              <div class="form-group">
-                <label style="color:var(--red);">杀码筛选</label>
-                <input id="killDigits" placeholder="例：48" maxlength="10" style="border-color:var(--red-border);">
-                <span class="helper">号码中包含任意一个杀码即排除（优先级最高）。</span>
+              <div class="library-group">
+                <div class="library-title"><span>缩水条件</span><span>细项分开</span></div>
+                <button type="button" class="condition-add-btn" data-condition-add="stats_rules">和值筛选</button>
+                <button type="button" class="condition-add-btn" data-condition-add="pair_rules">两码筛选</button>
+                <button type="button" class="condition-add-btn" data-condition-add="pattern_rules">形态比例</button>
+                <button type="button" class="condition-add-btn" data-condition-add="segment">段组条件</button>
+                <button type="button" class="condition-add-btn" data-condition-add="ncode">N码条件</button>
               </div>
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label>两码差数字</label>
-              <input id="advanceDigits" placeholder="例：523" maxlength="10">
-              <span class="helper">百十、百个、十个任意一个差值命中即保留。</span>
-            </div>
-          </div>
+            </aside>
 
-          <div class="filter-divider"></div>
-          <div class="logic-title">过滤规则 <span>以下条件可组合，容错只作用于高级过滤规则</span></div>
-          <div class="form-group">
-            <label>段组条件</label>
-            <div class="segment-selector">
-              <select class="segment-select" id="segmentTypeSelect">
-                <option value="">选择段组类型添加...</option>
-                <option value="2-2-6">2-2-6 段组</option>
-                <option value="2-3-5">2-3-5 段组</option>
-                <option value="5-5">5-5 段组</option>
-              </select>
-              <button class="btn-green" id="segmentAddBtn" title="添加段组条件" style="width:40px;height:40px;padding:0;font-size:20px;min-height:auto;">+</button>
-            </div>
-            <div class="segment-stack" id="segmentGroups"></div>
-            <span class="helper">选择段组类型后点击 + 添加条件。可添加多个，筛选结果必须同时通过所有段组。</span>
-          </div>
-          <div class="form-group">
-            <label>N码条件 <span style="font-weight:400;color:var(--text-muted);font-size:11px;">（可选）</span></label>
-            <div class="code-selector">
-              <select class="code-select" id="codeLenSelect">
-                <option value="3">3码</option><option value="4">4码</option>
-                <option value="5" selected>5码</option><option value="6">6码</option>
-                <option value="7">7码</option><option value="8">8码</option>
-              </select>
-              <select class="code-select" id="codeCondSelect">
-                <option value="01">=01</option>
-                <option value="012" selected>=012</option>
-                <option value="123">=123</option>
-              </select>
-              <button class="btn-green" id="codeAddBtn" title="添加N码条件" style="width:40px;height:40px;padding:0;font-size:20px;min-height:auto;">+</button>
-            </div>
-            <div class="code-stack" id="codeCards"></div>
-            <span class="helper">选择码数N和条件后点击+添加。可添加多个，筛选结果必须同时通过所有N码条件。</span>
-          </div>
-          <div class="form-group">
-            <label>3D缩水高级过滤 <span style="font-weight:400;color:var(--text-muted);font-size:11px;">（可选）</span></label>
-            <div class="advanced-panel">
-              <div class="advanced-top">
-                <strong>条件按钮</strong>
-                <button class="btn-secondary btn-sm" id="advancedPresetBtn" type="button">使用常用条件</button>
+            <section class="condition-workbench">
+              <div class="workbench-head">
+                <div class="workbench-title">
+                  <strong>已启用条件</strong>
+                  <span>左侧点击添加；移除后该条件会清空，不再参与筛选。</span>
+                </div>
+                <span class="badge" id="activeConditionCount">0项</span>
               </div>
-              <div class="condition-chip-row" id="advancedConditionChips"></div>
-              <div class="advanced-grid" id="advancedConditionCards"></div>
-              <div class="tolerance-row">
-                <input id="advancedMissMin" type="number" min="0" max="7" value="0" aria-label="容错下限">
-                <strong>≤ 容错个数 ≤</strong>
-                <input id="advancedMissMax" type="number" min="0" max="7" value="0" aria-label="容错上限">
+              <div class="condition-empty" id="activeConditionEmpty">还没有启用筛选条件。左侧点一个条件，它才会出现在这里。</div>
+              <input id="advanceDigits" type="hidden" value="">
+              <div class="active-condition-stack">
+                <div class="active-condition-card hidden" data-condition-card="dan">
+                  <div class="active-condition-head">
+                    <div class="active-condition-title"><strong>胆码</strong><span>号码中包含任意一个胆码即保留。</span></div>
+                    <button type="button" class="condition-remove" data-condition-remove="dan">移除</button>
+                  </div>
+                  <div class="form-group">
+                    <label>胆码筛选</label>
+                    <input id="filterDigits" placeholder="例：357" maxlength="10">
+                    <span class="helper">只要号码里出现 3 / 5 / 7 任意一个，就通过这条条件。</span>
+                  </div>
+                </div>
+
+                <div class="active-condition-card hidden" data-condition-card="kill">
+                  <div class="active-condition-head">
+                    <div class="active-condition-title"><strong>杀码</strong><span>号码中包含任意一个杀码即排除，优先级最高。</span></div>
+                    <button type="button" class="condition-remove" data-condition-remove="kill">移除</button>
+                  </div>
+                  <div class="form-group">
+                    <label style="color:var(--red);">杀码筛选</label>
+                    <input id="killDigits" placeholder="例：48" maxlength="10" style="border-color:var(--red-border);">
+                    <span class="helper">只要号码里出现 4 / 8 任意一个，就会被排除。</span>
+                  </div>
+                </div>
+
+                <div class="active-condition-card hidden" data-condition-card="position">
+                  <div class="active-condition-head">
+                    <div class="active-condition-title"><strong>定位筛选</strong><span>百位、十位、个位分别设置保留或排除数字。</span></div>
+                    <button type="button" class="condition-remove" data-condition-remove="position">移除</button>
+                  </div>
+                  <div class="position-grid" id="positionFilterPanel"></div>
+                </div>
+
+                <div class="active-condition-card hidden" data-condition-card="shape">
+                  <div class="active-condition-head">
+                    <div class="active-condition-title"><strong>形态条件</strong><span>形态可包含或排除，质合按数量选择。</span></div>
+                    <button type="button" class="condition-remove" data-condition-remove="shape">移除</button>
+                  </div>
+                  <div class="compact-panel">
+                    <div class="compact-title">
+                      <span>形态模式</span>
+                      <div class="segmented" id="shapeModeControl">
+                        <button type="button" class="active" data-mode="include">包含</button>
+                        <button type="button" data-mode="exclude">排除</button>
+                      </div>
+                    </div>
+                    <div class="grid-2">
+                      <div class="shape-card">
+                        <div class="compact-title"><span>号码形态</span><span class="helper" style="margin:0;">可多选</span></div>
+                        <div class="digit-pad" id="shapeTypesPad"></div>
+                      </div>
+                      <div class="shape-card">
+                        <div class="compact-title"><span>质数数量</span><span class="helper" style="margin:0;">2/3/5/7 为质</span></div>
+                        <div class="digit-pad" id="primeCountPad"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="active-condition-card hidden" data-condition-card="stats_rules">
+                  <div class="active-condition-head">
+                    <div class="active-condition-title"><strong>和值筛选</strong><span>和值、和尾、平均值、跨度、首尾距、AC值。</span></div>
+                    <div class="toolbar">
+                      <button class="btn-secondary btn-sm" type="button" data-rule-clear="stats_rules">清空</button>
+                      <button type="button" class="condition-remove" data-condition-remove="stats_rules">移除</button>
+                    </div>
+                  </div>
+                  <div id="ruleFilterGridStats"></div>
+                </div>
+
+                <div class="active-condition-card hidden" data-condition-card="pair_rules">
+                  <div class="active-condition-head">
+                    <div class="active-condition-title"><strong>两码筛选</strong><span>二码和、二码和尾、二码差、两码合差、二码组合。</span></div>
+                    <div class="toolbar">
+                      <button class="btn-secondary btn-sm" type="button" data-rule-clear="pair_rules">清空</button>
+                      <button type="button" class="condition-remove" data-condition-remove="pair_rules">移除</button>
+                    </div>
+                  </div>
+                  <div id="ruleFilterGridPair"></div>
+                </div>
+
+                <div class="active-condition-card hidden" data-condition-card="pattern_rules">
+                  <div class="active-condition-head">
+                    <div class="active-condition-title"><strong>形态比例</strong><span>012路、大小、奇偶、质合、小中大。</span></div>
+                    <div class="toolbar">
+                      <button class="btn-secondary btn-sm" type="button" data-rule-clear="pattern_rules">清空</button>
+                      <button type="button" class="condition-remove" data-condition-remove="pattern_rules">移除</button>
+                    </div>
+                  </div>
+                  <div id="ruleFilterGridPattern"></div>
+                </div>
+
+                <div class="active-condition-card hidden" data-condition-card="segment">
+                  <div class="active-condition-head">
+                    <div class="active-condition-title"><strong>段组条件</strong><span>2-2-6、2-3-5、3-3-4、5-5 分开添加，可多条同时生效。</span></div>
+                    <button type="button" class="condition-remove" data-condition-remove="segment">移除</button>
+                  </div>
+                  <div class="segment-quick-grid">
+                    <button type="button" class="segment-quick-btn" data-segment-add="2-2-6">添加 2-2-6</button>
+                    <button type="button" class="segment-quick-btn" data-segment-add="2-3-5">添加 2-3-5</button>
+                    <button type="button" class="segment-quick-btn" data-segment-add="3-3-4">添加 3-3-4</button>
+                    <button type="button" class="segment-quick-btn" data-segment-add="5-5">添加 5-5</button>
+                  </div>
+                  <div class="segment-stack" id="segmentGroups"></div>
+                  <span class="helper">每添加一条都会生成独立段组卡片，删除单条不影响其它段组。</span>
+                </div>
+
+                <div class="active-condition-card hidden" data-condition-card="ncode">
+                  <div class="active-condition-head">
+                    <div class="active-condition-title"><strong>N码条件</strong><span>用 3-8 个数字判断号码命中数量，和复式码生成不是同一个功能。</span></div>
+                    <button type="button" class="condition-remove" data-condition-remove="ncode">移除</button>
+                  </div>
+                  <div class="code-selector">
+                    <select class="code-select" id="codeLenSelect">
+                      <option value="3">3码</option><option value="4">4码</option>
+                      <option value="5" selected>5码</option><option value="6">6码</option>
+                      <option value="7">7码</option><option value="8">8码</option>
+                    </select>
+                    <select class="code-select" id="codeCondSelect">
+                      <option value="01">=01</option>
+                      <option value="012" selected>=012</option>
+                      <option value="123">=123</option>
+                      <option value="23">=23</option>
+                    </select>
+                    <button class="btn-green" id="codeAddBtn" title="添加N码条件" style="width:40px;height:40px;padding:0;font-size:20px;min-height:auto;">+</button>
+                  </div>
+                  <div class="code-stack" id="codeCards"></div>
+                  <span class="helper">选择码数N和条件后点击 + 添加。可添加多个。</span>
+                </div>
+
               </div>
-            </div>
-            <span class="helper">和值、和尾、奇偶比、大小比、跨度、012路比、大中小属于过滤规则；容错不影响胆码、杀码、两码差、段组或N码。</span>
+            </section>
           </div>
         </div>
       </div>
@@ -573,6 +869,7 @@
           <div class="stat"><strong id="filteredCount">0</strong><span>筛选命中</span></div>
           <div class="stat"><strong id="percent">0%</strong><span>命中占比</span></div>
         </div>
+        <div class="step-strip" id="stepsArea"></div>
       </div>
 
       <div id="resultArea" class="panel" style="display:none;">
@@ -583,6 +880,19 @@
             <button class="btn-secondary btn-sm" id="saveHistoryBtn">保存历史</button>
             <button class="btn-amber btn-sm" id="exportFileBtn">保存文件</button>
           </div>
+        </div>
+        <div class="result-tools">
+          <label class="tool-field">每行数量 <input id="resultPerLine" type="number" min="1" max="50" value="10"></label>
+          <label class="tool-field">分隔符
+            <select id="resultSeparator">
+              <option value="  ">双空格</option>
+              <option value=" ">空格</option>
+              <option value=",">逗号</option>
+              <option value="、">顿号</option>
+              <option value="\n">逐行</option>
+            </select>
+          </label>
+          <span class="helper" style="margin:0;">复制和保存文件会使用当前排版。</span>
         </div>
         <div class="output" id="resultBox">等待筛选</div>
       </div>
@@ -609,21 +919,38 @@
   var HISTORY_KEY = "lottery_filter_history_v3";
   var OLD_KEYS = ["lottery_filter_history_v2", "lottery_filter_history"];
   var MAX_HISTORY = 80;
-  var SEGMENT_SIZES = {"2-2-6":[2,2,6], "2-3-5":[2,3,5], "5-5":[5,5]};
-  var SEGMENT_LABELS = {"2-2-6":"2-2-6 段组", "2-3-5":"2-3-5 段组", "5-5":"5-5 段组"};
-  var SEGMENT_DEMOS = {"2-2-6":["01","23","456789"], "2-3-5":["01","234","56789"], "5-5":["01234","56789"]};
+  var SEGMENT_SIZES = {"2-2-6":[2,2,6], "2-3-5":[2,3,5], "3-3-4":[3,3,4], "5-5":[5,5]};
+  var SEGMENT_LABELS = {"2-2-6":"2-2-6 段组", "2-3-5":"2-3-5 段组", "3-3-4":"3-3-4 段组", "5-5":"5-5 段组"};
+  var SEGMENT_DEMOS = {"2-2-6":["01","23","456789"], "2-3-5":["01","234","56789"], "3-3-4":["012","345","6789"], "5-5":["01234","56789"]};
   var ADVANCED_META = {
     sum: {label:"和值", values:Array.from({length:28}, function(_, i) { return String(i); })},
     sum_tail: {label:"和尾", values:Array.from({length:10}, function(_, i) { return String(i); })},
+    average: {label:"平均值", values:Array.from({length:10}, function(_, i) { return String(i); })},
+    ac: {label:"AC值", values:["1","2","3"]},
     odd_even: {label:"奇偶比", values:["0:3","1:2","2:1","3:0"]},
     big_small: {label:"大小比", values:["0:3","1:2","2:1","3:0"]},
     span: {label:"跨度", values:Array.from({length:10}, function(_, i) { return String(i); })},
     mod012: {label:"012路比", values:["3:0:0","2:1:0","2:0:1","1:2:0","1:1:1","1:0:2","0:3:0","0:2:1","0:1:2","0:0:3"]},
-    size_area: {label:"大中小", values:["3:0:0","2:1:0","2:0:1","1:2:0","1:1:1","1:0:2","0:3:0","0:2:1","0:1:2","0:0:3"]}
+    size_area: {label:"小中大", values:["3:0:0","2:1:0","2:0:1","1:2:0","1:1:1","1:0:2","0:3:0","0:2:1","0:1:2","0:0:3"]}
   };
-  var ADVANCED_ORDER = ["sum","sum_tail","odd_even","big_small","span","mod012","size_area"];
+  var ADVANCED_ORDER = ["sum","sum_tail","average","ac","odd_even","big_small","span","mod012","size_area"];
+  var BASE_MODE_LABELS = {input:"输入号码池", direct:"直选全量", group:"组选大底(不含豹子)", group3:"组三", group6:"组六", baozi:"豹子"};
+  var POSITION_LABELS = ["百位", "十位", "个位"];
+  var SHAPE_TYPE_LABELS = [
+    {value:"baozi", label:"豹子"},
+    {value:"group3", label:"组三"},
+    {value:"group6", label:"组六"},
+    {value:"consecutive", label:"连号"},
+    {value:"semi_consecutive", label:"半顺"},
+    {value:"prime_composite", label:"质合数量"}
+  ];
   var currentResult = [], currentDigits = "", currentAdvanceDigits = "", currentKillDigits = "", currentSegment = "";
   var currentSegmentFilters = [], currentCodeFilters = [], currentAdvancedFilter = null, currentTotal = 0, currentPercent = 0, lastResultObj = null;
+  var currentBaseMode = "input", currentPositionFilter = null, currentPairFilter = null, currentShapeFilter = null, currentRuleFilters = [], currentSteps = [];
+  var baseMode = "input";
+  var pairState = {mode:"include", pair_sums:[], pair_sum_tails:[], pair_diffs:[]};
+  var shapeState = {mode:"include", types:[], prime_count:[]};
+  var ruleFilterState = {};
   var drawRecords = [], latestIssue = "", latestDraw = "", nextIssue = "";
   var historyItems = [];
   var segmentCards = [], segmentCardIdCounter = 0;
@@ -631,8 +958,53 @@
   var advancedState = {conditions:{}};
   var qimaCodes = [];
   var currentQimaLen = 5;
+  var activeConditionTypes = [];
+  var CONDITION_LABELS = {
+    dan: "胆码",
+    kill: "杀码",
+    position: "定位筛选",
+    shape: "形态条件",
+    stats_rules: "和值筛选",
+    pair_rules: "两码筛选",
+    pattern_rules: "形态比例",
+    segment: "段组条件",
+    ncode: "N码条件"
+  };
 
   var demoRaw = "组六：\n012 013 014 015 016 017 018 019 023 024\n\n\n组三：\n001 002 005 006 007 008 009 011 022\n";
+
+  function patternValues(chars, len) {
+    var result = [""];
+    for (var i = 0; i < len; i++) {
+      var next = [];
+      result.forEach(function(prefix) { chars.forEach(function(ch) { next.push(prefix + ch); }); });
+      result = next;
+    }
+    return result;
+  }
+  var RULE_FILTER_META = [
+    {type:"sum", label:"和值", values:Array.from({length:28}, function(_, i) { return String(i); })},
+    {type:"sum_tail", label:"和尾", values:Array.from({length:10}, function(_, i) { return String(i); })},
+    {type:"average", label:"平均值", values:Array.from({length:10}, function(_, i) { return String(i); })},
+    {type:"ac", label:"AC值", values:["1","2","3"]},
+    {type:"span", label:"跨度", values:Array.from({length:10}, function(_, i) { return String(i); })},
+    {type:"first_last_diff", label:"首尾距", values:Array.from({length:10}, function(_, i) { return String(i); })},
+    {type:"pair_sum", label:"二码和", values:Array.from({length:19}, function(_, i) { return String(i); })},
+    {type:"pair_sum_tail", label:"二码和尾", values:Array.from({length:10}, function(_, i) { return String(i); })},
+    {type:"pair_diff", label:"二码差", values:Array.from({length:10}, function(_, i) { return String(i); })},
+    {type:"pair_sum_diff", label:"两码合差", values:Array.from({length:19}, function(_, i) { return String(i); })},
+    {type:"pair_code", label:"二码", values:(function(){ var r=[]; for(var a=0;a<=9;a++) for(var b=a;b<=9;b++) r.push(String(a)+String(b)); return r; })()},
+    {type:"mod012", label:"012路", values:patternValues(["0","1","2"], 3)},
+    {type:"big_small", label:"大小", values:patternValues(["B","S"], 3), display:{"B":"大","S":"小"}},
+    {type:"odd_even", label:"奇偶", values:patternValues(["O","E"], 3), display:{"O":"奇","E":"偶"}},
+    {type:"prime_composite", label:"质合", values:patternValues(["P","C"], 3), display:{"P":"质","C":"合"}},
+    {type:"size_area", label:"小中大", values:patternValues(["L","M","H"], 3), display:{"L":"小","M":"中","H":"大"}}
+  ];
+  var RULE_GROUPS = [
+    {key:"stats_rules", container:"ruleFilterGridStats", title:"和值筛选", hint:"常用和值、跨度、AC等", types:["sum","sum_tail","average","span","first_last_diff","ac"]},
+    {key:"pair_rules", container:"ruleFilterGridPair", title:"两码筛选", hint:"任意两位的和值、尾、差、对子", types:["pair_sum","pair_sum_tail","pair_diff","pair_sum_diff","pair_code"]},
+    {key:"pattern_rules", container:"ruleFilterGridPattern", title:"形态比例", hint:"012路、大小、奇偶、质合、小中大", types:["mod012","big_small","odd_even","prime_composite","size_area"]}
+  ];
 
   var $ = function(id) { return document.getElementById(id); };
   function toast(msg) {
@@ -655,6 +1027,304 @@
       return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch];
     });
   }
+  function isConditionActive(type) { return activeConditionTypes.indexOf(type) >= 0; }
+  function syncConditionVisibility() {
+    document.querySelectorAll("[data-condition-card]").forEach(function(card) {
+      card.classList.toggle("hidden", !isConditionActive(card.dataset.conditionCard));
+    });
+    document.querySelectorAll("[data-condition-add]").forEach(function(btn) {
+      btn.classList.toggle("active", isConditionActive(btn.dataset.conditionAdd));
+    });
+    $("activeConditionCount").textContent = activeConditionTypes.length + "项";
+    $("activeConditionEmpty").style.display = activeConditionTypes.length ? "none" : "block";
+  }
+  function activateCondition(type) {
+    if (!CONDITION_LABELS[type]) return;
+    if (!isConditionActive(type)) activeConditionTypes.push(type);
+    syncConditionVisibility();
+  }
+  function deactivateCondition(type, clear) {
+    activeConditionTypes = activeConditionTypes.filter(function(item) { return item !== type; });
+    if (clear !== false) clearConditionValue(type);
+    syncConditionVisibility();
+  }
+  function clearConditionValue(type) {
+    if (type === "dan") $("filterDigits").value = "";
+    if (type === "kill") $("killDigits").value = "";
+    if (type === "position") renderPositionFilter();
+    if (type === "shape") renderShapeFilter();
+    if (["stats_rules","pair_rules","pattern_rules"].indexOf(type) >= 0) clearRuleGroup(type);
+    if (type === "segment") { segmentCards = []; renderSegmentCards(); }
+    if (type === "ncode") { codeCards = []; renderCodeCards(); }
+  }
+  function setActiveConditions(types) {
+    activeConditionTypes = [];
+    (types || []).forEach(function(type) {
+      if (CONDITION_LABELS[type] && activeConditionTypes.indexOf(type) < 0) activeConditionTypes.push(type);
+    });
+    syncConditionVisibility();
+  }
+  function inferActiveConditions(digits, killDigits, positionFilter, shapeFilter, ruleFilters, segmentFilters, codeFilters, advancedFilter) {
+    var types = [];
+    if (digits) types.push("dan");
+    if (killDigits) types.push("kill");
+    if (hasPositionFilter(positionFilter || {include:["","",""], exclude:["","",""]})) types.push("position");
+    if (hasShapeFilter(shapeFilter || {mode:"include", types:[], prime_count:[]})) types.push("shape");
+    (ruleFilters || []).forEach(function(item) {
+      var group = ruleGroupForType(item.type);
+      if (group && types.indexOf(group.key) < 0) types.push(group.key);
+    });
+    if ((segmentFilters || []).length) types.push("segment");
+    if ((codeFilters || []).length) types.push("ncode");
+    setActiveConditions(types);
+  }
+  function setBaseMode(mode) {
+    baseMode = BASE_MODE_LABELS[mode] ? mode : "input";
+    document.querySelectorAll("[data-base-mode]").forEach(function(btn) {
+      btn.classList.toggle("active", btn.dataset.baseMode === baseMode);
+    });
+    $("baseModeHint").textContent = baseMode === "input" ? "输入模式会使用下方号码池。" : BASE_MODE_LABELS[baseMode] + " 可不填号码池，筛选时由后端生成。";
+  }
+  function generateBasePool(mode) {
+    var result = [];
+    for (var i = 0; i < 1000; i++) {
+      var n = String(i).padStart(3, "0"), unique = Array.from(new Set(n.split(""))).length;
+      if (mode === "direct") result.push(n);
+      else if (mode === "baozi" && unique === 1) result.push(n);
+      else if (mode === "group3" && unique === 2) result.push(n.split("").sort().join(""));
+      else if (mode === "group6" && unique === 3) result.push(n.split("").sort().join(""));
+      else if (mode === "group" && unique >= 2) result.push(n.split("").sort().join(""));
+    }
+    return Array.from(new Set(result)).sort();
+  }
+  function fillBasePool() {
+    if (baseMode === "input") return toast("输入模式请手动粘贴号码池");
+    var pool = generateBasePool(baseMode);
+    $("inputArea").value = pool.join(" ");
+    toast("已填充" + BASE_MODE_LABELS[baseMode] + "：" + pool.length + "组");
+  }
+  function toggleListValue(list, value) {
+    value = String(value);
+    var idx = list.indexOf(value);
+    if (idx >= 0) list.splice(idx, 1);
+    else list.push(value);
+  }
+  function renderNumberPad(id, values, selected, onClick, warn) {
+    $(id).innerHTML = values.map(function(value) {
+      value = String(value);
+      return '<button type="button" class="digit-btn' + (warn ? " warn" : "") + (selected.indexOf(value) >= 0 ? " active" : "") + '" data-value="' + value + '">' + value + '</button>';
+    }).join("");
+    $(id).querySelectorAll("button").forEach(function(btn) {
+      btn.addEventListener("click", function() { onClick(btn.dataset.value); });
+    });
+  }
+  function selectedFromPad(scope) {
+    return Array.from(scope.querySelectorAll(".digit-btn.active")).map(function(btn) { return btn.dataset.value; }).join("");
+  }
+  function renderPositionFilter(saved) {
+    var include = saved && saved.include ? saved.include : ["", "", ""];
+    var exclude = saved && saved.exclude ? saved.exclude : ["", "", ""];
+    $("positionFilterPanel").innerHTML = POSITION_LABELS.map(function(label, idx) {
+      return '<div class="position-card" data-pos="' + idx + '"><div class="position-title">' + label + '</div><div class="mini-row"><span class="mini-label">保留</span><div class="digit-pad position-include"></div></div><div class="mini-row"><span class="mini-label">排除</span><div class="digit-pad position-exclude"></div></div></div>';
+    }).join("");
+    document.querySelectorAll(".position-card").forEach(function(card) {
+      var idx = Number(card.dataset.pos), inc = (include[idx] || "").split("").filter(Boolean), exc = (exclude[idx] || "").split("").filter(Boolean);
+      renderNumberPadIn(card.querySelector(".position-include"), inc, false);
+      renderNumberPadIn(card.querySelector(".position-exclude"), exc, true);
+    });
+  }
+  function renderNumberPadIn(container, selected, warn) {
+    container.innerHTML = "0123456789".split("").map(function(value) {
+      return '<button type="button" class="digit-btn' + (warn ? " warn" : "") + (selected.indexOf(value) >= 0 ? " active" : "") + '" data-value="' + value + '">' + value + '</button>';
+    }).join("");
+    container.querySelectorAll("button").forEach(function(btn) {
+      btn.addEventListener("click", function() { btn.classList.toggle("active"); });
+    });
+  }
+  function getPositionFilter() {
+    var include = [], exclude = [];
+    document.querySelectorAll(".position-card").forEach(function(card) {
+      include.push(selectedFromPad(card.querySelector(".position-include")));
+      exclude.push(selectedFromPad(card.querySelector(".position-exclude")));
+    });
+    return {include:include, exclude:exclude};
+  }
+  function hasPositionFilter(filter) { return (filter.include || []).concat(filter.exclude || []).some(Boolean); }
+  function setSegmentedMode(id, mode, callback) {
+    $(id).querySelectorAll("button").forEach(function(btn) {
+      btn.classList.toggle("active", btn.dataset.mode === mode);
+      btn.onclick = function() { callback(btn.dataset.mode); };
+    });
+  }
+  function renderPairFilter(saved) {
+    pairState = {
+      mode: (saved && saved.mode) || "include",
+      pair_sums: ((saved && saved.pair_sums) || []).map(String),
+      pair_sum_tails: ((saved && saved.pair_sum_tails) || []).map(String),
+      pair_diffs: ((saved && saved.pair_diffs) || []).map(String)
+    };
+    if (!$("pairModeControl")) return;
+    setSegmentedMode("pairModeControl", pairState.mode, function(mode) { pairState.mode = mode; renderPairFilter(pairState); });
+    renderNumberPad("pairSumsPad", Array.from({length:19}, function(_, i) { return i; }), pairState.pair_sums, function(v) { toggleListValue(pairState.pair_sums, v); renderPairFilter(pairState); });
+    renderNumberPad("pairSumTailsPad", Array.from({length:10}, function(_, i) { return i; }), pairState.pair_sum_tails, function(v) { toggleListValue(pairState.pair_sum_tails, v); renderPairFilter(pairState); });
+    renderNumberPad("pairDiffsPad", Array.from({length:10}, function(_, i) { return i; }), pairState.pair_diffs, function(v) { toggleListValue(pairState.pair_diffs, v); renderPairFilter(pairState); });
+  }
+  function getPairFilter() {
+    if (!$("pairModeControl")) return {mode:"include", pair_sums:[], pair_sum_tails:[], pair_diffs:[]};
+    return {mode:pairState.mode, pair_sums:pairState.pair_sums.map(Number), pair_sum_tails:pairState.pair_sum_tails.map(Number), pair_diffs:pairState.pair_diffs.map(Number)};
+  }
+  function hasPairFilter(filter) { return filter.pair_sums.length || filter.pair_sum_tails.length || filter.pair_diffs.length; }
+  function renderShapeFilter(saved) {
+    shapeState = {mode:(saved && saved.mode) || "include", types:((saved && saved.types) || []).slice(), prime_count:((saved && (saved.prime_count || saved.values)) || []).map(String)};
+    setSegmentedMode("shapeModeControl", shapeState.mode, function(mode) { shapeState.mode = mode; renderShapeFilter(shapeState); });
+    $("shapeTypesPad").innerHTML = SHAPE_TYPE_LABELS.map(function(item) {
+      return '<button type="button" class="value-btn' + (shapeState.types.indexOf(item.value) >= 0 ? " active" : "") + '" data-value="' + item.value + '">' + item.label + '</button>';
+    }).join("");
+    $("shapeTypesPad").querySelectorAll("button").forEach(function(btn) {
+      btn.addEventListener("click", function() { toggleListValue(shapeState.types, btn.dataset.value); renderShapeFilter(shapeState); });
+    });
+    renderNumberPad("primeCountPad", [0,1,2,3], shapeState.prime_count, function(v) {
+      if (shapeState.types.indexOf("prime_composite") < 0) shapeState.types.push("prime_composite");
+      toggleListValue(shapeState.prime_count, v); renderShapeFilter(shapeState);
+    });
+  }
+  function getShapeFilter() {
+    return {mode:shapeState.mode, types:shapeState.types.slice(), prime_count:shapeState.prime_count.map(Number)};
+  }
+  function hasShapeFilter(filter) { return filter.types.length > 0; }
+  function compactFilterPack(base, position, pair, shape, advanced) {
+    return {base_mode:base, position_filter:position, pair_filter:pair, shape_filter:shape, advanced_filter:advanced};
+  }
+  function baseModeDesc(mode) {
+    return BASE_MODE_LABELS[mode || "input"] || BASE_MODE_LABELS.input;
+  }
+  function positionDesc(filter) {
+    if (!filter || !hasPositionFilter(filter)) return "";
+    var parts = [];
+    (filter.include || []).forEach(function(v, i) { if (v) parts.push(POSITION_LABELS[i] + "保" + v); });
+    (filter.exclude || []).forEach(function(v, i) { if (v) parts.push(POSITION_LABELS[i] + "杀" + v); });
+    return parts.join(" / ");
+  }
+  function pairDesc(filter) {
+    if (!filter || !hasPairFilter(filter)) return "";
+    var parts = [];
+    if (filter.pair_sums && filter.pair_sums.length) parts.push("和" + filter.pair_sums.join(","));
+    if (filter.pair_sum_tails && filter.pair_sum_tails.length) parts.push("尾" + filter.pair_sum_tails.join(","));
+    if (filter.pair_diffs && filter.pair_diffs.length) parts.push("差" + filter.pair_diffs.join(","));
+    return (filter.mode === "exclude" ? "排除" : "包含") + parts.join(" / ");
+  }
+  function shapeDesc(filter) {
+    if (!filter || !hasShapeFilter(filter)) return "";
+    var names = filter.types.map(function(type) {
+      var item = SHAPE_TYPE_LABELS.find(function(x) { return x.value === type; });
+      return item ? item.label : type;
+    });
+    if (filter.prime_count && filter.prime_count.length) names.push("质数" + filter.prime_count.join(","));
+    return (filter.mode === "exclude" ? "排除" : "包含") + names.join(" / ");
+  }
+  function ruleGroupForType(type) {
+    return RULE_GROUPS.find(function(group) { return group.types.indexOf(type) >= 0; });
+  }
+  function clearRuleGroup(groupKey) {
+    var group = RULE_GROUPS.find(function(item) { return item.key === groupKey; });
+    if (!group) return;
+    group.types.forEach(function(type) { delete ruleFilterState[type]; });
+    renderRuleFilters(getRuleFilters());
+  }
+  function renderRuleFilters(saved) {
+    ruleFilterState = {};
+    (saved || []).forEach(function(item) {
+      if (item && item.type) ruleFilterState[item.type] = {mode:item.mode || "include", values:(item.values || []).map(String)};
+    });
+    var metaByType = {};
+    RULE_FILTER_META.forEach(function(meta) { metaByType[meta.type] = meta; });
+    RULE_GROUPS.forEach(function(group) {
+      if (!$(group.container)) return;
+      var cards = group.types.map(function(type) {
+        var meta = metaByType[type];
+        if (!meta) return "";
+        var state = ruleFilterState[meta.type] || {mode:"include", values:[]};
+        var values = meta.values.map(function(value) {
+          var active = state.values.indexOf(String(value)) >= 0;
+          var label = (meta.display ? String(value).split("").map(function(ch) { return meta.display[ch] || ch; }).join("") : value);
+          return '<button type="button" class="caibao-value-btn' + (active ? ' active' : '') + '" data-rule="' + meta.type + '" data-value="' + escapeHtml(value) + '">' + escapeHtml(label) + '</button>';
+        }).join("");
+        return '<div class="caibao-rule-card" data-rule="' + meta.type + '" data-mode="' + state.mode + '"><div class="caibao-rule-head"><span class="caibao-rule-name">' + meta.label + '</span><div class="caibao-rule-tools"><button type="button" class="mini-mode' + (state.mode === "include" ? " active" : "") + '" data-rule-mode="include">含</button><button type="button" class="mini-mode' + (state.mode === "exclude" ? " active" : "") + '" data-rule-mode="exclude">排</button><button type="button" class="mini-clear" title="清空">×</button></div></div><div class="caibao-value-grid">' + values + '</div></div>';
+      }).join("");
+      $(group.container).innerHTML = '<section class="rule-section"><div class="rule-section-title">' + group.title + '<span>' + group.hint + '</span></div><div class="caibao-rule-grid">' + cards + '</div></section>';
+    });
+    document.querySelectorAll(".caibao-value-btn").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var type = btn.dataset.rule;
+        if (!ruleFilterState[type]) ruleFilterState[type] = {mode:"include", values:[]};
+        toggleListValue(ruleFilterState[type].values, btn.dataset.value);
+        renderRuleFilters(getRuleFilters());
+      });
+    });
+    document.querySelectorAll(".caibao-rule-card").forEach(function(card) {
+      var type = card.dataset.rule;
+      card.querySelectorAll("[data-rule-mode]").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          if (!ruleFilterState[type]) ruleFilterState[type] = {mode:"include", values:[]};
+          ruleFilterState[type].mode = btn.dataset.ruleMode;
+          renderRuleFilters(getRuleFilters());
+        });
+      });
+      card.querySelector(".mini-clear").addEventListener("click", function() {
+        delete ruleFilterState[type];
+        renderRuleFilters(getRuleFilters());
+      });
+    });
+  }
+  function getRuleFilters() {
+    return Object.keys(ruleFilterState).map(function(type) {
+      var state = ruleFilterState[type] || {};
+      return {type:type, mode:state.mode || "include", values:(state.values || []).slice(), enabled:true};
+    }).filter(function(item) { return item.values.length; });
+  }
+  function ruleFiltersDesc(filters) {
+    filters = filters || [];
+    if (!filters.length) return "";
+    var labels = {};
+    var displays = {};
+    RULE_FILTER_META.forEach(function(meta) { labels[meta.type] = meta.label; displays[meta.type] = meta.display || null; });
+    return filters.map(function(item) {
+      var textValues = item.values.map(function(value) {
+        return displays[item.type] ? String(value).split("").map(function(ch) { return displays[item.type][ch] || ch; }).join("") : value;
+      });
+      return (labels[item.type] || item.type) + (item.mode === "exclude" ? "排" : "含") + textValues.join(",");
+    }).join(" / ");
+  }
+  function renderSteps(steps) {
+    steps = steps || [];
+    if (!$("stepsArea")) return;
+    var labels = {
+      legacy: "基础条件",
+      position_filter: "定位",
+      shape_filter: "形态",
+      pair_filter: "二码兼容",
+      rule_filters: "规则筛选"
+    };
+    $("stepsArea").innerHTML = steps.length ? steps.map(function(step) {
+      var removed = Math.max(0, Number(step.before || 0) - Number(step.after || 0));
+      return '<span class="step-chip"><strong>' + (labels[step.name] || step.name) + '</strong> ' + step.before + '→' + step.after + '，减' + removed + '</span>';
+    }).join("") : "";
+  }
+  function validateClientConflicts(digits, killDigits, positionFilter, ruleFilters, advancedFilter) {
+    var overlap = digits.split("").filter(function(d) { return killDigits.indexOf(d) >= 0; });
+    if (overlap.length) return "胆码和杀码冲突：" + Array.from(new Set(overlap)).join("");
+    var hasPosition = hasPositionFilter(positionFilter);
+    if (hasPosition && ["group","group3","group6","baozi"].indexOf(baseMode) >= 0) {
+      return "定位筛选只能用于直选全量或输入原始三位号码池，不能用于组选代表号大底";
+    }
+    for (var i = 0; i < 3; i++) {
+      var inc = (positionFilter.include[i] || "").split("");
+      var exc = (positionFilter.exclude[i] || "").split("");
+      var both = inc.filter(function(d) { return exc.indexOf(d) >= 0; });
+      if (both.length) return POSITION_LABELS[i] + "保留和排除冲突：" + Array.from(new Set(both)).join("");
+    }
+    return "";
+  }
   function toggleConditionType(type) {
     if (advancedState.conditions[type]) delete advancedState.conditions[type];
     else advancedState.conditions[type] = [];
@@ -669,6 +1339,7 @@
     renderAdvancedFilter();
   }
   function renderAdvancedFilter() {
+    if (!$("advancedConditionChips") || !$("advancedConditionCards")) return;
     $("advancedConditionChips").innerHTML = ADVANCED_ORDER.map(function(type) {
       var active = !!advancedState.conditions[type];
       return '<button type="button" class="condition-chip' + (active ? " active" : "") + '" data-type="' + type + '">' + ADVANCED_META[type].label + '</button>';
@@ -685,7 +1356,7 @@
     document.querySelectorAll(".condition-chip").forEach(function(btn) {
       btn.addEventListener("click", function() { toggleConditionType(btn.dataset.type); });
     });
-    document.querySelectorAll(".value-btn").forEach(function(btn) {
+    $("advancedConditionCards").querySelectorAll(".value-btn").forEach(function(btn) {
       btn.addEventListener("click", function() { toggleConditionValue(btn.dataset.type, btn.dataset.value); });
     });
   }
@@ -698,6 +1369,7 @@
     return Object.keys(advancedState.conditions).length > 0;
   }
   function validateAdvancedFilter() {
+    if (!$("advancedMissMin") || !$("advancedMissMax")) return {ok:true, filter:{conditions:[], miss_min:0, miss_max:0}};
     var enabledTypes = ADVANCED_ORDER.filter(function(type) { return advancedState.conditions[type]; });
     for (var i = 0; i < enabledTypes.length; i++) {
       var type = enabledTypes[i], values = advancedState.conditions[type] || [];
@@ -711,6 +1383,10 @@
     return {ok:true, filter:{conditions:conditions, miss_min:missMin, miss_max:missMax}};
   }
   function restoreAdvancedFilter(saved) {
+    if (!$("advancedMissMin") || !$("advancedMissMax")) {
+      advancedState = {conditions:{}};
+      return;
+    }
     saved = saved || {};
     advancedState = {conditions: {}};
     (saved.conditions || []).forEach(function(item) {
@@ -730,6 +1406,7 @@
     return parts.join("; ");
   }
   function applyAdvancedPreset() {
+    if (!$("advancedMissMin") || !$("advancedMissMax")) return;
     advancedState.conditions = {
       sum: ["6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21"],
       span: ["2","3","4","5","6","7","8"],
@@ -793,6 +1470,7 @@
       nextIssue = updated.nextIssue || "";
       renderDrawSidebar();
       if (updated.updated === false) toast(updated.error || "批量开奖更新失败，已保留本地已有开奖");
+      else if (updated.warning) toast(updated.warning);
       else toast("已补全开奖：" + (updated.added || 0) + "期，已拉取" + (updated.fetched || 0) + "期");
     } catch(e) { toast(e.message); }
     finally { $("refreshDrawBtn").disabled = false; $("updateDrawBtn").disabled = false; $("refreshDrawBtn").textContent = oldText; }
@@ -800,9 +1478,9 @@
 
   function addSegmentCard(mode) {
     if (!mode || !SEGMENT_SIZES[mode]) return;
+    activateCondition("segment");
     segmentCards.push({ id: ++segmentCardIdCounter, mode: mode, groups: SEGMENT_DEMOS[mode].map(function(g) { return g; }) });
     renderSegmentCards();
-    $("segmentTypeSelect").value = "";
   }
   function removeSegmentCard(cardId) { segmentCards = segmentCards.filter(function(c) { return c.id !== cardId; }); renderSegmentCards(); }
   function renderSegmentCards() {
@@ -876,7 +1554,7 @@
   function renderCodeCards() {
     if (!codeCards.length) { $("codeCards").innerHTML = '<div class="code-empty">暂未添加N码条件。</div>'; return; }
     $("codeCards").innerHTML = codeCards.map(function(card) {
-      var hintMap = {"01":"号码中包含0~1个所选数字即通过","012":"号码中包含0~2个所选数字即通过","123":"号码中包含1~3个所选数字即通过"};
+      var hintMap = {"01":"号码中包含0~1个所选数字即通过","012":"号码中包含0~2个所选数字即通过","123":"号码中包含1~3个所选数字即通过","23":"号码中包含2~3个所选数字即通过"};
       var hint = hintMap[card.condition] || "";
       var digitsHtml = Array.from({length:10}, function(_, d) {
         var active = (card.digits || "").indexOf(String(d)) !== -1;
@@ -952,37 +1630,74 @@
 
   function resultText(filtered) {
     if (!filtered.length) return "没有匹配的号码";
-    return filtered.reduce(function(lines, n, i) { if (i%10===0) lines.push([]); lines[lines.length-1].push(n); return lines; }, []).map(function(line) { return line.join("  "); }).join("\n");
+    var perLine = Math.max(1, Math.min(50, Number(($("resultPerLine") && $("resultPerLine").value) || 10)));
+    var sep = (($("resultSeparator") && $("resultSeparator").value) || "  ").replace("\\n", "\n");
+    return filtered.reduce(function(lines, n, i) {
+      if (i % perLine === 0) lines.push([]);
+      lines[lines.length-1].push(n);
+      return lines;
+    }, []).map(function(line) { return line.join(sep); }).join("\n");
   }
   function renderResult(filtered) { $("resultBadge").textContent = filtered.length + "组"; $("resultBox").textContent = resultText(filtered); }
-  function displayFilterResults(data, digits, advanceDigits, killDigits, segment, filters, codeFilters, advancedFilter) {
+  function displayFilterResults(data, digits, advanceDigits, killDigits, segment, filters, codeFilters, advancedFilter, extraFilters) {
+    extraFilters = extraFilters || {};
     currentResult = data.filtered || []; currentDigits = digits; currentAdvanceDigits = advanceDigits;
     currentKillDigits = killDigits || ""; currentSegment = segment || "";
     currentSegmentFilters = filters || data.segment_filters || [];
     currentCodeFilters = codeFilters || data.code_filters || [];
     currentAdvancedFilter = advancedFilter || data.advanced_filter || null;
+    currentBaseMode = extraFilters.base_mode || data.base_mode || baseMode || "input";
+    currentPositionFilter = extraFilters.position_filter || data.position_filter || getPositionFilter();
+    currentPairFilter = extraFilters.pair_filter || data.pair_filter || getPairFilter();
+    currentShapeFilter = extraFilters.shape_filter || data.shape_filter || getShapeFilter();
+    currentRuleFilters = extraFilters.rule_filters || data.rule_filters || getRuleFilters();
+    currentSteps = data.steps || extraFilters.steps || [];
     currentTotal = data.total || 0; currentPercent = data.percent || 0;
     $("totalCount").textContent = currentTotal; $("filteredCount").textContent = currentResult.length;
     $("percent").textContent = currentPercent + "%";
     renderResult(currentResult);
+    renderSteps(currentSteps);
     $("statsArea").style.display = "block"; $("resultArea").style.display = "block"; $("emptyState").style.display = "none";
-    lastResultObj = { id: Date.now(), time: nowText(), targetIssue: nextIssue || autoIssueName(), digits: digits, advance_digits: advanceDigits, kill_digits: currentKillDigits, segment: segment, segment_filters: currentSegmentFilters, code_filters: currentCodeFilters, advanced_filter: currentAdvancedFilter, total: currentTotal, count: currentResult.length, percent: currentPercent, filtered: currentResult, actualDraw: null, hit: null };
+    var request = {text:$("inputArea").value.trim(), base_mode:currentBaseMode, pool_mode:currentBaseMode, digits:digits, advance_digits:advanceDigits, kill_digits:currentKillDigits, segment_filters:currentSegmentFilters, code_filters:currentCodeFilters, advanced_filter:currentAdvancedFilter, position_filter:currentPositionFilter, pair_filter:currentPairFilter, shape_filter:currentShapeFilter, rule_filters:currentRuleFilters};
+    lastResultObj = { id: Date.now(), time: nowText(), targetIssue: nextIssue || autoIssueName(), request: request, filters: compactFilterPack(currentBaseMode, currentPositionFilter, currentPairFilter, currentShapeFilter, currentAdvancedFilter), base_mode: currentBaseMode, pool_mode: currentBaseMode, position_filter: currentPositionFilter, pair_filter: currentPairFilter, shape_filter: currentShapeFilter, rule_filters: currentRuleFilters, steps: currentSteps, digits: digits, advance_digits: advanceDigits, kill_digits: currentKillDigits, segment: segment, segment_filters: currentSegmentFilters, code_filters: currentCodeFilters, advanced_filter: currentAdvancedFilter, total: currentTotal, count: currentResult.length, percent: currentPercent, filtered: currentResult, actualDraw: null, hit: null };
     $("resultArea").scrollIntoView({behavior:"smooth", block:"start"});
   }
   async function startFilter() {
-    var text = $("inputArea").value.trim(), digits = cleanDigits($("filterDigits").value), advanceDigits = cleanDigits($("advanceDigits").value), killDigits = cleanDigits($("killDigits").value);
+    var text = $("inputArea").value.trim(), digits = cleanDigits($("filterDigits").value), advanceDigits = "", killDigits = cleanDigits($("killDigits").value);
     $("filterDigits").value = digits; $("advanceDigits").value = advanceDigits; $("killDigits").value = killDigits;
     var seg = validateSegmentFilters();
     var code = validateCodeFilters();
     var advanced = validateAdvancedFilter();
-    if (!text) return toast("请填写号码池");
+    var positionFilter = getPositionFilter();
+    var pairFilter = getPairFilter();
+    var shapeFilter = getShapeFilter();
+    var ruleFilters = getRuleFilters();
+    var hasNewFilters = hasPositionFilter(positionFilter) || hasPairFilter(pairFilter) || hasShapeFilter(shapeFilter) || ruleFilters.length;
+    if (!text && baseMode === "input") return toast("请填写号码池，或切换到大底模式");
     if (!seg.ok) return toast(seg.msg);
     if (!code.ok) return toast(code.msg);
     if (!advanced.ok) return toast(advanced.msg);
-    if (!digits && !advanceDigits && !killDigits && !seg.filters.length && !code.filters.length && !hasAdvancedState()) return toast("请至少输入一个筛选条件");
+    var conflict = validateClientConflicts(digits, killDigits, positionFilter, ruleFilters, advanced.filter);
+    if (conflict) return toast(conflict);
+    if (baseMode === "input" && !digits && !advanceDigits && !killDigits && !seg.filters.length && !code.filters.length && !hasAdvancedState() && !hasNewFilters) return toast("请至少输入一个筛选条件");
     $("filterBtn").disabled = true;
     var oldText = $("filterBtn").textContent; $("filterBtn").textContent = "筛选中...";
-    try { var data = await api("/api/filter", {text:text, digits:digits, advance_digits:advanceDigits, kill_digits:killDigits, segment_filters:seg.filters, code_filters:code.filters, advanced_filter:advanced.filter}); displayFilterResults(data, digits, advanceDigits, killDigits, data.segment || "", seg.filters, data.code_filters || [], data.advanced_filter || advanced.filter); toast("筛选完成：" + data.count + "组"); }
+    var payload = {
+      text:text,
+      base_mode:baseMode,
+      pool_mode:baseMode,
+      digits:digits,
+      advance_digits:advanceDigits,
+      kill_digits:killDigits,
+      segment_filters:seg.filters,
+      code_filters:code.filters,
+      advanced_filter:advanced.filter,
+      position_filter:positionFilter,
+      pair_filter:pairFilter,
+      shape_filter:shapeFilter,
+      rule_filters:ruleFilters
+    };
+    try { var data = await api("/api/filter", payload); displayFilterResults(data, digits, advanceDigits, killDigits, data.segment || "", seg.filters, data.code_filters || [], data.advanced_filter || advanced.filter, {base_mode:baseMode, position_filter:positionFilter, pair_filter:pairFilter, shape_filter:shapeFilter, rule_filters:ruleFilters}); toast("筛选完成：" + data.count + "组"); }
     catch(e) { toast(e.message); }
     finally { $("filterBtn").disabled = false; $("filterBtn").textContent = oldText; }
   }
@@ -1016,9 +1731,18 @@
       var preview = (item.filtered || []).slice(0, 10).join(" ") + ((item.filtered||[]).length > 10 ? " ...等" + item.count + "组" : "");
       var segPills = (item.segment_filters || []).map(function(f) { return '<span class="pill green">' + f.mode + ' 段组</span>'; }).join("");
       var codePills = (item.code_filters || []).map(function(f) { return '<span class="pill" style="background:#fdf6ff;color:#8b2fc9;">' + f.code_len + '码=' + f.condition + '</span>'; }).join("");
-      var advText = advancedDesc(item.advanced_filter);
-      var advPill = advText ? '<span class="pill red">高级缩水</span>' : "";
-      return '<div class="history-item" data-id="' + item.id + '"><div class="history-meta"><span class="pill">' + (item.time||"") + '</span>' + statusPill(item) + (item.digits ? '<span class="pill">胆码 ' + item.digits + '</span>' : "") + (item.kill_digits ? '<span class="pill red">杀码 ' + item.kill_digits + '</span>' : "") + (item.advance_digits ? '<span class="pill">两码差 ' + item.advance_digits + '</span>' : "") + segPills + codePills + advPill + '</div><div class="history-preview">期号 ' + (item.targetIssue||"--") + ' | 总数 ' + item.total + ' | 命中 ' + item.count + ' | 占比 ' + item.percent + '% | ' + (advText ? advText + ' | ' : '') + preview + '</div><div class="history-actions"><input class="inline-issue" data-role="issue" value="' + (item.targetIssue||"") + '" placeholder="期号"><button class="btn-secondary btn-sm" data-role="save-issue">改期号</button><button class="btn-secondary btn-sm" data-role="load">加载条件</button><button class="btn-red btn-sm" data-role="delete">删除</button></div></div>';
+      var advText = "";
+      var advPill = "";
+      var basePill = item.base_mode && item.base_mode !== "input" ? '<span class="pill">' + baseModeDesc(item.base_mode) + '</span>' : "";
+      var positionText = positionDesc(item.position_filter);
+      var pairText = pairDesc(item.pair_filter);
+      var shapeText = shapeDesc(item.shape_filter);
+      var ruleText = ruleFiltersDesc(item.rule_filters);
+      var legacyDiffText = item.advance_digits ? "二码差含" + item.advance_digits : "";
+      var newPills = (positionText ? '<span class="pill green">定位</span>' : "") + (pairText ? '<span class="pill">二码</span>' : "") + (shapeText ? '<span class="pill red">形态</span>' : "");
+      var rulePill = (ruleText || legacyDiffText) ? '<span class="pill green">规则筛选</span>' : "";
+      var filterText = [positionText, pairText, shapeText, ruleText, legacyDiffText, advText].filter(Boolean).join(" | ");
+      return '<div class="history-item" data-id="' + item.id + '"><div class="history-meta"><span class="pill">' + (item.time||"") + '</span>' + statusPill(item) + basePill + (item.digits ? '<span class="pill">胆码 ' + item.digits + '</span>' : "") + (item.kill_digits ? '<span class="pill red">杀码 ' + item.kill_digits + '</span>' : "") + segPills + codePills + advPill + rulePill + newPills + '</div><div class="history-preview">期号 ' + (item.targetIssue||"--") + ' | 总数 ' + item.total + ' | 命中 ' + item.count + ' | 占比 ' + item.percent + '% | ' + (filterText ? filterText + ' | ' : '') + preview + '</div><div class="history-actions"><input class="inline-issue" data-role="issue" value="' + (item.targetIssue||"") + '" placeholder="期号"><button class="btn-secondary btn-sm" data-role="save-issue">改期号</button><button class="btn-secondary btn-sm" data-role="load">加载条件</button><button class="btn-red btn-sm" data-role="delete">删除</button></div></div>';
     }).join("");
     document.querySelectorAll(".history-item").forEach(function(el) {
       var id = Number(el.dataset.id);
@@ -1036,11 +1760,43 @@
   }
   async function deleteHistoryItem(id) { try { await setHistory(historyItems.filter(function(x) { return Number(x.id) !== id; })); toast("已删除"); } catch(e) { toast(e.message); } }
   function restoreHistoryItem(item) {
-    $("filterDigits").value = item.digits || ""; $("advanceDigits").value = item.advance_digits || ""; $("killDigits").value = item.kill_digits || "";
-    renderSegmentGroups(item.segment_filters || itemToSegmentFilters(item));
-    renderCodeCardsFromFilters(item.code_filters || []);
-    restoreAdvancedFilter(item.advanced_filter || {});
-    displayFilterResults({total:item.total, count:item.count, percent:item.percent, filtered:item.filtered||[]}, item.digits||"", item.advance_digits||"", item.kill_digits||"", item.segment||"", item.segment_filters||[], item.code_filters||[], item.advanced_filter || null);
+    var request = item.request || {};
+    var savedBaseMode = item.base_mode || item.pool_mode || request.base_mode || request.pool_mode || "input";
+    setBaseMode(savedBaseMode);
+    $("inputArea").value = request.text || item.text || "";
+    $("filterDigits").value = item.digits || request.digits || "";
+    $("advanceDigits").value = "";
+    $("killDigits").value = item.kill_digits || request.kill_digits || "";
+    var segmentFilters = item.segment_filters || request.segment_filters || itemToSegmentFilters(item) || [];
+    var codeFilters = item.code_filters || request.code_filters || [];
+    var advancedFilter = item.advanced_filter || request.advanced_filter || {};
+    var positionFilter = item.position_filter || request.position_filter || {include:["","",""], exclude:["","",""]};
+    var pairFilter = item.pair_filter || request.pair_filter || {mode:"include", pair_sums:[], pair_sum_tails:[], pair_diffs:[]};
+    var shapeFilter = item.shape_filter || request.shape_filter || {mode:"include", types:[], prime_count:[]};
+    var ruleFilters = item.rule_filters || request.rule_filters || [];
+    if (!ruleFilters.length && (item.advance_digits || request.advance_digits)) {
+      ruleFilters = [{type:"pair_diff", mode:"include", values:String(item.advance_digits || request.advance_digits).split("")}];
+    }
+    renderPositionFilter(positionFilter);
+    renderPairFilter(pairFilter);
+    renderShapeFilter(shapeFilter);
+    renderRuleFilters(ruleFilters);
+    renderSegmentGroups(segmentFilters);
+    renderCodeCardsFromFilters(codeFilters);
+    restoreAdvancedFilter(advancedFilter);
+    inferActiveConditions(item.digits||request.digits||"", item.kill_digits||request.kill_digits||"", positionFilter, shapeFilter, ruleFilters, segmentFilters, codeFilters, advancedFilter);
+    var restoredPairAsRules = [];
+    if (!ruleFilters.length && pairFilter) {
+      if (pairFilter.pair_sums && pairFilter.pair_sums.length) restoredPairAsRules.push({type:"pair_sum", mode:pairFilter.mode || "include", values:pairFilter.pair_sums.map(String)});
+      if (pairFilter.pair_sum_tails && pairFilter.pair_sum_tails.length) restoredPairAsRules.push({type:"pair_sum_tail", mode:pairFilter.mode || "include", values:pairFilter.pair_sum_tails.map(String)});
+      if (pairFilter.pair_diffs && pairFilter.pair_diffs.length) restoredPairAsRules.push({type:"pair_diff", mode:pairFilter.mode || "include", values:pairFilter.pair_diffs.map(String)});
+      if (restoredPairAsRules.length) {
+        ruleFilters = restoredPairAsRules;
+        renderRuleFilters(ruleFilters);
+        inferActiveConditions(item.digits||request.digits||"", item.kill_digits||request.kill_digits||"", positionFilter, shapeFilter, ruleFilters, segmentFilters, codeFilters, advancedFilter);
+      }
+    }
+    displayFilterResults({total:item.total, count:item.count, percent:item.percent, filtered:item.filtered||[], base_mode:savedBaseMode}, item.digits||request.digits||"", "", item.kill_digits||request.kill_digits||"", item.segment||"", segmentFilters, codeFilters, advancedFilter || null, {base_mode:savedBaseMode, position_filter:positionFilter, pair_filter:{mode:"include", pair_sums:[], pair_sum_tails:[], pair_diffs:[]}, shape_filter:shapeFilter, rule_filters:ruleFilters});
     toast("已加载历史：" + item.count + "组");
   }
   function renderCodeCardsFromFilters(savedFilters) {
@@ -1073,6 +1829,7 @@
       var checked = await api("/api/check_history", {items: historyItems.slice()});
       await setHistory(checked.items || historyItems);
       if (updated.updated === false) toast("批量更新失败，仅按本地已有开奖回查历史");
+      else if (updated.warning) toast(updated.warning + "；已按现有开奖回查历史");
       else toast("已补全开奖并回查历史：" + (updated.added || 0) + "期");
     } catch(e) { toast(e.message); }
     finally { $("updateDrawBtn").disabled = false; $("refreshDrawBtn").disabled = false; $("updateDrawBtn").textContent = oldText; }
@@ -1081,8 +1838,7 @@
   function exportToFile() {
     if (!currentResult.length) return toast("无结果可保存");
     var codeDesc = (currentCodeFilters||[]).map(function(f) { return f.code_len + "码=" + f.condition + "[" + f.digits + "]"; }).join(", ") || "--";
-    var advDesc = advancedDesc(currentAdvancedFilter) || "--";
-    var content = "筛选结果\n自动期号:" + autoIssueName() + " 数字:" + (currentDigits||"--") + " 杀码:" + (currentKillDigits||"--") + " 两码差:" + (currentAdvanceDigits||"--") + " 段组:" + (currentSegment||"--") + " N码:" + codeDesc + " 高级缩水:" + advDesc + "\n总数:" + currentTotal + " 命中:" + currentResult.length + " 占比:" + currentPercent + "%\n" + "=".repeat(50) + "\n" + $("resultBox").textContent + "\n";
+    var content = "筛选结果\n自动期号:" + autoIssueName() + " 大底:" + baseModeDesc(currentBaseMode) + " 数字:" + (currentDigits||"--") + " 杀码:" + (currentKillDigits||"--") + " 段组:" + (currentSegment||"--") + " N码:" + codeDesc + " 定位:" + (positionDesc(currentPositionFilter)||"--") + " 形态:" + (shapeDesc(currentShapeFilter)||"--") + " 规则筛选:" + (ruleFiltersDesc(currentRuleFilters)||"--") + "\n总数:" + currentTotal + " 命中:" + currentResult.length + " 占比:" + currentPercent + "%\n" + "=".repeat(50) + "\n" + $("resultBox").textContent + "\n";
     var blob = new Blob([content], {type:"text/plain;charset=utf-8"}), a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = "筛号_" + new Date().toISOString().slice(0,19).replace(/:/g,"-") + ".txt"; a.click(); URL.revokeObjectURL(a.href);
     toast("文件已保存");
@@ -1090,21 +1846,39 @@
   function clearAll() {
     $("inputArea").value = ""; $("filterDigits").value = ""; $("advanceDigits").value = ""; $("killDigits").value = "";
     segmentCards = []; renderSegmentCards(); codeCards = []; renderCodeCards(); qimaCodes = []; renderQimaList(); $("qimaInput").value = "";
+    setBaseMode("input");
+    renderPositionFilter();
+    renderPairFilter();
+    renderShapeFilter();
+    renderRuleFilters();
     restoreAdvancedFilter({});
+    setActiveConditions([]);
     currentQimaLen = 5; $("qimaLenSelect").value = "5"; $("qimaInput").placeholder = "输入5个数字，如 01234"; $("qimaInput").maxLength = 5;
-    $("statsArea").style.display = "none"; $("resultArea").style.display = "none"; $("emptyState").style.display = "block";
-    currentResult = []; currentAdvancedFilter = null; lastResultObj = null;
+    $("statsArea").style.display = "none"; $("resultArea").style.display = "none"; $("emptyState").style.display = "block"; renderSteps([]);
+    currentResult = []; currentAdvancedFilter = null; currentBaseMode = "input"; currentPositionFilter = null; currentPairFilter = null; currentShapeFilter = null; currentRuleFilters = []; currentSteps = []; lastResultObj = null;
   }
   function loadDemo() {
+    setBaseMode("input");
     $("inputArea").value = demoRaw; $("filterDigits").value = "357"; $("advanceDigits").value = ""; $("killDigits").value = "4";
-    renderSegmentGroups([{mode:"2-3-5", groups:SEGMENT_DEMOS["2-3-5"]}, {mode:"5-5", groups:SEGMENT_DEMOS["5-5"]}]);
+    renderPositionFilter({include:["","",""], exclude:["","4",""]});
+    renderPairFilter({mode:"include", pair_sums:[5,8,9], pair_sum_tails:[], pair_diffs:[2,3,5]});
+    renderShapeFilter({mode:"include", types:["group3","group6","semi_consecutive"], prime_count:[]});
+    renderRuleFilters([
+      {type:"pair_diff", mode:"include", values:["2","3","5"]},
+      {type:"pair_sum_tail", mode:"include", values:["2","3","4","5"]},
+      {type:"average", mode:"include", values:["3","4","5","6"]},
+      {type:"ac", mode:"include", values:["1","2"]},
+      {type:"mod012", mode:"exclude", values:["000","222"]}
+    ]);
+    renderSegmentGroups([{mode:"2-3-5", groups:SEGMENT_DEMOS["2-3-5"]}, {mode:"3-3-4", groups:SEGMENT_DEMOS["3-3-4"]}]);
     renderCodeCardsFromFilters([{code_len:5, condition:"012", digits:"01234"}]);
     restoreAdvancedFilter({conditions:[{type:"sum", values:["8","9","10","11","12","13","14","15","16","17","18"]}, {type:"span", values:["3","4","5","6","7"]}], miss_min:0, miss_max:1});
+    inferActiveConditions("357", "4", getPositionFilter(), getShapeFilter(), getRuleFilters(), getSegmentFilters(), getCodeFilters(), validateAdvancedFilter().filter);
     qimaCodes = [{digits: "01234", len: 5}, {digits: "123456", len: 6}];
     renderQimaList();
     currentQimaLen = 5; $("qimaLenSelect").value = "5";
     $("qimaInput").placeholder = "输入5个数字，如 01234"; $("qimaInput").maxLength = 5;
-    toast("示例数据已填入，号码条件、段组、N码和高级过滤规则已添加");
+    toast("示例数据已填入，号码条件、段组、N码和分组规则已添加");
   }
   async function clearHistory() {
     if (!historyItems.length) return;
@@ -1113,8 +1887,24 @@
     }
   }
 
-  $("advancedPresetBtn").addEventListener("click", applyAdvancedPreset);
-  $("segmentAddBtn").addEventListener("click", function() { addSegmentCard($("segmentTypeSelect").value); });
+  document.querySelectorAll("[data-condition-add]").forEach(function(btn) {
+    btn.addEventListener("click", function() { activateCondition(btn.dataset.conditionAdd); });
+  });
+  document.querySelectorAll("[data-segment-add]").forEach(function(btn) {
+    btn.addEventListener("click", function() { addSegmentCard(btn.dataset.segmentAdd); });
+  });
+  document.querySelectorAll("[data-condition-remove]").forEach(function(btn) {
+    btn.addEventListener("click", function() { deactivateCondition(btn.dataset.conditionRemove, true); });
+  });
+  if ($("advancedPresetBtn")) $("advancedPresetBtn").addEventListener("click", applyAdvancedPreset);
+  document.querySelectorAll("[data-base-mode]").forEach(function(btn) { btn.addEventListener("click", function() { setBaseMode(btn.dataset.baseMode); }); });
+  $("fillBasePoolBtn").addEventListener("click", fillBasePool);
+  document.querySelectorAll("[data-rule-clear]").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      clearRuleGroup(btn.dataset.ruleClear);
+      toast((CONDITION_LABELS[btn.dataset.ruleClear] || "规则") + "已清空");
+    });
+  });
   $("codeAddBtn").addEventListener("click", addCodeCard);
   $("qimaLenSelect").addEventListener("change", function() {
     currentQimaLen = Number(this.value);
@@ -1134,8 +1924,11 @@
   $("exportFileBtn").addEventListener("click", exportToFile);
   $("updateDrawBtn").addEventListener("click", updateDrawRecords);
   $("clearHistoryBtn").addEventListener("click", clearHistory);
+  $("resultPerLine").addEventListener("input", function() { if (currentResult.length) renderResult(currentResult); });
+  $("resultSeparator").addEventListener("change", function() { if (currentResult.length) renderResult(currentResult); });
   ["filterDigits","advanceDigits","killDigits"].forEach(function(id) { $(id).addEventListener("keydown", function(e) { if (e.key==="Enter") startFilter(); }); });
-  loadDraws(); renderSegmentCards(); renderCodeCards(); renderAdvancedFilter(); loadHistory();
+  setBaseMode("input"); renderPositionFilter(); renderPairFilter(); renderShapeFilter(); renderRuleFilters();
+  loadDraws(); renderSegmentCards(); renderCodeCards(); renderAdvancedFilter(); setActiveConditions([]); loadHistory();
 })();
 </script>
 </body>

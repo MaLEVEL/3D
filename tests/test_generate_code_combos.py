@@ -86,6 +86,12 @@ class GenerateCodesEndpointLogicTest(unittest.TestCase):
         self.assertFalse(result.get("ok"))
         self.assertEqual(400, status)
 
+    def test_declared_len_must_match_digits_length(self):
+        result, status = app.process_generate_codes([{"digits": "01234", "len": 8}])
+        self.assertFalse(result.get("ok"))
+        self.assertIn("error", result)
+        self.assertEqual(400, status)
+
 
 if __name__ == "__main__":
     unittest.main()

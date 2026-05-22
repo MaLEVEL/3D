@@ -26,11 +26,14 @@ IP138_3D_URL = "https://caipiao.ip138.com/3d/"
 SEGMENT_PATTERNS = {
     "2-2-6": [2, 2, 6],
     "2-3-5": [2, 3, 5],
+    "3-3-4": [3, 3, 4],
     "5-5": [5, 5],
 }
 ADVANCED_CONDITION_TYPES = {
     "sum",
     "sum_tail",
+    "average",
+    "ac",
     "odd_even",
     "big_small",
     "span",
@@ -40,11 +43,13 @@ ADVANCED_CONDITION_TYPES = {
 ADVANCED_CONDITION_LABELS = {
     "sum": "和值",
     "sum_tail": "和尾",
+    "average": "平均值",
+    "ac": "AC值",
     "odd_even": "奇偶比",
     "big_small": "大小比",
     "span": "跨度",
     "mod012": "012路比",
-    "size_area": "大中小",
+    "size_area": "小中大",
 }
 
 try:
@@ -200,14 +205,19 @@ def fetch_ip138_recent():
 
 
 def fetch_official_recent_pages(pages=OFFICIAL_FETCH_PAGES, size=OFFICIAL_PAGE_SIZE):
+    records = []
+    seen = set()
     ip138_error_msg = ""
     try:
-        return fetch_ip138_recent()
+        for record in fetch_ip138_recent():
+            issue = str(record.get("issue", ""))
+            if issue in seen:
+                continue
+            seen.add(issue)
+            records.append(record)
     except Exception as ip138_error:
         ip138_error_msg = str(ip138_error)
 
-    records = []
-    seen = set()
     try:
         for page in range(1, pages + 1):
             page_records = fetch_official_recent(page=page, size=size)
@@ -222,9 +232,11 @@ def fetch_official_recent_pages(pages=OFFICIAL_FETCH_PAGES, size=OFFICIAL_PAGE_S
             if new_count == 0:
                 break
     except Exception as official_error:
-        raise RuntimeError(f"all draw sources failed; ip138: {ip138_error_msg}; official: {official_error}") from official_error
+        if not records:
+            raise RuntimeError(f"all draw sources failed; ip138: {ip138_error_msg}; official: {official_error}") from official_error
     if not records:
         raise RuntimeError(f"all draw sources returned no valid records; ip138: {ip138_error_msg}")
+    records.sort(key=lambda r: int(str(r.get("issue", "0"))) if str(r.get("issue", "")).isdigit() else 0, reverse=True)
     return records
 
 
@@ -246,9 +258,80 @@ def merge_draw_records(new_records):
     return merged, added
 
 
+def issue_number(record_or_issue):
+    issue = record_or_issue if isinstance(record_or_issue, str) else record_or_issue.get("issue", "")
+    issue = str(issue)
+    return int(issue) if issue.isdigit() else None
+
+
+def latest_issue_year(records):
+    years = []
+    for record in records:
+        issue = str(record.get("issue", ""))
+        if issue.isdigit() and len(issue) >= 5:
+            years.append(issue[:4])
+    return max(years) if years else ""
+
+
 def next_issue(records):
-    numeric = [int(str(r.get("issue", ""))) for r in records if str(r.get("issue", "")).isdigit()]
-    return str(max(numeric) + 1) if numeric else ""
+    year = latest_issue_year(records)
+    numeric = []
+    for record in records:
+        issue = str(record.get("issue", ""))
+        if issue.isdigit() and (not year or issue.startswith(year)):
+            numeric.append(int(issue))
+    if not numeric:
+        return ""
+    ordered = sorted(set(numeric))
+    current = ordered[0]
+    for issue in ordered[1:]:
+        if issue == current + 1:
+            current = issue
+        elif issue > current + 1:
+            break
+    return str(current + 1)
+
+
+def contiguous_draw_update(existing_records, fetched_records):
+    existing_nums = {issue_number(record) for record in existing_records}
+    existing_nums.discard(None)
+    fetched_by_num = {}
+    for record in fetched_records:
+        num = issue_number(record)
+        if num is not None:
+            fetched_by_num[num] = record
+
+    if not fetched_by_num:
+        return [], []
+    if not existing_nums:
+        return list(fetched_by_num.values()), []
+
+    max_existing = max(existing_nums)
+    allowed_nums = {num for num in fetched_by_num if num <= max_existing}
+    expected = max_existing + 1
+    missing = []
+    for num in sorted(n for n in fetched_by_num if n > max_existing):
+        if num == expected:
+            allowed_nums.add(num)
+            expected += 1
+        elif num > expected:
+            missing = list(range(expected, num))
+            break
+
+    mergeable = [fetched_by_num[num] for num in sorted(allowed_nums, reverse=True)]
+    return mergeable, [str(num) for num in missing]
+
+
+def fetch_and_merge_draw_records():
+    existing = load_draw_records()
+    fetched = fetch_official_recent_pages()
+    mergeable, missing = contiguous_draw_update(existing, fetched)
+    if mergeable:
+        records, added = merge_draw_records(mergeable)
+    else:
+        records, added = existing, 0
+    records.sort(key=lambda r: str(r.get("issue", "")), reverse=True)
+    return records, added, fetched, missing
 
 
 def recent_draw_records(limit=10):
@@ -262,6 +345,21 @@ def group_hit(filtered, draw):
         return False
     draw_key = "".join(sorted(draw))
     return any("".join(sorted(str(n).zfill(3))) == draw_key for n in filtered)
+
+
+def direct_hit(filtered, draw):
+    if not filtered or not draw:
+        return False
+    draw = str(draw).zfill(3)
+    return any(str(n).zfill(3) == draw for n in filtered)
+
+
+def history_item_hit(item, draw):
+    request = item.get("request") if isinstance(item.get("request"), dict) else {}
+    base_mode = str(item.get("base_mode") or item.get("pool_mode") or request.get("base_mode") or request.get("pool_mode") or "input")
+    if base_mode in ("direct", "full"):
+        return direct_hit(item.get("filtered", []), draw)
+    return group_hit(item.get("filtered", []), draw)
 
 
 def generate_code_combos(digits):
@@ -296,15 +394,24 @@ def process_generate_codes(codes):
     if not codes:
         return {"ok": False, "error": "请提供复式码列表"}, 400
     all_generated = set()
+    normalized_codes = []
     for item in codes:
         digits = str(item.get("digits", ""))
         if not digits:
             continue
+        raw_len = item.get("len", item.get("code_len", len(digits)))
+        try:
+            code_len = int(raw_len)
+        except (TypeError, ValueError):
+            return {"ok": False, "error": "码数必须是数字"}, 400
+        if code_len != len(digits):
+            return {"ok": False, "error": f"{digits} 是{len(digits)}码，不能标记为{code_len}码"}, 400
         try:
             combos = generate_code_combos(digits)
         except ValueError as e:
             return {"ok": False, "error": str(e)}, 400
         all_generated.update(combos)
+        normalized_codes.append({"digits": digits, "len": code_len})
     if not all_generated:
         return {"ok": False, "error": "没有有效的复式码"}, 400
     generated = sorted(all_generated)
@@ -312,7 +419,7 @@ def process_generate_codes(codes):
         "ok": True,
         "generated": generated,
         "count": len(generated),
-        "codes": [{"digits": c.get("digits", ""), "len": c.get("len", len(c.get("digits", "")))} for c in codes],
+        "codes": normalized_codes,
     }, 200
 
 
@@ -382,8 +489,8 @@ def validate_code_filter(item):
     if code_len < 3 or code_len > 8:
         raise ValueError(f"码数必须在3-8之间，当前为{code_len}")
     condition = item.get("condition", "012")
-    if condition not in ("01", "012", "123"):
-        raise ValueError(f"条件只能是01、012或123，当前为{condition}")
+    if condition not in ("01", "012", "123", "23"):
+        raise ValueError(f"条件只能是01、012、123或23，当前为{condition}")
     digits = str(item.get("digits", ""))
     if len(digits) != code_len:
         raise ValueError(f"需要恰好{code_len}个数字，当前有{len(digits)}个")
@@ -402,6 +509,8 @@ def passes_code_filter(number, code_filter):
         return count in (0, 1, 2)
     elif condition == "123":
         return count in (1, 2, 3)
+    elif condition == "23":
+        return count in (2, 3)
     return True
 
 
@@ -459,6 +568,10 @@ def normalize_advanced_condition_values(kind, values):
         values = [values]
     if kind == "sum":
         return _range_values(values, 0, 27, "和值")
+    if kind == "average":
+        return _range_values(values, 0, 9, "平均值")
+    if kind == "ac":
+        return _range_values(values, 1, 3, "AC值")
     if kind in ("sum_tail", "span"):
         label = "和尾" if kind == "sum_tail" else "跨度"
         return _range_values(values, 0, 9, label)
@@ -466,7 +579,7 @@ def normalize_advanced_condition_values(kind, values):
         label = "奇偶比" if kind == "odd_even" else "大小比"
         return _ratio_values(values, 2, label)
     if kind in ("mod012", "size_area"):
-        label = "012路比" if kind == "mod012" else "大中小"
+        label = "012路比" if kind == "mod012" else "小中大"
         return _ratio_values(values, 3, label)
     raise ValueError(f"未知高级条件: {kind}")
 
@@ -516,6 +629,10 @@ def advanced_condition_value(number, kind):
         return str(sum(digits))
     if kind == "sum_tail":
         return str(sum(digits) % 10)
+    if kind == "average":
+        return str(int(sum(digits) / 3 + 0.5))
+    if kind == "ac":
+        return str(ac_value(number))
     if kind == "odd_even":
         odd = sum(1 for d in digits if d % 2 == 1)
         return f"{odd}:{3 - odd}"
@@ -570,6 +687,393 @@ def segment_desc(segment_filters):
         f"{item['mode']} segment [" + " | ".join(item["groups_data"]) + "]"
         for item in segment_filters
     )
+
+
+def get_alias(data, *names, default=None):
+    for name in names:
+        if name in data:
+            return data.get(name)
+    return default
+
+
+def unique_numbers_from_text(text):
+    matches = re.findall(r"\b\d{3}\b", text or "")
+    seen = set()
+    unique = []
+    for m in matches:
+        if m not in seen:
+            seen.add(m)
+            unique.append(m)
+    return unique
+
+
+def number_shape(number):
+    unique_count = len(set(number))
+    if unique_count == 1:
+        return "baozi"
+    if unique_count == 2:
+        return "group3"
+    return "group6"
+
+
+def generate_base_pool(mode="input"):
+    mode = str(mode or "input").lower()
+    if mode in ("direct", "full"):
+        return [f"{i:03d}" for i in range(1000)]
+    if mode == "baozi":
+        return [str(i) * 3 for i in range(10)]
+
+    result = []
+    for i in range(1000):
+        number = f"{i:03d}"
+        shape = number_shape(number)
+        if mode == "group3" and shape != "group3":
+            continue
+        if mode == "group6" and shape != "group6":
+            continue
+        if mode == "group" and shape not in ("group3", "group6"):
+            continue
+        if mode in ("group", "group3", "group6"):
+            number = "".join(sorted(number))
+        result.append(number)
+
+    if mode in ("group", "group3", "group6"):
+        return sorted(set(result))
+    if mode == "input":
+        return []
+    raise ValueError(f"invalid base_mode: {mode}")
+
+
+def normalize_base_mode(data):
+    return str(get_alias(data, "base_mode", "baseMode", "pool_mode", "poolMode", default="input") or "input").lower()
+
+
+def _digits_set(raw, label):
+    if raw is None:
+        return set()
+    if isinstance(raw, list):
+        raw = "".join(str(item) for item in raw)
+    text = str(raw).strip()
+    if not text:
+        return set()
+    if not text.isdigit():
+        raise ValueError(f"{label} must contain digits only")
+    return set(text)
+
+
+def normalize_position_filter(data):
+    raw = get_alias(data, "position_filter", "positionFilter")
+    if not isinstance(raw, dict):
+        return {"include": [set(), set(), set()], "exclude": [set(), set(), set()], "enabled": False}
+
+    include_raw = raw.get("include", raw.get("keep", []))
+    exclude_raw = raw.get("exclude", raw.get("kill", []))
+    include_raw = include_raw if isinstance(include_raw, list) else []
+    exclude_raw = exclude_raw if isinstance(exclude_raw, list) else []
+
+    include = []
+    exclude = []
+    for idx in range(3):
+        include.append(_digits_set(include_raw[idx] if idx < len(include_raw) else "", f"position include {idx}"))
+        exclude.append(_digits_set(exclude_raw[idx] if idx < len(exclude_raw) else "", f"position exclude {idx}"))
+    for idx in range(3):
+        overlap = include[idx] & exclude[idx]
+        if overlap:
+            raise ValueError(f"position {idx + 1} include/exclude conflict: {''.join(sorted(overlap))}")
+    return {
+        "include": include,
+        "exclude": exclude,
+        "enabled": any(include) or any(exclude),
+    }
+
+
+def passes_position_filter(number, position_filter):
+    if not position_filter.get("enabled"):
+        return True
+    for idx, digit in enumerate(number):
+        include = position_filter["include"][idx]
+        exclude = position_filter["exclude"][idx]
+        if include and digit not in include:
+            return False
+        if exclude and digit in exclude:
+            return False
+    return True
+
+
+def serialize_position_filter(position_filter):
+    return {
+        "include": ["".join(sorted(values)) for values in position_filter.get("include", [])],
+        "exclude": ["".join(sorted(values)) for values in position_filter.get("exclude", [])],
+    }
+
+
+def _int_values(raw, low, high, label):
+    if raw is None:
+        return []
+    values = raw if isinstance(raw, list) else [raw]
+    result = []
+    for item in values:
+        text = str(item).strip()
+        if not text:
+            continue
+        if not text.isdigit():
+            raise ValueError(f"{label} must contain numbers")
+        value = int(text)
+        if value < low or value > high:
+            raise ValueError(f"{label} must be between {low} and {high}")
+        result.append(value)
+    return sorted(set(result))
+
+
+def normalize_shape_filter(data):
+    raw = get_alias(data, "shape_filter", "shapeFilter")
+    if not isinstance(raw, dict):
+        return {"types": [], "mode": "include", "prime_count": [], "values": [], "enabled": False}
+    types = raw.get("types", [])
+    types = types if isinstance(types, list) else [types]
+    allowed = {
+        "baozi",
+        "group3",
+        "group6",
+        "pair",
+        "consecutive",
+        "semi_consecutive",
+        "prime_composite",
+    }
+    normalized_types = []
+    for item in types:
+        kind = str(item).strip().lower()
+        if not kind:
+            continue
+        if kind not in allowed:
+            raise ValueError(f"invalid shape type: {kind}")
+        normalized_types.append(kind)
+    mode = str(raw.get("mode", "include") or "include").lower()
+    if mode not in ("include", "exclude"):
+        raise ValueError("shape_filter mode must be include or exclude")
+    prime_count = _int_values(raw.get("prime_count", raw.get("primeCount", raw.get("values", []))), 0, 3, "prime_count")
+    return {
+        "types": sorted(set(normalized_types)),
+        "mode": mode,
+        "prime_count": prime_count,
+        "values": prime_count,
+        "enabled": bool(normalized_types),
+    }
+
+
+def is_consecutive(number):
+    digits = sorted(set(int(d) for d in number))
+    if len(digits) != 3:
+        return False
+    return digits[1] == digits[0] + 1 and digits[2] == digits[1] + 1
+
+
+def is_semi_consecutive(number):
+    digits = sorted(set(int(d) for d in number))
+    if len(digits) < 2 or is_consecutive(number):
+        return False
+    return any(digits[i + 1] - digits[i] == 1 for i in range(len(digits) - 1))
+
+
+def shape_type_hit(number, kind, shape_filter=None):
+    shape = number_shape(number)
+    if kind == "pair":
+        return shape == "group3"
+    if kind in ("baozi", "group3", "group6"):
+        return shape == kind
+    if kind == "consecutive":
+        return is_consecutive(number)
+    if kind == "semi_consecutive":
+        return is_semi_consecutive(number)
+    if kind == "prime_composite":
+        prime_count = sum(1 for d in number if d in "2357")
+        allowed = (shape_filter or {}).get("prime_count") or (shape_filter or {}).get("values")
+        return prime_count in allowed if allowed else True
+    return False
+
+
+def passes_shape_filter(number, shape_filter):
+    if not shape_filter.get("enabled"):
+        return True
+    hit = any(shape_type_hit(number, kind, shape_filter) for kind in shape_filter["types"])
+    return hit if shape_filter.get("mode") != "exclude" else not hit
+
+
+def normalize_pair_filter(data):
+    raw = get_alias(data, "pair_filter", "pairFilter")
+    if not isinstance(raw, dict):
+        return {"pair_sums": [], "pair_sum_tails": [], "pair_diffs": [], "mode": "include", "enabled": False}
+    mode = str(raw.get("mode", "include") or "include").lower()
+    if mode not in ("include", "exclude"):
+        raise ValueError("pair_filter mode must be include or exclude")
+    result = {
+        "pair_sums": _int_values(raw.get("pair_sums", raw.get("pairSums", [])), 0, 18, "pair_sums"),
+        "pair_sum_tails": _int_values(raw.get("pair_sum_tails", raw.get("pairSumTails", [])), 0, 9, "pair_sum_tails"),
+        "pair_diffs": _int_values(raw.get("pair_diffs", raw.get("pairDiffs", [])), 0, 9, "pair_diffs"),
+        "mode": mode,
+    }
+    result["enabled"] = bool(result["pair_sums"] or result["pair_sum_tails"] or result["pair_diffs"])
+    return result
+
+
+def pair_values(number):
+    digits = [int(d) for d in number]
+    pairs = ((digits[0], digits[1]), (digits[0], digits[2]), (digits[1], digits[2]))
+    return {
+        "pair_sums": [a + b for a, b in pairs],
+        "pair_sum_tails": [(a + b) % 10 for a, b in pairs],
+        "pair_diffs": [abs(a - b) for a, b in pairs],
+    }
+
+
+def passes_pair_filter(number, pair_filter):
+    if not pair_filter.get("enabled"):
+        return True
+    values = pair_values(number)
+    hit = (
+        bool(set(pair_filter["pair_sums"]) & set(values["pair_sums"]))
+        or bool(set(pair_filter["pair_sum_tails"]) & set(values["pair_sum_tails"]))
+        or bool(set(pair_filter["pair_diffs"]) & set(values["pair_diffs"]))
+    )
+    return hit if pair_filter.get("mode") != "exclude" else not hit
+
+
+def _string_values(raw, allowed, label):
+    if raw is None:
+        return []
+    values = raw if isinstance(raw, list) else [raw]
+    allowed_set = set(allowed)
+    result = []
+    for item in values:
+        value = str(item).strip()
+        if not value:
+            continue
+        if value not in allowed_set:
+            raise ValueError(f"{label} contains invalid value: {value}")
+        result.append(value)
+    return sorted(set(result))
+
+
+def _pattern_values(chars, length):
+    result = [""]
+    for _ in range(length):
+        result = [prefix + ch for prefix in result for ch in chars]
+    return result
+
+
+def _pair_code_values():
+    return [f"{a}{b}" for a in range(10) for b in range(a, 10)]
+
+
+def ac_value(number):
+    digits = [int(d) for d in number]
+    diffs = {
+        abs(digits[0] - digits[1]),
+        abs(digits[0] - digits[2]),
+        abs(digits[1] - digits[2]),
+    }
+    return len(diffs)
+
+
+RULE_FILTER_META = {
+    "sum": {"kind": "int", "low": 0, "high": 27},
+    "sum_tail": {"kind": "int", "low": 0, "high": 9},
+    "average": {"kind": "int", "low": 0, "high": 9},
+    "ac": {"kind": "int", "low": 1, "high": 3},
+    "span": {"kind": "int", "low": 0, "high": 9},
+    "first_last_diff": {"kind": "int", "low": 0, "high": 9},
+    "pair_sum": {"kind": "int", "low": 0, "high": 18},
+    "pair_sum_tail": {"kind": "int", "low": 0, "high": 9},
+    "pair_diff": {"kind": "int", "low": 0, "high": 9},
+    "pair_sum_diff": {"kind": "int", "low": 0, "high": 18},
+    "pair_code": {"kind": "string", "allowed": _pair_code_values()},
+    "mod012": {"kind": "string", "allowed": _pattern_values("012", 3)},
+    "big_small": {"kind": "string", "allowed": _pattern_values("BS", 3)},
+    "odd_even": {"kind": "string", "allowed": _pattern_values("OE", 3)},
+    "prime_composite": {"kind": "string", "allowed": _pattern_values("PC", 3)},
+    "size_area": {"kind": "string", "allowed": _pattern_values("LMH", 3)},
+}
+
+
+def normalize_rule_filters(data):
+    raw = get_alias(data, "rule_filters", "ruleFilters", default=[])
+    if not isinstance(raw, list):
+        return []
+    result = []
+    for item in raw:
+        if not isinstance(item, dict) or item.get("enabled") is False:
+            continue
+        kind = str(item.get("type", item.get("kind", ""))).strip()
+        if kind not in RULE_FILTER_META:
+            raise ValueError(f"invalid rule filter type: {kind}")
+        mode = str(item.get("mode", "include") or "include").lower()
+        if mode not in ("include", "exclude"):
+            raise ValueError(f"{kind} mode must be include or exclude")
+        meta = RULE_FILTER_META[kind]
+        if meta["kind"] == "int":
+            values = _int_values(item.get("values", []), meta["low"], meta["high"], kind)
+            values = [str(v) for v in values]
+        else:
+            values = _string_values(item.get("values", []), meta["allowed"], kind)
+        if values:
+            result.append({"type": kind, "mode": mode, "values": values})
+    return result
+
+
+def rule_filter_values(number, kind):
+    digits = [int(d) for d in number]
+    if kind == "sum":
+        return {str(sum(digits))}
+    if kind == "sum_tail":
+        return {str(sum(digits) % 10)}
+    if kind == "average":
+        return {str(int(sum(digits) / 3 + 0.5))}
+    if kind == "ac":
+        return {str(ac_value(number))}
+    if kind == "span":
+        return {str(max(digits) - min(digits))}
+    if kind == "first_last_diff":
+        return {str(abs(digits[0] - digits[2]))}
+    pairs = ((digits[0], digits[1], digits[2]), (digits[0], digits[2], digits[1]), (digits[1], digits[2], digits[0]))
+    if kind == "pair_sum":
+        return {str(a + b) for a, b, _ in pairs}
+    if kind == "pair_sum_tail":
+        return {str((a + b) % 10) for a, b, _ in pairs}
+    if kind == "pair_diff":
+        return {str(abs(a - b)) for a, b, _ in pairs}
+    if kind == "pair_sum_diff":
+        return {str(abs((a + b) - c)) for a, b, c in pairs}
+    if kind == "pair_code":
+        return {"".join(sorted((str(a), str(b)))) for a, b, _ in pairs}
+    if kind == "mod012":
+        return {"".join(str(d % 3) for d in digits)}
+    if kind == "big_small":
+        return {"".join("B" if d >= 5 else "S" for d in digits)}
+    if kind == "odd_even":
+        return {"".join("O" if d % 2 else "E" for d in digits)}
+    if kind == "prime_composite":
+        return {"".join("P" if str(d) in "2357" else "C" for d in digits)}
+    if kind == "size_area":
+        return {"".join("L" if d <= 2 else "M" if d <= 6 else "H" for d in digits)}
+    return set()
+
+
+def passes_rule_filters(number, rule_filters):
+    for item in rule_filters:
+        values = rule_filter_values(number, item["type"])
+        hit = bool(values & set(item["values"]))
+        if item["mode"] == "include" and not hit:
+            return False
+        if item["mode"] == "exclude" and hit:
+            return False
+    return True
+
+
+def apply_filter_step(numbers, name, predicate, steps):
+    before = len(numbers)
+    filtered = [n for n in numbers if predicate(n)]
+    steps.append({"name": name, "before": before, "after": len(filtered)})
+    return filtered
 
 
 class RequestHandler(http.server.BaseHTTPRequestHandler):
@@ -641,24 +1145,29 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
     def _api_filter(self):
         data = self._read_json_body()
         text = data.get("text", "")
+        base_mode = normalize_base_mode(data)
         digits = data.get("digits", "")
         advance_digits = data.get("advance_digits", "")
         kill_digits = data.get("kill_digits", "")
         segment_filters = normalize_segment_filters(data)
         code_filters = normalize_code_filters(data)
         advanced_filter = normalize_advanced_filter(data)
+        position_filter = normalize_position_filter(data)
+        shape_filter = normalize_shape_filter(data)
+        pair_filter = normalize_pair_filter(data)
+        rule_filters = normalize_rule_filters(data)
 
-        matches = re.findall(r"\b\d{3}\b", text)
-        seen = set()
-        unique = []
-        for m in matches:
-            if m not in seen:
-                seen.add(m)
-                unique.append(m)
+        if base_mode in ("group", "group3", "group6", "baozi") and position_filter["enabled"]:
+            raise ValueError("定位筛选需要使用直选全量或输入原始三位号码池，不能用于组选代表号大底")
+
+        unique = unique_numbers_from_text(text) if base_mode == "input" else generate_base_pool(base_mode)
 
         target_include = set(digits) if digits else set()
         target_advance = set(advance_digits) if advance_digits else set()
         target_kill = set(kill_digits) if kill_digits else set()
+        overlap = target_include & target_kill
+        if overlap:
+            raise ValueError(f"胆码和杀码冲突：{''.join(sorted(overlap))}")
 
         if (
             not target_include
@@ -667,34 +1176,52 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             and not segment_filters
             and not code_filters
             and not advanced_filter["enabled"]
+            and not position_filter["enabled"]
+            and not shape_filter["enabled"]
+            and not pair_filter["enabled"]
+            and not rule_filters
+            and base_mode == "input"
         ):
             self._send_json({"error": "please enter at least one filter condition"}, 400)
             return
 
-        filtered = []
-        for n in unique:
+        steps = []
+        filtered = unique[:]
+
+        def passes_legacy_filters(n):
             if advanced_filter["enabled"] and not passes_advanced_filter(n, advanced_filter):
-                continue
+                return False
             if target_kill and any(d in n for d in target_kill):
-                continue
+                return False
             if target_include and not any(d in n for d in target_include):
-                continue
+                return False
             if target_advance:
                 a, b, c = int(n[0]), int(n[1]), int(n[2])
                 adv_set = {abs(a - b), abs(a - c), abs(b - c)}
                 if not any(str(d) in target_advance for d in adv_set):
-                    continue
+                    return False
             if any(not passes_segment_pattern(n, item["groups"], item["mode"]) for item in segment_filters):
-                continue
+                return False
             if any(not passes_code_filter(n, cf) for cf in code_filters):
-                continue
-            filtered.append(n)
+                return False
+            return True
+
+        filtered = apply_filter_step(filtered, "legacy", passes_legacy_filters, steps)
+        if position_filter["enabled"]:
+            filtered = apply_filter_step(filtered, "position_filter", lambda n: passes_position_filter(n, position_filter), steps)
+        if shape_filter["enabled"]:
+            filtered = apply_filter_step(filtered, "shape_filter", lambda n: passes_shape_filter(n, shape_filter), steps)
+        if pair_filter["enabled"]:
+            filtered = apply_filter_step(filtered, "pair_filter", lambda n: passes_pair_filter(n, pair_filter), steps)
+        if rule_filters:
+            filtered = apply_filter_step(filtered, "rule_filters", lambda n: passes_rule_filters(n, rule_filters), steps)
 
         self._send_json({
             "total": len(unique),
             "filtered": filtered,
             "count": len(filtered),
             "percent": round(len(filtered) / len(unique) * 100, 2) if unique else 0,
+            "base_mode": base_mode,
             "advance_digits": advance_digits,
             "segment": segment_desc(segment_filters),
             "segment_filters": [
@@ -712,6 +1239,21 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                 "miss_min": advanced_filter["miss_min"],
                 "miss_max": advanced_filter["miss_max"],
             },
+            "position_filter": serialize_position_filter(position_filter),
+            "shape_filter": {
+                "types": shape_filter["types"],
+                "mode": shape_filter["mode"],
+                "prime_count": shape_filter["prime_count"],
+                "values": shape_filter["values"],
+            },
+            "pair_filter": {
+                "pair_sums": pair_filter["pair_sums"],
+                "pair_sum_tails": pair_filter["pair_sum_tails"],
+                "pair_diffs": pair_filter["pair_diffs"],
+                "mode": pair_filter["mode"],
+            },
+            "rule_filters": rule_filters,
+            "steps": steps,
         })
 
     def _api_generate_codes(self):
@@ -722,13 +1264,14 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 
     def _api_update_draws(self):
         try:
-            new_records = fetch_official_recent_pages()
-            records, added = merge_draw_records(new_records)
-            records.sort(key=lambda r: str(r.get("issue", "")), reverse=True)
+            records, added, new_records, missing = fetch_and_merge_draw_records()
             self._send_json({
                 "ok": True,
+                "updated": True,
                 "added": added,
                 "fetched": len(new_records),
+                "missingIssues": missing,
+                "warning": f"远端开奖存在跳期，缺少 {'、'.join(missing)}，已停止写入后续期号" if missing else "",
                 "latest": records[0] if records else None,
                 "nextIssue": next_issue(records),
                 "count": len(records),
@@ -784,7 +1327,7 @@ def check_history_items(items):
         if draw:
             next_item["actualIssue"] = draw.get("issue")
             next_item["actualDraw"] = draw.get("draw")
-            next_item["hit"] = group_hit(item.get("filtered", []), draw.get("draw", ""))
+            next_item["hit"] = history_item_hit(item, draw.get("draw", ""))
         checked.append(next_item)
     return checked
 
