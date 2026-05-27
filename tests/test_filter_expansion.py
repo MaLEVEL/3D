@@ -137,6 +137,26 @@ class RuleFilterTest(unittest.TestCase):
         self.assertEqual({"4"}, app.rule_filter_values("148", "average"))
         self.assertEqual({"3"}, app.rule_filter_values("148", "ac"))
 
+    def test_group_stat_pattern_filters_ignore_position_order(self):
+        filters = app.normalize_rule_filters({
+            "rule_filters": [
+                {"type": "odd_even_count", "values": ["2:1"]},
+                {"type": "big_small_count", "values": ["0:3"]},
+                {"type": "prime_composite_count", "values": ["2:1"]},
+                {"type": "mod012_count", "values": ["1:1:1"]},
+            ]
+        })
+
+        self.assertTrue(app.passes_rule_filters("123", filters))
+        self.assertTrue(app.passes_rule_filters("321", filters))
+        self.assertFalse(app.passes_rule_filters("456", filters))
+
+    def test_group_stat_pattern_values(self):
+        self.assertEqual({"2:1"}, app.rule_filter_values("123", "odd_even_count"))
+        self.assertEqual({"0:3"}, app.rule_filter_values("123", "big_small_count"))
+        self.assertEqual({"2:1"}, app.rule_filter_values("123", "prime_composite_count"))
+        self.assertEqual({"1:1:1"}, app.rule_filter_values("123", "mod012_count"))
+
 
 class SegmentPatternExpansionTest(unittest.TestCase):
     def test_334_segment_pattern_is_supported(self):
@@ -147,6 +167,30 @@ class SegmentPatternExpansionTest(unittest.TestCase):
         })
         self.assertEqual("3-3-4", filters[0]["mode"])
         self.assertEqual(["012", "345", "6789"], filters[0]["groups_data"])
+
+    def test_segment_filters_are_strict_by_default(self):
+        filters = app.normalize_segment_filters({
+            "segment_filters": [
+                {"mode": "2-3-5", "groups": ["14", "023", "56789"]},
+                {"mode": "3-3-4", "groups": ["012", "345", "6789"]},
+            ]
+        })
+
+        self.assertFalse(app.passes_segment_filters("147", filters))
+
+    def test_segment_filters_allow_configured_tolerance(self):
+        filters = app.normalize_segment_filters({
+            "segment_filters": [
+                {"mode": "2-3-5", "groups": ["14", "023", "56789"]},
+                {"mode": "3-3-4", "groups": ["012", "345", "6789"]},
+            ]
+        })
+
+        self.assertTrue(app.passes_segment_filters("147", filters, tolerance=1))
+
+    def test_segment_tolerance_is_clamped(self):
+        self.assertEqual(0, app.normalize_segment_tolerance({"segment_tolerance": -1}))
+        self.assertEqual(2, app.normalize_segment_tolerance({"segment_tolerance": 9}))
 
 
 class CodeFilterExpansionTest(unittest.TestCase):
@@ -159,6 +203,27 @@ class CodeFilterExpansionTest(unittest.TestCase):
 
         self.assertTrue(app.passes_code_filter("124", code_filter))
         self.assertFalse(app.passes_code_filter("567", code_filter))
+
+    def test_code_filter_defaults_to_unique_digit_count(self):
+        code_filter = app.validate_code_filter({
+            "code_len": 3,
+            "condition": "012",
+            "digits": "123",
+        })
+
+        self.assertFalse(code_filter["count_repeat"])
+        self.assertTrue(app.passes_code_filter("112", code_filter))
+
+    def test_code_filter_can_count_repeated_digits(self):
+        code_filter = app.validate_code_filter({
+            "code_len": 3,
+            "condition": "012",
+            "digits": "123",
+            "count_repeat": True,
+        })
+
+        self.assertTrue(code_filter["count_repeat"])
+        self.assertFalse(app.passes_code_filter("112", code_filter))
 
 
 class HistoryHitModeTest(unittest.TestCase):

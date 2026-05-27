@@ -3,6 +3,7 @@
 """FC3D local number filtering tool."""
 
 import http.server
+import datetime
 import json
 import os
 import re
@@ -23,6 +24,8 @@ OFFICIAL_PAGE_SIZE = 30
 OFFICIAL_FETCH_PAGES = 10
 DRAW_LIST_LIMIT = 50
 IP138_3D_URL = "https://caipiao.ip138.com/3d/"
+THREED178_YEAR_URL = "https://www.3d178.cn/kaijiang/{year}/"
+HUINIAO_HISTORY_URL = "https://api.huiniao.top/interface/home/lotteryHistory"
 SEGMENT_PATTERNS = {
     "2-2-6": [2, 2, 6],
     "2-3-5": [2, 3, 5],
@@ -109,24 +112,29 @@ def http_get_text(url, headers=None, timeout=20):
     except Exception as first_error:
         if os.name != "nt":
             raise
-        ps_script = (
-            "[Console]::OutputEncoding=[System.Text.Encoding]::UTF8; "
-            "$ProgressPreference='SilentlyContinue'; "
-            "$headers=@{'User-Agent'='Mozilla/5.0'; 'Referer'='https://caipiao.ip138.com/'}; "
-            f"$r=Invoke-WebRequest -Uri $args[0] -UseBasicParsing -TimeoutSec {int(timeout)} -Headers $headers; "
-            "[Console]::Write($r.Content)"
-        )
+        curl_cmd = [
+            "curl.exe",
+            "--silent",
+            "--show-error",
+            "--location",
+            "--fail",
+            "--max-time",
+            str(max(1, int(timeout))),
+        ]
+        for key, value in headers.items():
+            curl_cmd.extend(["-H", f"{key}: {value}"])
+        curl_cmd.append(url)
         try:
             completed = subprocess.run(
-                ["powershell", "-NoProfile", "-Command", ps_script, url],
+                curl_cmd,
                 capture_output=True,
                 timeout=timeout + 10,
             )
-        except (OSError, subprocess.SubprocessError) as ps_error:
-            raise RuntimeError(f"request failed: {first_error}; powershell fallback failed: {ps_error}") from ps_error
+        except (OSError, subprocess.SubprocessError) as curl_error:
+            raise RuntimeError(f"request failed: {first_error}; curl fallback failed: {curl_error}") from curl_error
         if completed.returncode != 0 or not completed.stdout:
             stderr = completed.stderr.decode("utf-8", "ignore").strip()
-            raise RuntimeError(f"request failed: {first_error}; powershell fallback failed: {stderr}")
+            raise RuntimeError(f"request failed: {first_error}; curl fallback failed: {stderr}")
         return completed.stdout.decode("utf-8", "ignore")
 
 
@@ -204,10 +212,76 @@ def fetch_ip138_recent():
     return parse_ip138_draw_records(html)
 
 
+def parse_huiniao_draw_records(data):
+    root = data.get("data", {}) if isinstance(data, dict) else {}
+    list_data = root.get("data", {}) if isinstance(root.get("data", {}), dict) else {}
+    items = list_data.get("list", [])
+    if not items and isinstance(root.get("last"), dict):
+        items = [root["last"]]
+
+    records = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        issue = str(item.get("code", "")).strip()
+        digits = [item.get("one"), item.get("two"), item.get("three")]
+        draw = "".join(str(d).strip() for d in digits)
+        date = str(item.get("day") or item.get("open_time") or "").split(" ")[0].strip()
+        if issue.isdigit() and len(issue) >= 5 and draw.isdigit() and len(draw) == 3:
+            records.append({"issue": issue, "draw": draw, "date": date})
+    if not records:
+        raise RuntimeError("huiniao draw api returned no valid records")
+    return records
+
+
+def fetch_huiniao_recent(limit=80):
+    url = f"{HUINIAO_HISTORY_URL}?type=fcsd&page=1&limit={int(limit)}"
+    text = http_get_text(url, {"User-Agent": "Mozilla/5.0"}, timeout=20)
+    return parse_huiniao_draw_records(json.loads(text))
+
+
+def parse_3d178_draw_records(html):
+    records = []
+    html = re.sub(r"<!--.*?-->", "", html, flags=re.S)
+    row_pattern = re.compile(
+        r'<td\s+class="td_qh"[^>]*>\s*<a[^>]+href="/kaijiang/\d{4}/(?P<issue>\d{5,})\.shtml"[^>]*>\s*(?P=issue)\s*</a>\s*</td>\s*'
+        r'<td\s+class="td_code"[^>]*>(?P<code>.*?)<td>\s*(?P<date>\d{4}-\d{2}-\d{2})\s*</td>',
+        re.S,
+    )
+    for match in row_pattern.finditer(html):
+        digits = re.findall(r"<span>\s*(\d)\s*</span>", match.group("code"))
+        draw = "".join(digits[:3])
+        issue = match.group("issue")
+        if issue.isdigit() and len(draw) == 3:
+            records.append({"issue": issue, "draw": draw, "date": match.group("date")})
+    if not records:
+        raise RuntimeError("3d178 draw page returned no valid records")
+    return records
+
+
+def fetch_3d178_recent(year=None):
+    year = year or datetime.date.today().year
+    url = THREED178_YEAR_URL.format(year=year)
+    html = http_get_text(url, {"User-Agent": "Mozilla/5.0"}, timeout=20)
+    return parse_3d178_draw_records(html)
+
+
 def fetch_official_recent_pages(pages=OFFICIAL_FETCH_PAGES, size=OFFICIAL_PAGE_SIZE):
     records = []
     seen = set()
+    huiniao_error_msg = ""
     ip138_error_msg = ""
+    threed178_error_msg = ""
+    try:
+        for record in fetch_huiniao_recent(size * pages):
+            issue = str(record.get("issue", ""))
+            if issue in seen:
+                continue
+            seen.add(issue)
+            records.append(record)
+    except Exception as huiniao_error:
+        huiniao_error_msg = str(huiniao_error)
+
     try:
         for record in fetch_ip138_recent():
             issue = str(record.get("issue", ""))
@@ -217,6 +291,16 @@ def fetch_official_recent_pages(pages=OFFICIAL_FETCH_PAGES, size=OFFICIAL_PAGE_S
             records.append(record)
     except Exception as ip138_error:
         ip138_error_msg = str(ip138_error)
+
+    try:
+        for record in fetch_3d178_recent():
+            issue = str(record.get("issue", ""))
+            if issue in seen:
+                continue
+            seen.add(issue)
+            records.append(record)
+    except Exception as threed178_error:
+        threed178_error_msg = str(threed178_error)
 
     try:
         for page in range(1, pages + 1):
@@ -233,9 +317,9 @@ def fetch_official_recent_pages(pages=OFFICIAL_FETCH_PAGES, size=OFFICIAL_PAGE_S
                 break
     except Exception as official_error:
         if not records:
-            raise RuntimeError(f"all draw sources failed; ip138: {ip138_error_msg}; official: {official_error}") from official_error
+            raise RuntimeError(f"all draw sources failed; huiniao: {huiniao_error_msg}; ip138: {ip138_error_msg}; 3d178: {threed178_error_msg}; official: {official_error}") from official_error
     if not records:
-        raise RuntimeError(f"all draw sources returned no valid records; ip138: {ip138_error_msg}")
+        raise RuntimeError(f"all draw sources returned no valid records; huiniao: {huiniao_error_msg}; ip138: {ip138_error_msg}; 3d178: {threed178_error_msg}")
     records.sort(key=lambda r: int(str(r.get("issue", "0"))) if str(r.get("issue", "")).isdigit() else 0, reverse=True)
     return records
 
@@ -324,14 +408,22 @@ def contiguous_draw_update(existing_records, fetched_records):
 
 def fetch_and_merge_draw_records():
     existing = load_draw_records()
-    fetched = fetch_official_recent_pages()
+    source_warning = ""
+    try:
+        fetched = fetch_official_recent_pages()
+    except Exception as batch_error:
+        source_warning = str(batch_error)
+        try:
+            fetched = [fetch_latest_draw()]
+        except Exception as latest_error:
+            raise RuntimeError(f"all draw sources failed; batch: {batch_error}; latest: {latest_error}") from latest_error
     mergeable, missing = contiguous_draw_update(existing, fetched)
     if mergeable:
         records, added = merge_draw_records(mergeable)
     else:
         records, added = existing, 0
     records.sort(key=lambda r: str(r.get("issue", "")), reverse=True)
-    return records, added, fetched, missing
+    return records, added, fetched, missing, source_warning
 
 
 def recent_draw_records(limit=10):
@@ -484,6 +576,26 @@ def normalize_segment_filters(data):
     return [{"mode": mode, "groups_data": groups_data, "groups": groups}] if groups else []
 
 
+def normalize_segment_tolerance(data):
+    try:
+        value = int(data.get("segment_tolerance", data.get("segmentTolerance", 0)))
+    except (TypeError, ValueError):
+        value = 0
+    return max(0, min(2, value))
+
+
+def passes_segment_filters(number, segment_filters, tolerance=0):
+    if not segment_filters:
+        return True
+    allowed_misses = normalize_segment_tolerance({"segment_tolerance": tolerance})
+    misses = sum(
+        1
+        for item in segment_filters
+        if not passes_segment_pattern(number, item["groups"], item["mode"])
+    )
+    return misses <= allowed_misses
+
+
 def validate_code_filter(item):
     code_len = int(item.get("code_len", 3))
     if code_len < 3 or code_len > 8:
@@ -496,13 +608,21 @@ def validate_code_filter(item):
         raise ValueError(f"需要恰好{code_len}个数字，当前有{len(digits)}个")
     if not digits.isdigit() or len(set(digits)) != len(digits):
         raise ValueError(f"数字必须是不重复的0-9数字")
-    return {"code_len": code_len, "condition": condition, "digits": digits}
+    raw_count_repeat = item.get("count_repeat", False)
+    if isinstance(raw_count_repeat, str):
+        count_repeat = raw_count_repeat.strip().lower() in ("1", "true", "yes", "repeat", "count")
+    else:
+        count_repeat = bool(raw_count_repeat)
+    return {"code_len": code_len, "condition": condition, "digits": digits, "count_repeat": count_repeat}
 
 
 def passes_code_filter(number, code_filter):
     digits = code_filter["digits"]
     condition = code_filter["condition"]
-    count = len(set(number) & set(digits))
+    if code_filter.get("count_repeat"):
+        count = sum(1 for d in number if d in digits)
+    else:
+        count = len(set(number) & set(digits))
     if condition == "01":
         return count in (0, 1)
     elif condition == "012":
@@ -529,7 +649,7 @@ def normalize_code_filters(data):
 
 def code_filter_desc(code_filters):
     return "; ".join(
-        f"{cf['code_len']}码={cf['condition']}[{cf['digits']}]"
+        f"{cf['code_len']}码={cf['condition']}[{cf['digits']}]{'同号计重' if cf.get('count_repeat') else '同号不计重'}"
         for cf in code_filters
     )
 
@@ -682,11 +802,15 @@ def advanced_filter_desc(advanced_filter):
     return "; ".join(parts)
 
 
-def segment_desc(segment_filters):
-    return "; ".join(
+def segment_desc(segment_filters, tolerance=0):
+    text = "; ".join(
         f"{item['mode']} segment [" + " | ".join(item["groups_data"]) + "]"
         for item in segment_filters
     )
+    tolerance = normalize_segment_tolerance({"segment_tolerance": tolerance})
+    if text and tolerance:
+        text += f"; 容错{tolerance}"
+    return text
 
 
 def get_alias(data, *names, default=None):
@@ -961,6 +1085,18 @@ def _pattern_values(chars, length):
     return result
 
 
+def _two_count_values():
+    return [f"{count}:{3 - count}" for count in range(4)]
+
+
+def _three_count_values():
+    return [
+        f"{a}:{b}:{3 - a - b}"
+        for a in range(3, -1, -1)
+        for b in range(3 - a, -1, -1)
+    ]
+
+
 def _pair_code_values():
     return [f"{a}{b}" for a in range(10) for b in range(a, 10)]
 
@@ -991,6 +1127,10 @@ RULE_FILTER_META = {
     "big_small": {"kind": "string", "allowed": _pattern_values("BS", 3)},
     "odd_even": {"kind": "string", "allowed": _pattern_values("OE", 3)},
     "prime_composite": {"kind": "string", "allowed": _pattern_values("PC", 3)},
+    "big_small_count": {"kind": "string", "allowed": _two_count_values()},
+    "odd_even_count": {"kind": "string", "allowed": _two_count_values()},
+    "prime_composite_count": {"kind": "string", "allowed": _two_count_values()},
+    "mod012_count": {"kind": "string", "allowed": _three_count_values()},
     "size_area": {"kind": "string", "allowed": _pattern_values("LMH", 3)},
 }
 
@@ -1053,6 +1193,20 @@ def rule_filter_values(number, kind):
         return {"".join("O" if d % 2 else "E" for d in digits)}
     if kind == "prime_composite":
         return {"".join("P" if str(d) in "2357" else "C" for d in digits)}
+    if kind == "big_small_count":
+        big = sum(1 for d in digits if d >= 5)
+        return {f"{big}:{3 - big}"}
+    if kind == "odd_even_count":
+        odd = sum(1 for d in digits if d % 2)
+        return {f"{odd}:{3 - odd}"}
+    if kind == "prime_composite_count":
+        prime = sum(1 for d in number if d in "2357")
+        return {f"{prime}:{3 - prime}"}
+    if kind == "mod012_count":
+        counts = [0, 0, 0]
+        for d in digits:
+            counts[d % 3] += 1
+        return {":".join(str(n) for n in counts)}
     if kind == "size_area":
         return {"".join("L" if d <= 2 else "M" if d <= 6 else "H" for d in digits)}
     return set()
@@ -1150,6 +1304,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         advance_digits = data.get("advance_digits", "")
         kill_digits = data.get("kill_digits", "")
         segment_filters = normalize_segment_filters(data)
+        segment_tolerance = normalize_segment_tolerance(data)
         code_filters = normalize_code_filters(data)
         advanced_filter = normalize_advanced_filter(data)
         position_filter = normalize_position_filter(data)
@@ -1200,7 +1355,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                 adv_set = {abs(a - b), abs(a - c), abs(b - c)}
                 if not any(str(d) in target_advance for d in adv_set):
                     return False
-            if any(not passes_segment_pattern(n, item["groups"], item["mode"]) for item in segment_filters):
+            if not passes_segment_filters(n, segment_filters, segment_tolerance):
                 return False
             if any(not passes_code_filter(n, cf) for cf in code_filters):
                 return False
@@ -1223,14 +1378,15 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             "percent": round(len(filtered) / len(unique) * 100, 2) if unique else 0,
             "base_mode": base_mode,
             "advance_digits": advance_digits,
-            "segment": segment_desc(segment_filters),
+            "segment": segment_desc(segment_filters, segment_tolerance),
+            "segment_tolerance": segment_tolerance,
             "segment_filters": [
                 {"mode": item["mode"], "groups": item["groups_data"]}
                 for item in segment_filters
             ],
             "code_desc": code_filter_desc(code_filters),
             "code_filters": [
-                {"code_len": cf["code_len"], "condition": cf["condition"], "digits": cf["digits"]}
+                {"code_len": cf["code_len"], "condition": cf["condition"], "digits": cf["digits"], "count_repeat": cf.get("count_repeat", False)}
                 for cf in code_filters
             ],
             "advanced_desc": advanced_filter_desc(advanced_filter),
@@ -1264,14 +1420,22 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 
     def _api_update_draws(self):
         try:
-            records, added, new_records, missing = fetch_and_merge_draw_records()
+            records, added, new_records, missing, source_warning = fetch_and_merge_draw_records()
+            warning = ""
+            if source_warning:
+                if missing:
+                    warning = f"批量开奖更新失败，已切换到最新一期兜底，但本地与新开奖号之间缺少 {'、'.join(missing)}，已停止写入后续期号：{source_warning}"
+                elif added > 0:
+                    warning = f"批量开奖更新失败，已切换到最新一期兜底并完成补写：{source_warning}"
+                else:
+                    warning = f"批量开奖更新失败，已切换到最新一期兜底，但未新增写入：{source_warning}"
             self._send_json({
                 "ok": True,
                 "updated": True,
                 "added": added,
                 "fetched": len(new_records),
                 "missingIssues": missing,
-                "warning": f"远端开奖存在跳期，缺少 {'、'.join(missing)}，已停止写入后续期号" if missing else "",
+                "warning": warning or (f"远端开奖存在跳期，缺少 {'、'.join(missing)}，已停止写入后续期号" if missing else ""),
                 "latest": records[0] if records else None,
                 "nextIssue": next_issue(records),
                 "count": len(records),
@@ -1279,10 +1443,23 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             })
         except (RuntimeError, urllib.error.URLError, TimeoutError, OSError) as e:
             records = recent_draw_records(DRAW_LIST_LIMIT)
+            if not records:
+                self._send_json({
+                    "ok": True,
+                    "updated": False,
+                    "error": f"批量开奖更新失败，本地也没有可用于回查的开奖数据：{e}",
+                    "added": 0,
+                    "fetched": 0,
+                    "latest": None,
+                    "nextIssue": "",
+                    "count": 0,
+                    "records": [],
+                })
+                return
             self._send_json({
                 "ok": True,
-                "updated": False,
-                "error": f"批量开奖更新失败，已保留本地已有开奖，未写入最新一期以避免跳期：{e}",
+                "updated": True,
+                "warning": f"批量开奖更新失败，已保留本地已有开奖，未写入最新一期以避免跳期：{e}",
                 "added": 0,
                 "fetched": 0,
                 "latest": records[0] if records else None,
