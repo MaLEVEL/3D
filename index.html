@@ -140,7 +140,7 @@
   }
   .mobile-filter-toggle,
   .mobile-filter-close,
-  .mobile-filter-backdrop { display: none; }
+  .mobile-filter-backdrop { display: none !important; }
   .content-stack { display: grid; gap: 18px; min-width: 0; }
   .panel {
     border: 1px solid rgba(216,225,238,.9);
@@ -508,30 +508,37 @@
     font-weight: 900;
   }
   .result-options input, .result-options select { width: auto; min-height: 34px; padding: 6px 10px; }
+  .format-hint {
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 9px;
+    border: 1px solid #BFDBFE;
+    border-radius: 999px;
+    color: #1D4ED8;
+    background: #EFF6FF;
+    font-size: 12px;
+    font-weight: 900;
+  }
   .number-wall {
     min-height: 260px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
-    gap: 9px;
-    padding: 14px;
+    max-height: 520px;
+    display: block;
+    overflow: auto;
+    padding: 16px 18px;
     border: 1px solid var(--border-2);
     border-radius: 14px;
+    color: var(--text);
+    font: 800 15px/1.9 var(--mono);
+    white-space: pre-wrap;
+    word-break: break-word;
+    user-select: text;
     background:
-      linear-gradient(180deg, #fff, #F8FAFC),
-      repeating-linear-gradient(90deg, rgba(15,23,42,.03) 0 1px, transparent 1px 48px);
+      repeating-linear-gradient(180deg, transparent 0 30px, rgba(29,78,216,.07) 31px),
+      linear-gradient(180deg, #fff, #F8FAFC);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
   }
-  .number-chip {
-    min-height: 42px;
-    display: grid;
-    place-items: center;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    background: #fff;
-    color: #0F172A;
-    font: 900 16px/1 var(--mono);
-    box-shadow: 0 4px 12px rgba(15,23,42,.04);
-  }
-  .number-chip.hot { color: #fff; border-color: transparent; background: var(--active-gradient); }
+  .number-wall.is-loading { color: var(--muted); }
   .output-text { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
   .empty-state {
     min-height: 240px;
@@ -692,9 +699,11 @@
     .history-main { display: grid; }
     .filter-rail {
       position: fixed;
-      inset: auto 0 0 0;
+      inset: max(8px, env(safe-area-inset-top)) 0 0 0;
       z-index: 70;
-      max-height: min(86vh, 760px);
+      display: block;
+      height: calc(100dvh - max(8px, env(safe-area-inset-top)));
+      max-height: none;
       padding: 14px 14px calc(16px + env(safe-area-inset-bottom));
       overflow: auto;
       background: var(--bg);
@@ -703,13 +712,15 @@
       transform: translateY(calc(100% + 28px));
       transition: transform .22s ease;
     }
+    .filter-rail > * { margin-bottom: 14px; }
+    .filter-rail > *:last-child { margin-bottom: 0; }
     body.filter-open .filter-rail { transform: translateY(0); }
     body.filter-open { overflow: hidden; }
     .mobile-filter-backdrop {
       position: fixed;
       inset: 0;
       z-index: 60;
-      display: block;
+      display: block !important;
       pointer-events: none;
       opacity: 0;
       background: rgba(15, 23, 42, .38);
@@ -724,13 +735,61 @@
       right: 16px;
       bottom: 16px;
       z-index: 55;
-      display: inline-flex;
+      display: inline-flex !important;
       box-shadow: 0 18px 34px rgba(29,78,216,.28);
     }
     .mobile-filter-close {
-      display: inline-flex;
+      display: inline-flex !important;
       margin-bottom: 10px;
     }
+    .sticky-actions {
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      grid-template-areas:
+        "summary demo clear"
+        "filter filter filter";
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+      background: linear-gradient(180deg, rgba(244,247,251,0), rgba(244,247,251,.98) 18%);
+    }
+    .sticky-actions .condition-summary {
+      grid-area: summary;
+      min-height: 36px;
+      max-height: 38px;
+      padding: 7px 9px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .sticky-actions .condition-summary::before {
+      content: "已启用 " attr(data-count) " 条";
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      margin-right: 8px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--active-gradient);
+      font-weight: 900;
+    }
+    .sticky-actions .logic-note { display: none; }
+    .sticky-actions .grid-2 { display: contents; }
+    .sticky-actions #filterBtn {
+      grid-area: filter;
+      min-height: 48px;
+    }
+    .sticky-actions #demoBtn,
+    .sticky-actions #clearBtn {
+      width: auto;
+      min-height: 36px;
+      padding: 7px 10px;
+      font-size: 12px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    .sticky-actions #demoBtn { grid-area: demo; }
+    .sticky-actions #clearBtn { grid-area: clear; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
@@ -955,7 +1014,7 @@
         <div class="panel-head">
           <div class="panel-title">
             <h2>筛选结果 <span class="pill" id="resultBadge">0 组</span></h2>
-            <span>号码墙清晰展示，复制和导出会使用当前排版。</span>
+            <span>按记事本样式展示，显示、复制和导出会使用当前排版。</span>
             <span class="pill amber hidden" id="resultStaleBadge">条件已变更，请重新筛选</span>
           </div>
           <div class="row">
@@ -966,8 +1025,8 @@
         <div class="panel-body">
           <div class="result-toolbar">
             <div class="result-options">
-              <label>每行数量 <input id="resultPerLine" type="number" min="1" max="50" value="10"></label>
-              <label>分隔符
+              <label>显示每行数量 <input id="resultPerLine" type="number" min="1" max="50" value="10"></label>
+              <label>显示分隔符
                 <select id="resultSeparator">
                   <option value="  ">双空格</option>
                   <option value=" ">空格</option>
@@ -976,6 +1035,7 @@
                   <option value="\n">逐行</option>
                 </select>
               </label>
+              <span class="format-hint">显示 / 复制 / 导出同步</span>
             </div>
             <button class="btn btn-sm btn-warning" id="exportFileBtn" type="button">导出 .txt</button>
           </div>
@@ -1143,9 +1203,11 @@
   var pickerConfigs = {};
   var segmentId = 0;
   var codeId = 0;
+  var mobileFilterPrepared = false;
 
   function $(id){ return document.getElementById(id); }
   function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function isMobileViewport(){ return window.matchMedia && window.matchMedia("(max-width: 768px)").matches; }
   function range(min, max){ var out = []; for (var i = min; i <= max; i++) out.push(String(i)); return out; }
   function pairCodes(){ var out = []; for (var a = 0; a <= 9; a++) for (var b = a; b <= 9; b++) out.push(String(a) + String(b)); return out; }
   function patternValues(chars){
@@ -1743,9 +1805,11 @@
     $("resultBox").textContent = "";
     $("emptyState").classList.add("hidden");
     $("resultWall").classList.remove("hidden");
-    $("resultWall").innerHTML = Array.from({length:24}, function(){ return '<div class="skeleton-line"></div>'; }).join("");
+    $("resultWall").classList.add("is-loading");
+    $("resultWall").textContent = "筛选中，请稍等...";
   }
   function showEmpty(title, message){
+    $("resultWall").classList.remove("is-loading");
     $("resultWall").classList.add("hidden");
     $("emptyState").classList.remove("hidden");
     $("emptyState").innerHTML = '<div><div class="empty-visual"><svg class="icon" style="width:34px;height:34px;" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><h3 style="margin:0 0 6px;">' + escapeHtml(title) + '</h3><p style="margin:0;">' + escapeHtml(message) + '</p></div>';
@@ -1798,13 +1862,11 @@
   function renderResultWall(){
     $("emptyState").classList.add("hidden");
     $("resultWall").classList.remove("hidden");
+    $("resultWall").classList.remove("is-loading");
     var list = state.currentResult;
-    var renderLimit = 600;
-    var visible = list.slice(0, renderLimit);
-    $("resultWall").innerHTML = visible.map(function(n, i){
-      return '<span class="number-chip ' + (i < 8 ? "hot" : "") + '">' + escapeHtml(n) + '</span>';
-    }).join("") + (list.length > renderLimit ? '<div class="result-truncate-note">已展示前 ' + renderLimit + ' 组，复制和导出仍包含全部 ' + list.length + ' 组。</div>' : "");
-    $("resultBox").textContent = resultText(list);
+    var text = resultText(list);
+    $("resultWall").textContent = text;
+    $("resultBox").textContent = text;
   }
   function resultText(list){
     if (!list.length) return "";
@@ -1911,7 +1973,9 @@
     markResultStale();
     var text = conditionText();
     $("conditionSummary").textContent = text === "无" ? "当前还没有启用筛选条件。" : text;
-    $("activeCount").textContent = activeConditionCount();
+    var count = activeConditionCount();
+    $("conditionSummary").dataset.count = String(count);
+    $("activeCount").textContent = count;
     renderConditionTags();
   }
   function activeConditionCount(){
@@ -2168,6 +2232,12 @@
     renderAll();
   }
   function setFilterDrawer(open){
+    if (open && isMobileViewport() && !mobileFilterPrepared) {
+      qsa("details.filter-group").forEach(function(group, index){
+        group.open = index === 0;
+      });
+      mobileFilterPrepared = true;
+    }
     document.body.classList.toggle("filter-open", !!open);
     $("mobileFilterToggle").setAttribute("aria-expanded", open ? "true" : "false");
   }
