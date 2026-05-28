@@ -92,7 +92,16 @@ def load_history_records():
 
 
 def save_history_records(items):
-    records = items if isinstance(items, list) else []
+    records = []
+    for item in items if isinstance(items, list) else []:
+        if not isinstance(item, dict):
+            continue
+        record = dict(item)
+        request = record.get("request") if isinstance(record.get("request"), dict) else {}
+        base_mode = str(record.get("base_mode") or record.get("pool_mode") or request.get("base_mode") or request.get("pool_mode") or "input").lower()
+        record["base_mode"] = base_mode
+        record["pool_mode"] = base_mode
+        records.append(record)
     records = records[:MAX_HISTORY]
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(records, f, ensure_ascii=False, indent=2)
@@ -448,8 +457,8 @@ def direct_hit(filtered, draw):
 
 def history_item_hit(item, draw):
     request = item.get("request") if isinstance(item.get("request"), dict) else {}
-    base_mode = str(item.get("base_mode") or item.get("pool_mode") or request.get("base_mode") or request.get("pool_mode") or "input")
-    if base_mode in ("direct", "full"):
+    base_mode = str(item.get("base_mode") or item.get("pool_mode") or request.get("base_mode") or request.get("pool_mode") or "input").lower()
+    if base_mode in ("direct", "full", "input"):
         return direct_hit(item.get("filtered", []), draw)
     return group_hit(item.get("filtered", []), draw)
 
@@ -555,6 +564,7 @@ def validate_segment_groups(groups_data, mode):
 
 def normalize_segment_filters(data):
     filters = data.get("segment_filters")
+    default_tolerance = normalize_segment_tolerance(data)
     if isinstance(filters, list):
         result = []
         for item in filters:
@@ -563,8 +573,9 @@ def normalize_segment_filters(data):
             mode = item.get("mode", "2-3-5")
             groups_data = [g for g in item.get("groups", []) if g and str(g).strip()]
             groups = validate_segment_groups(groups_data, mode)
+            tolerance = normalize_segment_tolerance({"segment_tolerance": item.get("tolerance", default_tolerance)})
             if groups:
-                result.append({"mode": mode, "groups_data": groups_data, "groups": groups})
+                result.append({"mode": mode, "groups_data": groups_data, "groups": groups, "tolerance": tolerance})
         return result
 
     mode = data.get("segment_mode", "2-3-5")
@@ -573,7 +584,7 @@ def normalize_segment_filters(data):
         groups_data = [data.get("group1", ""), data.get("group2", ""), data.get("group3", "")]
     groups_data = [g for g in groups_data if g and str(g).strip()]
     groups = validate_segment_groups(groups_data, mode)
-    return [{"mode": mode, "groups_data": groups_data, "groups": groups}] if groups else []
+    return [{"mode": mode, "groups_data": groups_data, "groups": groups, "tolerance": default_tolerance}] if groups else []
 
 
 def normalize_segment_tolerance(data):
@@ -587,13 +598,12 @@ def normalize_segment_tolerance(data):
 def passes_segment_filters(number, segment_filters, tolerance=0):
     if not segment_filters:
         return True
-    allowed_misses = normalize_segment_tolerance({"segment_tolerance": tolerance})
-    misses = sum(
-        1
-        for item in segment_filters
-        if not passes_segment_pattern(number, item["groups"], item["mode"])
-    )
-    return misses <= allowed_misses
+    misses_by_tolerance = {}
+    for item in segment_filters:
+        item_tolerance = normalize_segment_tolerance({"segment_tolerance": item.get("tolerance", tolerance)})
+        if not passes_segment_pattern(number, item["groups"], item["mode"]):
+            misses_by_tolerance[item_tolerance] = misses_by_tolerance.get(item_tolerance, 0) + 1
+    return all(misses <= item_tolerance for item_tolerance, misses in misses_by_tolerance.items())
 
 
 def validate_code_filter(item):
@@ -804,12 +814,9 @@ def advanced_filter_desc(advanced_filter):
 
 def segment_desc(segment_filters, tolerance=0):
     text = "; ".join(
-        f"{item['mode']} segment [" + " | ".join(item["groups_data"]) + "]"
+        f"{item['mode']} segment [" + " | ".join(item["groups_data"]) + f"] {'容错' + str(item.get('tolerance', 0)) if item.get('tolerance', 0) else '严格'}"
         for item in segment_filters
     )
-    tolerance = normalize_segment_tolerance({"segment_tolerance": tolerance})
-    if text and tolerance:
-        text += f"; 容错{tolerance}"
     return text
 
 
@@ -1300,6 +1307,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         data = self._read_json_body()
         text = data.get("text", "")
         base_mode = normalize_base_mode(data)
+        if base_mode != "input" and unique_numbers_from_text(text):
+            raise ValueError("检测到已输入号码池，请使用手动号码池模式按直选原号筛选")
         digits = data.get("digits", "")
         advance_digits = data.get("advance_digits", "")
         kill_digits = data.get("kill_digits", "")
@@ -1381,7 +1390,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             "segment": segment_desc(segment_filters, segment_tolerance),
             "segment_tolerance": segment_tolerance,
             "segment_filters": [
-                {"mode": item["mode"], "groups": item["groups_data"]}
+                {"mode": item["mode"], "groups": item["groups_data"], "tolerance": item.get("tolerance", 0)}
                 for item in segment_filters
             ],
             "code_desc": code_filter_desc(code_filters),

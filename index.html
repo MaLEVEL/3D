@@ -62,11 +62,11 @@
     z-index: 40;
     display: grid;
     grid-template-columns: minmax(260px, 1fr) minmax(320px, 560px);
-    gap: 16px;
+    gap: 12px;
     align-items: center;
-    padding: 14px 16px;
+    padding: 10px 12px;
     border: 1px solid rgba(216,225,238,.86);
-    border-radius: 18px;
+    border-radius: 14px;
     background: rgba(255,255,255,.86);
     backdrop-filter: blur(18px);
     box-shadow: var(--shadow-sm);
@@ -75,37 +75,59 @@
     display: flex;
     align-items: center;
     min-width: 0;
-    gap: 12px;
+    gap: 9px;
   }
   .brand-mark {
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
     display: grid;
     place-items: center;
-    border-radius: 13px;
+    border-radius: 10px;
     color: #fff;
-    font: 900 16px/1 var(--mono);
+    font: 900 14px/1 var(--mono);
     background: var(--active-gradient);
-    box-shadow: 0 12px 28px rgba(29,78,216,.24);
+    box-shadow: 0 8px 20px rgba(29,78,216,.22);
   }
-  .brand h1 { margin: 0; font-size: 19px; line-height: 1.2; letter-spacing: 0; }
-  .brand p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+  .brand h1 { margin: 0; font-size: 17px; line-height: 1.18; letter-spacing: 0; }
+  .brand p { margin: 1px 0 0; color: var(--muted); font-size: 11px; }
+  .brand-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+  .draw-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 24px;
+    padding: 2px 8px;
+    border: 1px solid rgba(6,182,212,.28);
+    border-radius: 999px;
+    color: #0e7490;
+    background: rgba(6,182,212,.1);
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .draw-chip strong { color: var(--text); font-family: var(--mono); }
   .top-status {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
+    gap: 6px;
+    justify-content: flex-end;
   }
   .status-chip {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    min-height: 32px;
-    padding: 5px 10px;
+    gap: 5px;
+    min-height: 28px;
+    padding: 3px 8px;
     border: 1px solid var(--border-2);
     border-radius: 999px;
     color: var(--muted);
     background: var(--surface-2);
+    font-size: 12px;
     white-space: nowrap;
   }
   .status-chip strong { color: var(--text); font-family: var(--mono); }
@@ -139,7 +161,7 @@
     padding-right: 4px;
   }
   .mobile-filter-toggle,
-  .mobile-filter-close,
+  .mobile-drawer-back,
   .mobile-filter-backdrop { display: none !important; }
   .content-stack { display: grid; gap: 18px; min-width: 0; }
   .panel {
@@ -342,6 +364,22 @@
   .compact-card.disabled {
     opacity: .68;
     background: #F1F5F9;
+  }
+  details.compact-collapse {
+    padding: 0;
+    gap: 0;
+  }
+  details.compact-collapse > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 12px;
+  }
+  details.compact-collapse > summary::-webkit-details-marker { display: none; }
+  details.compact-collapse[open] > summary { border-bottom: 1px solid var(--border-2); }
+  .compact-collapse-body {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
   }
   .card-title-row {
     display: flex;
@@ -685,15 +723,53 @@
   }
   @media (max-width: 768px) {
     .app-shell { width: min(100% - 20px, 760px); padding-top: 10px; }
-    .topbar { border-radius: 14px; padding: 12px; }
-    .brand-mark { width: 40px; height: 40px; }
-    .brand h1 { font-size: 17px; }
+    .topbar { border-radius: 12px; gap: 8px; padding: 8px 10px; }
+    .brand-mark { width: 32px; height: 32px; border-radius: 9px; font-size: 13px; }
+    .brand h1 { font-size: 15px; }
+    .brand-title-row { gap: 6px; }
+    .draw-chip { min-height: 23px; padding: 2px 7px; font-size: 11px; }
+    .brand p {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 10.5px;
+    }
+    .top-status {
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      gap: 5px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .top-status::-webkit-scrollbar { display: none; }
+    .status-chip { min-height: 26px; padding: 3px 7px; font-size: 11px; }
     .panel-head { flex-direction: column; align-items: stretch; }
     .panel-head .row { display: grid; grid-template-columns: 1fr 1fr; }
     .grid-2, .grid-3, .stat-grid { grid-template-columns: 1fr; }
     .mode-grid { grid-template-columns: 1fr; }
-    .btn, .digit-btn { min-height: 44px; }
-    .picker-grid { grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); }
+    .btn {
+      min-height: 38px;
+      padding: 7px 10px;
+      border-radius: 10px;
+      font-size: 13px;
+    }
+    input, select { min-height: 38px; padding: 8px 10px; }
+    textarea { min-height: 104px; }
+    .mode-card { min-height: 40px; border-radius: 10px; font-size: 13px; }
+    .compact-card { gap: 8px; padding: 10px; border-radius: 11px; }
+    .group-body { gap: 10px; padding: 0 11px 11px; }
+    .picker { gap: 6px; padding: 8px; border-radius: 11px; }
+    .picker-grid {
+      grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+      gap: 6px;
+    }
+    .digit-btn {
+      min-width: 38px;
+      min-height: 38px;
+      border-radius: 10px;
+      font-size: 12px;
+    }
     .step-item { grid-template-columns: 1fr; }
     .segment-row { grid-template-columns: 1fr; }
     .history-main { display: grid; }
@@ -704,7 +780,7 @@
       display: block;
       height: calc(100dvh - max(8px, env(safe-area-inset-top)));
       max-height: none;
-      padding: 14px 14px calc(16px + env(safe-area-inset-bottom));
+      padding: 10px 10px calc(12px + env(safe-area-inset-bottom));
       overflow: auto;
       background: var(--bg);
       border-radius: 22px 22px 0 0;
@@ -712,7 +788,7 @@
       transform: translateY(calc(100% + 28px));
       transition: transform .22s ease;
     }
-    .filter-rail > * { margin-bottom: 14px; }
+    .filter-rail > * { margin-bottom: 10px; }
     .filter-rail > *:last-child { margin-bottom: 0; }
     body.filter-open .filter-rail { transform: translateY(0); }
     body.filter-open { overflow: hidden; }
@@ -736,27 +812,26 @@
       bottom: 16px;
       z-index: 55;
       display: inline-flex !important;
+      min-height: 44px;
+      padding: 10px 14px;
       box-shadow: 0 18px 34px rgba(29,78,216,.28);
     }
-    .mobile-filter-close {
-      display: inline-flex !important;
-      margin-bottom: 10px;
-    }
+    .mobile-drawer-back { display: inline-flex !important; }
     .sticky-actions {
       grid-template-columns: minmax(0, 1fr) auto auto;
       grid-template-areas:
-        "summary demo clear"
-        "filter filter filter";
+        "summary back clear"
+        "demo filter filter";
       align-items: center;
-      gap: 8px;
-      padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+      gap: 6px;
+      padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
       background: linear-gradient(180deg, rgba(244,247,251,0), rgba(244,247,251,.98) 18%);
     }
     .sticky-actions .condition-summary {
       grid-area: summary;
-      min-height: 36px;
-      max-height: 38px;
-      padding: 7px 9px;
+      min-height: 32px;
+      max-height: 34px;
+      padding: 5px 8px;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -777,13 +852,22 @@
     .sticky-actions .grid-2 { display: contents; }
     .sticky-actions #filterBtn {
       grid-area: filter;
-      min-height: 48px;
+      min-height: 44px;
+    }
+    .sticky-actions #mobileDrawerBackBtn {
+      grid-area: back;
+      width: auto;
+      min-height: 32px;
+      padding: 6px 9px;
+      font-size: 12px;
+      border-radius: 10px;
+      white-space: nowrap;
     }
     .sticky-actions #demoBtn,
     .sticky-actions #clearBtn {
       width: auto;
-      min-height: 36px;
-      padding: 7px 10px;
+      min-height: 32px;
+      padding: 6px 9px;
       font-size: 12px;
       border-radius: 10px;
       white-space: nowrap;
@@ -802,15 +886,16 @@
     <div class="brand">
       <div class="brand-mark">3D</div>
       <div>
-        <h1>智能筛选选号系统</h1>
+        <div class="brand-title-row">
+          <h1>智能筛选选号系统</h1>
+          <span class="draw-chip">开奖号 <strong id="latestDraw">---</strong></span>
+        </div>
         <p>商业级筛选工作台 · 条件输入 · 结果导出 · 历史回查</p>
       </div>
     </div>
     <div class="top-status">
       <span class="status-chip">最新期号 <strong id="latestIssue">--</strong></span>
       <span class="status-chip">下期 <strong id="nextIssue">--</strong></span>
-      <span class="status-chip">开奖号 <strong id="latestDraw">---</strong></span>
-      <span class="status-chip">本地数据 <strong id="drawCount">0</strong></span>
     </div>
   </header>
 
@@ -822,7 +907,6 @@
 
   <div class="workbench">
     <aside class="filter-rail" id="filterRail" aria-label="筛选条件">
-      <button class="btn btn-soft btn-full mobile-filter-close" id="mobileFilterClose" type="button">收起筛选</button>
       <details class="filter-group" open>
         <summary>
           <div class="summary-left">
@@ -839,6 +923,7 @@
           <div class="field">
             <label for="inputArea">手动号码池</label>
             <textarea id="inputArea" placeholder="粘贴任意文本，系统会自动提取 000-999 的三位号码。"></textarea>
+            <div class="section-note">输入或粘贴号码后会自动切换为手动号码池，按直选原号逐个筛选，不会转成组选代表号。</div>
             <div class="row">
               <button class="btn btn-sm btn-soft" id="pastePoolBtn" type="button">粘贴号码</button>
               <button class="btn btn-sm btn-soft" id="copyPoolBtn" type="button">复制号码</button>
@@ -866,10 +951,10 @@
             <div class="field-title">杀码筛选 <span class="hint">命中任意一个排除</span></div>
             <div id="killPicker"></div>
           </div>
-          <div class="compact-card">
-            <div class="card-title-row"><strong>定位筛选</strong><span class="hint">百位、十位、个位分别设置</span></div>
-            <div id="positionPanel"></div>
-          </div>
+          <details class="compact-card compact-collapse">
+            <summary class="card-title-row"><strong>定位筛选</strong><span class="hint">百位、十位、个位分别设置</span></summary>
+            <div class="compact-collapse-body" id="positionPanel"></div>
+          </details>
         </div>
       </details>
 
@@ -916,7 +1001,7 @@
         <summary>
           <div class="summary-left">
             <span class="summary-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="5"/><rect x="12" y="8" width="3" height="9"/><rect x="17" y="5" width="3" height="12"/></svg></span>
-            <span class="summary-title"><strong>统计特征</strong><span>和值筛选、跨度筛选、两码筛选</span></span>
+            <span class="summary-title"><strong>和值筛选</strong><span>和值、和尾、平均值</span></span>
           </div>
           <svg class="icon chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
         </summary>
@@ -925,10 +1010,34 @@
             <div class="card-title-row"><strong>和值筛选</strong><button class="btn btn-sm btn-ghost" data-clear-rule-group="sum_rules" type="button">清除本组</button></div>
             <div id="sumRulePanel"></div>
           </div>
+        </div>
+      </details>
+
+      <details class="filter-group">
+        <summary>
+          <div class="summary-left">
+            <span class="summary-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M20 19V5"/><path d="M8 12h8"/><path d="m13 9 3 3-3 3"/><path d="m11 9-3 3 3 3"/></svg></span>
+            <span class="summary-title"><strong>跨度筛选</strong><span>跨度、首尾距、AC值</span></span>
+          </div>
+          <svg class="icon chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+        <div class="group-body">
           <div class="compact-card">
             <div class="card-title-row"><strong>跨度筛选</strong><button class="btn btn-sm btn-ghost" data-clear-rule-group="span_rules" type="button">清除本组</button></div>
             <div id="spanRulePanel"></div>
           </div>
+        </div>
+      </details>
+
+      <details class="filter-group">
+        <summary>
+          <div class="summary-left">
+            <span class="summary-icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="16" r="3"/><path d="M10.5 10.5 13.5 13.5"/></svg></span>
+            <span class="summary-title"><strong>两码筛选</strong><span>二码和、二码差、二码组合</span></span>
+          </div>
+          <svg class="icon chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+        <div class="group-body">
           <div class="compact-card">
             <div class="card-title-row"><strong>两码筛选</strong><button class="btn btn-sm btn-ghost" data-clear-rule-group="pair_rules" type="button">清除本组</button></div>
             <div id="pairRulePanel"></div>
@@ -954,7 +1063,7 @@
                 <option value="2">容错 2</option>
               </select>
             </div>
-            <span class="hint">容错表示允许几条段组规则不满足，默认严格。</span>
+            <span class="hint">添加后为空段组，从第一段开始选择；容错会保存到该条段组。</span>
             <div class="grid-2">
               <button class="btn btn-soft" data-add-segment="2-2-6" type="button">添加 2-2-6</button>
               <button class="btn btn-soft" data-add-segment="2-3-5" type="button">添加 2-3-5</button>
@@ -996,6 +1105,7 @@
             <svg class="icon" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3Z"/></svg>
             开始筛选
           </button>
+          <button class="btn btn-soft btn-full mobile-drawer-back" id="mobileDrawerBackBtn" type="button">返回</button>
           <button class="btn btn-soft btn-full" id="demoBtn" type="button">示例数据</button>
         </div>
         <button class="btn btn-ghost btn-full" id="clearBtn" type="button">清空全部条件</button>
@@ -1013,7 +1123,7 @@
       <section class="panel">
         <div class="panel-head">
           <div class="panel-title">
-            <h2>筛选结果 <span class="pill" id="resultBadge">0 组</span></h2>
+            <h2>筛选结果 <span class="pill" id="resultBadge">0 组</span> <span class="pill gray" id="resultModeBadge">未筛选</span></h2>
             <span>按记事本样式展示，显示、复制和导出会使用当前排版。</span>
             <span class="pill amber hidden" id="resultStaleBadge">条件已变更，请重新筛选</span>
           </div>
@@ -1111,6 +1221,9 @@
   ];
   var SEGMENT_SIZES = {"2-2-6":[2,2,6], "2-3-5":[2,3,5], "3-3-4":[3,3,4], "5-5":[5,5]};
   var SEGMENT_DEMOS = {"2-2-6":["01","23","456789"], "2-3-5":["01","234","56789"], "3-3-4":["012","345","6789"], "5-5":["01234","56789"]};
+  function emptySegmentGroups(mode){
+    return (SEGMENT_SIZES[mode] || []).map(function(){ return ""; });
+  }
   var RULE_GROUPS = {
     sum_rules: [
       ["sum", "和值", range(0, 27)],
@@ -1373,7 +1486,7 @@
     if (badge) badge.classList.toggle("hidden", !state.resultStale);
   }
   function markResultStale(){
-    if (!state.lastResult || state.isFiltering) return;
+    if (!state.lastResult) return;
     state.resultStale = true;
     updateResultStaleUi();
   }
@@ -1400,7 +1513,11 @@
     }).join("");
     qsa("[data-base-mode]").forEach(function(btn){
       btn.addEventListener("click", function(){
-        state.baseMode = btn.dataset.baseMode;
+        var nextMode = btn.dataset.baseMode;
+        if (nextMode !== "input" && extractNumbers($("inputArea").value).length) {
+          return toast("手动号码池已有号码。请先清空号码池，再切换系统大底。", true);
+        }
+        state.baseMode = nextMode;
         $("baseModeLabel").textContent = baseModeName(state.baseMode);
         renderBaseModes();
         updateSummary();
@@ -1592,10 +1709,11 @@
     }
     $("segmentStack").innerHTML = state.segments.map(function(seg){
       var sizes = SEGMENT_SIZES[seg.mode];
+      var tolerance = normalizeSegmentTolerance(seg.tolerance);
       var rows = sizes.map(function(size, row){
         return '<div class="segment-row"><span class="segment-label">第 ' + (row + 1) + ' 组 / ' + size + '码</span><div id="segment-' + seg.id + '-' + row + '"></div></div>';
       }).join("");
-      return '<div class="segment-card"><div class="card-title-row"><strong>' + escapeHtml(seg.mode) + ' 段组 #' + escapeHtml(seg.id) + '</strong><button class="btn btn-sm btn-ghost" type="button" data-remove-segment="' + escapeAttr(seg.id) + '">删除</button></div>' + rows + '</div>';
+      return '<div class="segment-card"><div class="card-title-row"><strong>' + escapeHtml(seg.mode) + ' 段组 #' + escapeHtml(seg.id) + '</strong><div class="row"><span class="pill gray">' + segmentToleranceLabel(tolerance) + '</span><button class="btn btn-sm btn-ghost" type="button" data-remove-segment="' + escapeAttr(seg.id) + '">删除</button></div></div>' + rows + '</div>';
     }).join("");
     state.segments.forEach(function(seg){
       SEGMENT_SIZES[seg.mode].forEach(function(size, row){
@@ -1623,7 +1741,7 @@
     });
   }
   function addSegment(mode){
-    state.segments.push({id: ++segmentId, mode: mode, groups: SEGMENT_DEMOS[mode].slice()});
+    state.segments.push({id: ++segmentId, mode: mode, groups: emptySegmentGroups(mode), tolerance: normalizeSegmentTolerance(state.segmentTolerance)});
     renderSegments();
     updateSummary();
   }
@@ -1703,6 +1821,9 @@
     if (hasPositionFilter() && state.baseMode !== "direct" && state.baseMode !== "input") {
       return "定位筛选只支持直选全量或手动号码池；组选、组三、组六、豹子模式下位置含义不明确。";
     }
+    if (payload.base_mode !== "input" && extractNumbers($("inputArea").value).length) {
+      return "检测到手动号码池已有号码。请清空号码池，或切换为手动号码池按直选原号筛选。";
+    }
     for (var i = 0; i < 3; i++) {
       var inc = state.position.include[i] || "";
       var exc = state.position.exclude[i] || "";
@@ -1740,6 +1861,7 @@
     var text = $("inputArea").value.trim();
     var baseMode = state.baseMode;
     if (baseMode === "input") text = extractNumbers(text).join(" ");
+    else text = "";
     var shapeTypes = state.shape.types.slice();
     if (state.shape.primeCount.length && shapeTypes.indexOf("prime_composite") < 0) shapeTypes.push("prime_composite");
     var ruleFilters = Object.keys(state.ruleFilters).map(function(type){
@@ -1755,7 +1877,7 @@
       digits: state.digits.join(""),
       advance_digits: "",
       kill_digits: state.killDigits.join(""),
-      segment_filters: state.segments.map(function(seg){ return {mode: seg.mode, enabled: true, groups: seg.groups.slice()}; }),
+      segment_filters: state.segments.map(function(seg){ return {mode: seg.mode, enabled: true, groups: seg.groups.slice(), tolerance: normalizeSegmentTolerance(seg.tolerance)}; }),
       segment_tolerance: normalizeSegmentTolerance(state.segmentTolerance),
       group_pattern_enabled: !!state.groupPatternEnabled,
       code_filters: state.codes.map(function(code){ return {code_len: code.code_len, condition: code.condition, digits: code.digits, count_repeat: normalizeCodeRepeat(code.count_repeat), enabled: true}; }),
@@ -1778,10 +1900,15 @@
     btn.disabled = true;
     btn.innerHTML = '<span class="loading-dot"></span> 筛选中';
     showLoadingResult();
+    var requestSignature = JSON.stringify(payload);
     try {
       var data = await apiPost("/api/filter", payload);
       if (requestId !== state.filterRequestSeq) return;
       displayResults(data, payload);
+      if (JSON.stringify(buildPayload()) !== requestSignature) {
+        markResultStale();
+        toast("筛选期间条件已变更，请重新筛选。", true);
+      }
       setFilterDrawer(false);
       toast("筛选完成：" + (data.count || 0) + " 组");
     } catch(e) {
@@ -1802,6 +1929,7 @@
     clearResultStale();
     $("filteredCount").textContent = "0";
     $("resultBadge").textContent = "筛选中";
+    $("resultModeBadge").textContent = baseModeName(buildPayload().base_mode);
     $("resultBox").textContent = "";
     $("emptyState").classList.add("hidden");
     $("resultWall").classList.remove("hidden");
@@ -1825,6 +1953,7 @@
     $("filteredCount").textContent = state.currentResult.length;
     $("percent").textContent = state.currentPercent + "%";
     $("resultBadge").textContent = state.currentResult.length + " 组";
+    $("resultModeBadge").textContent = baseModeName(payload.base_mode || payload.pool_mode || "input");
     if (!state.currentResult.length) {
       showEmpty("没有匹配号码", "当前条件可能过严，可减少杀码、放宽跨度或检查段组。");
     } else {
@@ -1903,10 +2032,11 @@
   }
   function exportToFile(){
     if (!canUseCurrentResult("导出")) return;
+    var request = state.lastResult && state.lastResult.request ? state.lastResult.request : buildPayload();
     var content = [
       "智能筛选选号系统 - 筛选结果",
-      "期号: " + (state.nextIssue || todayIssue()),
-      "大底: " + baseModeName(state.baseMode),
+      "期号: " + ((state.lastResult && state.lastResult.targetIssue) || state.nextIssue || todayIssue()),
+      "大底: " + baseModeName(request.base_mode || request.pool_mode || state.baseMode),
       "条件: " + conditionText(),
       "总数: " + state.currentTotal + " 命中: " + state.currentResult.length + " 占比: " + state.currentPercent + "%",
       "".padEnd(48, "="),
@@ -1943,7 +2073,7 @@
         parts.push({key:"rule:" + type, label:(rule.mode === "exclude" ? "排除" : "包含") + RULE_LABELS[type] + " " + rule.values.map(function(v){ return labels[v] || v; }).join(",")});
       }
     });
-    if (state.segments.length) parts.push({key:"segments", label:"段组 " + state.segments.map(function(s){ return s.mode; }).join(",") + " · " + segmentToleranceLabel(state.segmentTolerance)});
+    if (state.segments.length) parts.push({key:"segments", label:"段组 " + state.segments.map(function(s){ return s.mode + "(" + segmentToleranceLabel(s.tolerance) + ")"; }).join(", ")});
     if (state.codes.length) parts.push({key:"codes", label:"N码 " + state.codes.map(function(c){ return c.code_len + "码" + c.condition + "[" + c.digits + "] " + codeRepeatLabel(c); }).join(",")});
     return parts;
   }
@@ -2017,6 +2147,14 @@
     var seen = {};
     return matches.filter(function(n){ if (seen[n]) return false; seen[n] = true; return true; });
   }
+  function switchToManualInputIfNeeded(){
+    if (extractNumbers($("inputArea").value).length && state.baseMode !== "input") {
+      state.baseMode = "input";
+      renderBaseModes();
+      $("baseModeLabel").textContent = baseModeName(state.baseMode);
+      toast("已切换为手动号码池，按直选原号筛选");
+    }
+  }
   function fillBasePool(){
     $("inputArea").value = generateBasePool(state.baseMode).join(" ");
     state.baseMode = "input";
@@ -2025,7 +2163,12 @@
     toast("已填充当前大底到号码池");
   }
   async function pastePool(){
-    try { $("inputArea").value = await navigator.clipboard.readText(); markResultStale(); toast("已粘贴号码池"); }
+    try {
+      $("inputArea").value = await navigator.clipboard.readText();
+      switchToManualInputIfNeeded();
+      markResultStale();
+      toast("已粘贴号码池");
+    }
     catch(e) { toast("浏览器未允许读取剪贴板", true); }
   }
   function dedupePool(){
@@ -2039,7 +2182,7 @@
     data = cloneData(data || {});
     var ui = data.ui || data.filterState || data;
     var req = data.request || ui.request || data;
-    state.baseMode = ui.baseMode || req.base_mode || "direct";
+    state.baseMode = ui.baseMode || req.base_mode || req.pool_mode || "direct";
     $("inputArea").value = ui.inputText || req.text || "";
     state.digits = toDigitArray(ui.digits != null ? ui.digits : req.digits);
     state.killDigits = toDigitArray(ui.killDigits != null ? ui.killDigits : req.kill_digits);
@@ -2063,7 +2206,7 @@
     });
     state.groupPatternEnabled = normalizeEnabled(ui.groupPatternEnabled != null ? ui.groupPatternEnabled : req.group_pattern_enabled) || hasRestoredGroupPattern;
     state.segmentTolerance = normalizeSegmentTolerance(ui.segmentTolerance != null ? ui.segmentTolerance : req.segment_tolerance);
-    state.segments = (ui.segments || req.segment_filters || []).map(function(item){ return {id: ++segmentId, mode: item.mode, groups: (item.groups || []).map(cleanDigits)}; }).filter(function(item){ return SEGMENT_SIZES[item.mode]; });
+    state.segments = (ui.segments || req.segment_filters || []).map(function(item){ return {id: ++segmentId, mode: item.mode, groups: (item.groups || []).map(cleanDigits), tolerance: normalizeSegmentTolerance(item.tolerance != null ? item.tolerance : state.segmentTolerance)}; }).filter(function(item){ return SEGMENT_SIZES[item.mode]; });
     state.codes = (ui.codes || req.code_filters || []).map(function(item){ return {id: ++codeId, code_len: normalizeCodeLen(item.code_len), condition: normalizeCodeCondition(item.condition), count_repeat: normalizeCodeRepeat(item.count_repeat), digits: cleanDigits(item.digits)}; });
     renderAll();
   }
@@ -2081,8 +2224,8 @@
   function renderDraws(){
     $("latestIssue").textContent = state.latestIssue || "--";
     $("nextIssue").textContent = state.nextIssue || "--";
-    $("latestDraw").textContent = state.latestDraw || "---";
-    $("drawCount").textContent = String(state.draws.length);
+    if ($("latestDraw")) $("latestDraw").textContent = state.latestDraw || "---";
+    if ($("drawCount")) $("drawCount").textContent = String(state.draws.length);
     $("drawStatus").textContent = state.draws.length ? "显示最近 " + state.draws.length + " 期，下一期号 " + (state.nextIssue || "--") + "。" : "本地还没有开奖记录。";
     $("drawList").innerHTML = state.draws.length ? state.draws.slice(0, 12).map(function(item){
       var balls = String(item.draw || "").padStart(3, "0").split("").map(function(d){ return '<span class="ball">' + escapeHtml(d) + '</span>'; }).join("");
@@ -2120,8 +2263,10 @@
     }
     $("historyList").innerHTML = state.history.map(function(item){
       var preview = (item.filtered || []).slice(0, 16).map(escapeHtml).join(" ") + ((item.filtered || []).length > 16 ? " ..." : "");
+      var request = item.request && typeof item.request === "object" ? item.request : {};
+      var modeLabel = baseModeName(item.base_mode || item.pool_mode || request.base_mode || request.pool_mode || "input");
       var status = item.hit === true ? '<span class="pill green">中奖 ' + escapeHtml(item.actualDraw || "") + '</span>' : item.hit === false ? '<span class="pill red">未中 ' + escapeHtml(item.actualDraw || "") + '</span>' : '<span class="pill amber">待开奖</span>';
-      return '<div class="history-item" data-history-id="' + escapeAttr(item.id) + '"><div class="history-main"><div><div class="pill-row"><span class="pill gray">' + escapeHtml(item.time || "") + '</span>' + status + '<span class="pill">命中 ' + escapeHtml(item.count || 0) + '</span></div><div class="history-preview">期号 ' + escapeHtml(item.targetIssue || "--") + ' | ' + preview + '</div></div><div class="history-actions"><input data-history-issue value="' + escapeAttr(item.targetIssue || "") + '" placeholder="期号"><button class="btn btn-sm btn-soft" data-history-load type="button">加载</button><button class="btn btn-sm btn-soft" data-history-save type="button">改期号</button><button class="btn btn-sm btn-danger" data-history-delete type="button">删除</button></div></div></div>';
+      return '<div class="history-item" data-history-id="' + escapeAttr(item.id) + '"><div class="history-main"><div><div class="pill-row"><span class="pill gray">' + escapeHtml(item.time || "") + '</span><span class="pill gray">' + escapeHtml(modeLabel) + '</span>' + status + '<span class="pill">命中 ' + escapeHtml(item.count || 0) + '</span></div><div class="history-preview">期号 ' + escapeHtml(item.targetIssue || "--") + ' | ' + preview + '</div></div><div class="history-actions"><input data-history-issue value="' + escapeAttr(item.targetIssue || "") + '" placeholder="期号"><button class="btn btn-sm btn-soft" data-history-load type="button">加载</button><button class="btn btn-sm btn-soft" data-history-save type="button">改期号</button><button class="btn btn-sm btn-danger" data-history-delete type="button">删除</button></div></div></div>';
     }).join("");
     qsa("[data-history-id]").forEach(function(el){
       var id = Number(el.dataset.historyId);
@@ -2193,8 +2338,8 @@
     };
     state.groupPatternEnabled = false;
     state.segments = [
-      {id: ++segmentId, mode:"2-3-5", groups:SEGMENT_DEMOS["2-3-5"].slice()},
-      {id: ++segmentId, mode:"3-3-4", groups:SEGMENT_DEMOS["3-3-4"].slice()}
+      {id: ++segmentId, mode:"2-3-5", groups:SEGMENT_DEMOS["2-3-5"].slice(), tolerance: 0},
+      {id: ++segmentId, mode:"3-3-4", groups:SEGMENT_DEMOS["3-3-4"].slice(), tolerance: 0}
     ];
     state.segmentTolerance = 0;
     state.codes = [{id: ++codeId, code_len:5, condition:"012", count_repeat:false, digits:"01234"}];
@@ -2225,6 +2370,7 @@
     $("filteredCount").textContent = "0";
     $("percent").textContent = "0%";
     $("resultBadge").textContent = "0 组";
+    $("resultModeBadge").textContent = "未筛选";
     $("resultWall").classList.add("hidden");
     showEmpty("请选择条件开始筛选", "可以先使用“示例数据”，或者直接选择直选全量后设置筛选条件。");
     state.currentSteps = [];
@@ -2255,9 +2401,12 @@
     $("updateDrawBtn").addEventListener("click", checkHistory);
     $("clearHistoryBtn").addEventListener("click", clearHistory);
     $("mobileFilterToggle").addEventListener("click", function(){ setFilterDrawer(true); });
-    $("mobileFilterClose").addEventListener("click", function(){ setFilterDrawer(false); });
+    $("mobileDrawerBackBtn").addEventListener("click", function(){ setFilterDrawer(false); });
     $("mobileFilterBackdrop").addEventListener("click", function(){ setFilterDrawer(false); });
-    $("inputArea").addEventListener("input", markResultStale);
+    $("inputArea").addEventListener("input", function(){
+      switchToManualInputIfNeeded();
+      markResultStale();
+    });
     $("pastePoolBtn").addEventListener("click", pastePool);
     $("copyPoolBtn").addEventListener("click", function(){ copyText($("inputArea").value); });
     $("dedupePoolBtn").addEventListener("click", dedupePool);
@@ -2269,7 +2418,6 @@
     });
     $("segmentToleranceSelect").addEventListener("change", function(){
       state.segmentTolerance = normalizeSegmentTolerance(this.value);
-      updateSummary();
     });
     qsa("[data-add-segment]").forEach(function(btn){ btn.addEventListener("click", function(){ addSegment(btn.dataset.addSegment); }); });
     qsa("[data-clear-rule-group]").forEach(function(btn){

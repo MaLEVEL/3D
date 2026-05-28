@@ -12,13 +12,52 @@ class BasePoolGenerationTest(unittest.TestCase):
         self.assertEqual(1000, len(pool))
         self.assertEqual("000", pool[0])
         self.assertEqual("999", pool[-1])
+        self.assertIn("156", pool)
+        self.assertIn("165", pool)
 
     def test_group_pools_use_deduplicated_representatives_without_baozi(self):
         self.assertEqual(210, len(app.generate_base_pool("group")))
         self.assertNotIn("000", app.generate_base_pool("group"))
+        self.assertIn("156", app.generate_base_pool("group"))
+        self.assertNotIn("165", app.generate_base_pool("group"))
         self.assertEqual(90, len(app.generate_base_pool("group3")))
         self.assertEqual(120, len(app.generate_base_pool("group6")))
         self.assertEqual(10, len(app.generate_base_pool("baozi")))
+
+    def test_manual_input_preserves_direct_permutations(self):
+        self.assertEqual(["165", "156"], app.unique_numbers_from_text("165 156 165"))
+
+    def test_filter_endpoint_keeps_manual_direct_numbers(self):
+        handler = object.__new__(app.RequestHandler)
+        captured = {}
+        payload = {
+            "base_mode": "input",
+            "text": "165 156 165",
+            "position_filter": {"include": ["1", "", ""], "exclude": ["", "", ""]},
+        }
+
+        handler._read_json_body = lambda: payload
+
+        def fake_send_json(body, status=200):
+            captured["body"] = body
+            captured["status"] = status
+
+        handler._send_json = fake_send_json
+        handler._api_filter()
+
+        self.assertEqual(200, captured["status"])
+        self.assertEqual("input", captured["body"]["base_mode"])
+        self.assertEqual(2, captured["body"]["total"])
+        self.assertEqual(["165", "156"], captured["body"]["filtered"])
+
+    def test_filter_endpoint_rejects_text_pool_outside_input_mode(self):
+        handler = object.__new__(app.RequestHandler)
+        payload = {"base_mode": "group", "text": "165 156", "digits": "1"}
+
+        handler._read_json_body = lambda: payload
+
+        with self.assertRaisesRegex(ValueError, "号码池"):
+            handler._api_filter()
 
 
 class PositionFilterTest(unittest.TestCase):
@@ -180,13 +219,117 @@ class SegmentPatternExpansionTest(unittest.TestCase):
 
     def test_segment_filters_allow_configured_tolerance(self):
         filters = app.normalize_segment_filters({
+            "segment_tolerance": 1,
             "segment_filters": [
                 {"mode": "2-3-5", "groups": ["14", "023", "56789"]},
                 {"mode": "3-3-4", "groups": ["012", "345", "6789"]},
             ]
         })
 
-        self.assertTrue(app.passes_segment_filters("147", filters, tolerance=1))
+        self.assertTrue(app.passes_segment_filters("147", filters))
+
+    def test_segment_filters_keep_per_item_tolerance(self):
+        filters = app.normalize_segment_filters({
+            "segment_filters": [
+                {"mode": "2-3-5", "groups": ["14", "023", "56789"], "tolerance": 1},
+                {"mode": "3-3-4", "groups": ["012", "345", "6789"], "tolerance": 0},
+            ]
+        })
+
+        self.assertEqual(1, filters[0]["tolerance"])
+        self.assertEqual(0, filters[1]["tolerance"])
+
+    def test_segment_filters_legacy_global_tolerance_is_fallback(self):
+        filters = app.normalize_segment_filters({
+            "segment_tolerance": 1,
+            "segment_filters": [
+                {"mode": "2-3-5", "groups": ["14", "023", "56789"]},
+                {"mode": "3-3-4", "groups": ["012", "345", "6789"]},
+            ]
+        })
+
+        self.assertEqual([1, 1], [item["tolerance"] for item in filters])
+
+    def test_segment_filter_item_tolerance_overrides_global_tolerance(self):
+        filters = app.normalize_segment_filters({
+            "segment_tolerance": 1,
+            "segment_filters": [
+                {"mode": "2-3-5", "groups": ["14", "023", "56789"], "tolerance": 0},
+                {"mode": "3-3-4", "groups": ["012", "345", "6789"]},
+            ]
+        })
+
+        self.assertEqual([0, 1], [item["tolerance"] for item in filters])
+
+    def test_segment_filter_tolerates_only_tagged_segment_misses(self):
+        filters = app.normalize_segment_filters({
+            "segment_filters": [
+                {"mode": "3-3-4", "groups": ["012", "345", "6789"], "tolerance": 1},
+                {"mode": "2-3-5", "groups": ["14", "023", "56789"], "tolerance": 0},
+            ]
+        })
+
+        self.assertTrue(app.passes_segment_filters("147", filters))
+
+    def test_segment_filter_strict_tag_still_blocks_miss(self):
+        filters = app.normalize_segment_filters({
+            "segment_filters": [
+                {"mode": "3-3-4", "groups": ["012", "345", "6789"], "tolerance": 1},
+                {"mode": "2-3-5", "groups": ["14", "023", "56789"], "tolerance": 0},
+            ]
+        })
+
+        self.assertFalse(app.passes_segment_filters("246", filters))
+
+    def test_segment_filters_group_misses_by_tolerance_label(self):
+        filters = app.normalize_segment_filters({
+            "segment_filters": [
+                {"mode": "2-3-5", "groups": ["14", "023", "56789"], "tolerance": 2},
+                {"mode": "3-3-4", "groups": ["012", "345", "6789"], "tolerance": 2},
+                {"mode": "5-5", "groups": ["01234", "56789"], "tolerance": 2},
+                {"mode": "2-2-6", "groups": ["67", "48", "012359"], "tolerance": 2},
+                {"mode": "3-3-4", "groups": ["014", "235", "6789"], "tolerance": 0},
+            ]
+        })
+
+        self.assertTrue(app.passes_segment_filters("147", filters))
+
+    def test_segment_filters_strict_added_after_tolerant_group_still_blocks(self):
+        filters = app.normalize_segment_filters({
+            "segment_filters": [
+                {"mode": "2-3-5", "groups": ["14", "023", "56789"], "tolerance": 2},
+                {"mode": "3-3-4", "groups": ["012", "345", "6789"], "tolerance": 2},
+                {"mode": "5-5", "groups": ["01234", "56789"], "tolerance": 2},
+                {"mode": "2-2-6", "groups": ["67", "48", "012359"], "tolerance": 2},
+                {"mode": "2-3-5", "groups": ["01", "234", "56789"], "tolerance": 0},
+            ]
+        })
+
+        self.assertFalse(app.passes_segment_filters("147", filters))
+
+    def test_filter_endpoint_echoes_segment_item_tolerance(self):
+        handler = object.__new__(app.RequestHandler)
+        captured = {}
+        payload = {
+            "base_mode": "direct",
+            "digits": "1",
+            "segment_filters": [
+                {"mode": "2-3-5", "groups": ["14", "023", "56789"], "tolerance": 1},
+                {"mode": "3-3-4", "groups": ["012", "345", "6789"], "tolerance": 0},
+            ],
+        }
+
+        handler._read_json_body = lambda: payload
+
+        def fake_send_json(body, status=200):
+            captured["body"] = body
+            captured["status"] = status
+
+        handler._send_json = fake_send_json
+        handler._api_filter()
+
+        self.assertEqual(200, captured["status"])
+        self.assertEqual([1, 0], [item["tolerance"] for item in captured["body"]["segment_filters"]])
 
     def test_segment_tolerance_is_clamped(self):
         self.assertEqual(0, app.normalize_segment_tolerance({"segment_tolerance": -1}))
@@ -231,6 +374,16 @@ class HistoryHitModeTest(unittest.TestCase):
         item = {"base_mode": "direct", "filtered": ["123"]}
         self.assertTrue(app.history_item_hit(item, "123"))
         self.assertFalse(app.history_item_hit(item, "321"))
+
+    def test_input_history_requires_exact_order(self):
+        item = {"base_mode": "input", "filtered": ["156"]}
+        self.assertTrue(app.history_item_hit(item, "156"))
+        self.assertFalse(app.history_item_hit(item, "165"))
+
+    def test_nested_input_request_history_requires_exact_order(self):
+        item = {"request": {"base_mode": "input"}, "filtered": ["156"]}
+        self.assertTrue(app.history_item_hit(item, "156"))
+        self.assertFalse(app.history_item_hit(item, "165"))
 
     def test_group_history_uses_group_match(self):
         item = {"base_mode": "group", "filtered": ["123"]}
