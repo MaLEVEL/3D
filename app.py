@@ -13,6 +13,7 @@ import threading
 import urllib.error
 import urllib.request
 import webbrowser
+from zoneinfo import ZoneInfo
 
 PORT = 5000
 AUTO_OPEN_BROWSER = os.environ.get("FC3D_AUTO_OPEN_BROWSER", "1") != "0"
@@ -20,12 +21,19 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(ROOT, "draw_records.json")
 HISTORY_FILE = os.path.join(ROOT, "history_records.json")
 MAX_HISTORY = 80
+HISTORY_INPUT_TEXT_LIMIT = 4000
 OFFICIAL_PAGE_SIZE = 30
 OFFICIAL_FETCH_PAGES = 10
 DRAW_LIST_LIMIT = 50
 IP138_3D_URL = "https://caipiao.ip138.com/3d/"
 THREED178_YEAR_URL = "https://www.3d178.cn/kaijiang/{year}/"
 HUINIAO_HISTORY_URL = "https://api.huiniao.top/interface/home/lotteryHistory"
+AUTO_UPDATE_DRAWS = os.environ.get("FC3D_AUTO_UPDATE_DRAWS", "1") != "0"
+AUTO_UPDATE_TZ = os.environ.get("FC3D_AUTO_UPDATE_TZ", "Asia/Shanghai")
+AUTO_UPDATE_HOUR = int(os.environ.get("FC3D_AUTO_UPDATE_HOUR", "21"))
+AUTO_UPDATE_MINUTE = int(os.environ.get("FC3D_AUTO_UPDATE_MINUTE", "26"))
+AUTO_UPDATE_RETRY_SECONDS = int(os.environ.get("FC3D_AUTO_UPDATE_RETRY_SECONDS", "300"))
+DRAW_UPDATE_LOCK = threading.Lock()
 SEGMENT_PATTERNS = {
     "2-2-6": [2, 2, 6],
     "2-3-5": [2, 3, 5],
@@ -86,7 +94,9 @@ def load_history_records():
     try:
         with open(HISTORY_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
-        return data if isinstance(data, list) else []
+        if not isinstance(data, list):
+            return []
+        return [sanitize_history_record(item) for item in data if isinstance(item, dict)][:MAX_HISTORY]
     except (OSError, json.JSONDecodeError):
         return []
 
@@ -96,16 +106,129 @@ def save_history_records(items):
     for item in items if isinstance(items, list) else []:
         if not isinstance(item, dict):
             continue
-        record = dict(item)
-        request = record.get("request") if isinstance(record.get("request"), dict) else {}
-        base_mode = str(record.get("base_mode") or record.get("pool_mode") or request.get("base_mode") or request.get("pool_mode") or "input").lower()
-        record["base_mode"] = base_mode
-        record["pool_mode"] = base_mode
-        records.append(record)
+        records.append(sanitize_history_record(item))
     records = records[:MAX_HISTORY]
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(records, f, ensure_ascii=False, indent=2)
     return records
+
+
+def history_base_mode(item, request=None):
+    request = request if isinstance(request, dict) else {}
+    return str(
+        item.get("base_mode")
+        or item.get("pool_mode")
+        or request.get("base_mode")
+        or request.get("pool_mode")
+        or "input"
+    ).lower()
+
+
+def compact_history_request(item):
+    request = item.get("request") if isinstance(item.get("request"), dict) else {}
+    source = dict(request or item)
+    base_mode = history_base_mode(item, source)
+    text_numbers = unique_numbers_from_text(source.get("text", ""))
+    if base_mode == "input" and text_numbers == generate_base_pool("direct"):
+        base_mode = "direct"
+
+    compact = {"base_mode": base_mode, "pool_mode": base_mode}
+    allowed_keys = (
+        "digits",
+        "advance_digits",
+        "kill_digits",
+        "segment_filters",
+        "segment_tolerance",
+        "group_pattern_enabled",
+        "code_filters",
+        "advanced_filter",
+        "position_filter",
+        "shape_filter",
+        "pair_filter",
+        "rule_filters",
+    )
+    for key in allowed_keys:
+        value = source.get(key)
+        if value not in (None, "", [], {}):
+            compact[key] = value
+
+    if base_mode == "input":
+        text = " ".join(text_numbers)
+        if text and len(text) <= HISTORY_INPUT_TEXT_LIMIT:
+            compact["text"] = text
+        else:
+            compact["text"] = ""
+            if text:
+                compact["text_omitted"] = True
+                compact["input_count"] = len(text_numbers)
+    else:
+        compact["text"] = ""
+
+    return compact
+
+
+def history_condition_summary(item, request):
+    summary = str(item.get("condition_summary") or item.get("summary") or "").strip()
+    if summary:
+        return summary
+
+    parts = []
+    if request.get("digits"):
+        parts.append(f"胆码 {request.get('digits')}")
+    if request.get("kill_digits"):
+        parts.append(f"杀码 {request.get('kill_digits')}")
+    if request.get("segment_filters"):
+        labels = []
+        for seg in request.get("segment_filters", []):
+            if isinstance(seg, dict):
+                label = str(seg.get("mode") or "段组")
+                tolerance = seg.get("tolerance")
+                if tolerance not in (None, "", 0, "0"):
+                    label += f" 容错{tolerance}"
+                labels.append(label)
+        if labels:
+            parts.append("段组 " + ",".join(labels))
+    if request.get("code_filters"):
+        labels = []
+        for code in request.get("code_filters", []):
+            if isinstance(code, dict):
+                labels.append(f"{code.get('code_len', 'N')}码{code.get('condition', '')}")
+        if labels:
+            parts.append("N码 " + ",".join(labels))
+    if request.get("rule_filters"):
+        labels = []
+        for rule in request.get("rule_filters", []):
+            if isinstance(rule, dict):
+                labels.append(str(rule.get("type") or "规则"))
+        if labels:
+            parts.append("规则 " + ",".join(labels))
+    return " | ".join(parts) or "无筛选条件"
+
+
+def sanitize_history_record(item):
+    request = compact_history_request(item)
+    base_mode = request.get("base_mode", "input")
+    target_issue = str(item.get("targetIssue") or item.get("issue") or "")
+    if not target_issue or is_calendar_date_issue(target_issue):
+        target_issue = default_target_issue()
+    record = {
+        "id": item.get("id"),
+        "time": item.get("time", ""),
+        "targetIssue": target_issue,
+        "base_mode": base_mode,
+        "pool_mode": base_mode,
+        "condition_summary": history_condition_summary(item, request),
+        "total": item.get("total", 0),
+        "count": item.get("count", 0),
+        "percent": item.get("percent", 0),
+        "actualIssue": item.get("actualIssue"),
+        "actualDraw": item.get("actualDraw"),
+        "hit": item.get("hit"),
+        "request": request,
+    }
+    if request.get("text_omitted"):
+        record["input_text_omitted"] = True
+    return record
 
 
 def http_get_text(url, headers=None, timeout=20):
@@ -385,6 +508,22 @@ def next_issue(records):
     return str(current + 1)
 
 
+def default_target_issue():
+    return next_issue(load_draw_records())
+
+
+def is_calendar_date_issue(value):
+    text = str(value or "")
+    if not (text.isdigit() and len(text) == 8):
+        return False
+    try:
+        month = int(text[4:6])
+        day = int(text[6:8])
+    except ValueError:
+        return False
+    return 1 <= month <= 12 and 1 <= day <= 31
+
+
 def contiguous_draw_update(existing_records, fetched_records):
     existing_nums = {issue_number(record) for record in existing_records}
     existing_nums.discard(None)
@@ -441,6 +580,103 @@ def recent_draw_records(limit=10):
     return records[:limit]
 
 
+def auto_update_timezone():
+    try:
+        return ZoneInfo(AUTO_UPDATE_TZ)
+    except Exception:
+        return None
+
+
+def auto_update_now(now=None):
+    if now is not None:
+        return now
+    tz = auto_update_timezone()
+    return datetime.datetime.now(tz) if tz else datetime.datetime.now()
+
+
+def next_auto_update_at(now=None):
+    current = auto_update_now(now)
+    target = current.replace(
+        hour=AUTO_UPDATE_HOUR,
+        minute=AUTO_UPDATE_MINUTE,
+        second=0,
+        microsecond=0,
+    )
+    if current >= target:
+        target += datetime.timedelta(days=1)
+    return target
+
+
+def seconds_until_auto_update(now=None):
+    current = auto_update_now(now)
+    return max(1, int((next_auto_update_at(current) - current).total_seconds()))
+
+
+def latest_draw_issue(records=None):
+    records = records if records is not None else load_draw_records()
+    nums = [issue_number(record) for record in records]
+    nums = [num for num in nums if num is not None]
+    return max(nums) if nums else None
+
+
+def should_retry_scheduled_update(target_issue, records=None):
+    target_num = issue_number(str(target_issue)) if target_issue else None
+    latest_num = latest_draw_issue(records)
+    return bool(target_num is not None and (latest_num is None or latest_num < target_num))
+
+
+def run_scheduled_draw_update(target_issue=None):
+    with DRAW_UPDATE_LOCK:
+        records, added, fetched, missing, source_warning = fetch_and_merge_draw_records()
+    latest = records[0] if records else None
+    retry = should_retry_scheduled_update(target_issue, records) if target_issue else False
+    print(
+        "[auto] draw update finished: "
+        f"latest={latest.get('issue') if latest else '--'} "
+        f"target={target_issue or '--'} "
+        f"added={added} fetched={len(fetched)} missing={','.join(missing) if missing else '-'} "
+        f"retry={'yes' if retry else 'no'}"
+    )
+    if source_warning:
+        print(f"[auto] draw update warning: {source_warning}")
+    return not retry
+
+
+def scheduled_draw_update_loop(stop_event=None):
+    stop_event = stop_event or threading.Event()
+    while not stop_event.wait(seconds_until_auto_update()):
+        target_issue = next_issue(load_draw_records())
+        try:
+            done = run_scheduled_draw_update(target_issue)
+        except Exception as e:
+            print(f"[auto] draw update failed: {e}")
+            done = False
+        while target_issue and not done and not stop_event.wait(max(1, AUTO_UPDATE_RETRY_SECONDS)):
+            try:
+                done = run_scheduled_draw_update(target_issue)
+            except Exception as e:
+                print(f"[auto] draw update retry failed: {e}")
+
+
+def start_scheduled_draw_update():
+    if not AUTO_UPDATE_DRAWS:
+        print("[auto] scheduled draw update disabled")
+        return None
+    next_run = next_auto_update_at()
+    print(
+        "[auto] scheduled draw update enabled: "
+        f"{AUTO_UPDATE_TZ} {AUTO_UPDATE_HOUR:02d}:{AUTO_UPDATE_MINUTE:02d}, "
+        f"retry={AUTO_UPDATE_RETRY_SECONDS}s, next={next_run.isoformat()}"
+    )
+    thread = threading.Thread(
+        target=scheduled_draw_update_loop,
+        name="fc3d-draw-auto-update",
+        daemon=True,
+    )
+    thread.start()
+    return thread
+
+
 def group_hit(filtered, draw):
     if not filtered or not draw:
         return False
@@ -457,14 +693,40 @@ def direct_hit(filtered, draw):
 
 def history_item_hit(item, draw):
     request = item.get("request") if isinstance(item.get("request"), dict) else {}
-    base_mode = str(item.get("base_mode") or item.get("pool_mode") or request.get("base_mode") or request.get("pool_mode") or "input").lower()
+    base_mode = history_base_mode(item, request)
+    filtered = item.get("filtered") if isinstance(item.get("filtered"), list) else []
+    if not filtered:
+        filtered = history_item_filtered(item)
     if base_mode in ("direct", "full", "input"):
-        return direct_hit(item.get("filtered", []), draw)
-    return group_hit(item.get("filtered", []), draw)
+        return direct_hit(filtered, draw)
+    return group_hit(filtered, draw)
 
 
-def generate_code_combos(digits):
-    """Generate all 组六 + 组三 combos from N unique digits (N=3~8)."""
+def history_item_filtered(item):
+    request = item.get("request") if isinstance(item.get("request"), dict) else compact_history_request(item)
+    if history_base_mode(item, request) == "input" and not request.get("text"):
+        return []
+    try:
+        result, status = build_filter_result(request)
+    except Exception:
+        return []
+    if status != 200:
+        return []
+    return result.get("filtered", [])
+
+
+def normalize_generate_code_mode(mode):
+    mode_text = str(mode or "group").strip().lower()
+    if mode_text in ("group", "zuxuan", "zu", "组选"):
+        return "group"
+    if mode_text in ("direct", "full", "zhixuan", "zx", "直选"):
+        return "direct"
+    raise ValueError("生成类型只能是组选或直选")
+
+
+def generate_code_combos(digits, mode="group"):
+    """Generate group or direct combos from N unique digits (N=3~8)."""
+    mode = normalize_generate_code_mode(mode)
     digits = str(digits)
     if len(digits) < 3:
         raise ValueError("至少需要3个不同数字")
@@ -473,6 +735,8 @@ def generate_code_combos(digits):
     if len(set(digits)) != len(digits) or not digits.isdigit():
         raise ValueError("数字必须是不重复的0-9数字")
     arr = list(digits)
+    if mode == "direct":
+        return [a + b + c for a in arr for b in arr for c in arr]
     n = len(arr)
     result = []
     # 组六: C(n,3) — three different digits
@@ -488,8 +752,12 @@ def generate_code_combos(digits):
     return result
 
 
-def process_generate_codes(codes):
+def process_generate_codes(codes, mode="group"):
     """Process a list of code specs and return (result_dict, status_code)."""
+    try:
+        mode = normalize_generate_code_mode(mode)
+    except ValueError as e:
+        return {"ok": False, "error": str(e)}, 400
     if not isinstance(codes, list):
         return {"ok": False, "error": "codes must be a list"}, 400
     if not codes:
@@ -508,7 +776,7 @@ def process_generate_codes(codes):
         if code_len != len(digits):
             return {"ok": False, "error": f"{digits} 是{len(digits)}码，不能标记为{code_len}码"}, 400
         try:
-            combos = generate_code_combos(digits)
+            combos = generate_code_combos(digits, mode)
         except ValueError as e:
             return {"ok": False, "error": str(e)}, 400
         all_generated.update(combos)
@@ -518,6 +786,7 @@ def process_generate_codes(codes):
     generated = sorted(all_generated)
     return {
         "ok": True,
+        "mode": mode,
         "generated": generated,
         "count": len(generated),
         "codes": normalized_codes,
@@ -1246,6 +1515,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -1254,6 +1525,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         body = html.encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -1305,131 +1578,20 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 
     def _api_filter(self):
         data = self._read_json_body()
-        text = data.get("text", "")
-        base_mode = normalize_base_mode(data)
-        if base_mode != "input" and unique_numbers_from_text(text):
-            raise ValueError("检测到已输入号码池，请使用手动号码池模式按直选原号筛选")
-        digits = data.get("digits", "")
-        advance_digits = data.get("advance_digits", "")
-        kill_digits = data.get("kill_digits", "")
-        segment_filters = normalize_segment_filters(data)
-        segment_tolerance = normalize_segment_tolerance(data)
-        code_filters = normalize_code_filters(data)
-        advanced_filter = normalize_advanced_filter(data)
-        position_filter = normalize_position_filter(data)
-        shape_filter = normalize_shape_filter(data)
-        pair_filter = normalize_pair_filter(data)
-        rule_filters = normalize_rule_filters(data)
-
-        if base_mode in ("group", "group3", "group6", "baozi") and position_filter["enabled"]:
-            raise ValueError("定位筛选需要使用直选全量或输入原始三位号码池，不能用于组选代表号大底")
-
-        unique = unique_numbers_from_text(text) if base_mode == "input" else generate_base_pool(base_mode)
-
-        target_include = set(digits) if digits else set()
-        target_advance = set(advance_digits) if advance_digits else set()
-        target_kill = set(kill_digits) if kill_digits else set()
-        overlap = target_include & target_kill
-        if overlap:
-            raise ValueError(f"胆码和杀码冲突：{''.join(sorted(overlap))}")
-
-        if (
-            not target_include
-            and not target_advance
-            and not target_kill
-            and not segment_filters
-            and not code_filters
-            and not advanced_filter["enabled"]
-            and not position_filter["enabled"]
-            and not shape_filter["enabled"]
-            and not pair_filter["enabled"]
-            and not rule_filters
-            and base_mode == "input"
-        ):
-            self._send_json({"error": "please enter at least one filter condition"}, 400)
-            return
-
-        steps = []
-        filtered = unique[:]
-
-        def passes_legacy_filters(n):
-            if advanced_filter["enabled"] and not passes_advanced_filter(n, advanced_filter):
-                return False
-            if target_kill and any(d in n for d in target_kill):
-                return False
-            if target_include and not any(d in n for d in target_include):
-                return False
-            if target_advance:
-                a, b, c = int(n[0]), int(n[1]), int(n[2])
-                adv_set = {abs(a - b), abs(a - c), abs(b - c)}
-                if not any(str(d) in target_advance for d in adv_set):
-                    return False
-            if not passes_segment_filters(n, segment_filters, segment_tolerance):
-                return False
-            if any(not passes_code_filter(n, cf) for cf in code_filters):
-                return False
-            return True
-
-        filtered = apply_filter_step(filtered, "legacy", passes_legacy_filters, steps)
-        if position_filter["enabled"]:
-            filtered = apply_filter_step(filtered, "position_filter", lambda n: passes_position_filter(n, position_filter), steps)
-        if shape_filter["enabled"]:
-            filtered = apply_filter_step(filtered, "shape_filter", lambda n: passes_shape_filter(n, shape_filter), steps)
-        if pair_filter["enabled"]:
-            filtered = apply_filter_step(filtered, "pair_filter", lambda n: passes_pair_filter(n, pair_filter), steps)
-        if rule_filters:
-            filtered = apply_filter_step(filtered, "rule_filters", lambda n: passes_rule_filters(n, rule_filters), steps)
-
-        self._send_json({
-            "total": len(unique),
-            "filtered": filtered,
-            "count": len(filtered),
-            "percent": round(len(filtered) / len(unique) * 100, 2) if unique else 0,
-            "base_mode": base_mode,
-            "advance_digits": advance_digits,
-            "segment": segment_desc(segment_filters, segment_tolerance),
-            "segment_tolerance": segment_tolerance,
-            "segment_filters": [
-                {"mode": item["mode"], "groups": item["groups_data"], "tolerance": item.get("tolerance", 0)}
-                for item in segment_filters
-            ],
-            "code_desc": code_filter_desc(code_filters),
-            "code_filters": [
-                {"code_len": cf["code_len"], "condition": cf["condition"], "digits": cf["digits"], "count_repeat": cf.get("count_repeat", False)}
-                for cf in code_filters
-            ],
-            "advanced_desc": advanced_filter_desc(advanced_filter),
-            "advanced_filter": {
-                "conditions": advanced_filter["conditions"],
-                "miss_min": advanced_filter["miss_min"],
-                "miss_max": advanced_filter["miss_max"],
-            },
-            "position_filter": serialize_position_filter(position_filter),
-            "shape_filter": {
-                "types": shape_filter["types"],
-                "mode": shape_filter["mode"],
-                "prime_count": shape_filter["prime_count"],
-                "values": shape_filter["values"],
-            },
-            "pair_filter": {
-                "pair_sums": pair_filter["pair_sums"],
-                "pair_sum_tails": pair_filter["pair_sum_tails"],
-                "pair_diffs": pair_filter["pair_diffs"],
-                "mode": pair_filter["mode"],
-            },
-            "rule_filters": rule_filters,
-            "steps": steps,
-        })
+        result, status = build_filter_result(data)
+        self._send_json(result, status)
 
     def _api_generate_codes(self):
         data = self._read_json_body()
         codes = data.get("codes", [])
-        result, status = process_generate_codes(codes)
+        mode = data.get("mode", data.get("generate_mode", data.get("generateMode", "group")))
+        result, status = process_generate_codes(codes, mode)
         self._send_json(result, status)
 
     def _api_update_draws(self):
         try:
-            records, added, new_records, missing, source_warning = fetch_and_merge_draw_records()
+            with DRAW_UPDATE_LOCK:
+                records, added, new_records, missing, source_warning = fetch_and_merge_draw_records()
             warning = ""
             if source_warning:
                 if missing:
@@ -1494,7 +1656,10 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         self._send_json({"ok": True, "items": checked, "drawCount": len(load_draw_records())})
 
     def _api_history_get(self):
-        self._send_json({"ok": True, "items": load_history_records()})
+        items = load_history_records()
+        if items:
+            items = save_history_records(items)
+        self._send_json({"ok": True, "items": items})
 
     def _api_history_save(self):
         body = self._read_json_body()
@@ -1514,8 +1679,125 @@ def check_history_items(items):
             next_item["actualIssue"] = draw.get("issue")
             next_item["actualDraw"] = draw.get("draw")
             next_item["hit"] = history_item_hit(item, draw.get("draw", ""))
-        checked.append(next_item)
+        checked.append(sanitize_history_record(next_item))
     return checked
+
+
+def build_filter_result(data):
+    text = data.get("text", "")
+    base_mode = normalize_base_mode(data)
+    if base_mode != "input" and unique_numbers_from_text(text):
+        raise ValueError("检测到已输入号码池，请使用手动号码池模式按直选原号筛选")
+    digits = data.get("digits", "")
+    advance_digits = data.get("advance_digits", "")
+    kill_digits = data.get("kill_digits", "")
+    segment_filters = normalize_segment_filters(data)
+    segment_tolerance = normalize_segment_tolerance(data)
+    code_filters = normalize_code_filters(data)
+    advanced_filter = normalize_advanced_filter(data)
+    position_filter = normalize_position_filter(data)
+    shape_filter = normalize_shape_filter(data)
+    pair_filter = normalize_pair_filter(data)
+    rule_filters = normalize_rule_filters(data)
+
+    if base_mode in ("group", "group3", "group6", "baozi") and position_filter["enabled"]:
+        raise ValueError("定位筛选需要使用直选全量或输入原始三位号码池，不能用于组选代表号大底")
+
+    unique = unique_numbers_from_text(text) if base_mode == "input" else generate_base_pool(base_mode)
+
+    target_include = set(digits) if digits else set()
+    target_advance = set(advance_digits) if advance_digits else set()
+    target_kill = set(kill_digits) if kill_digits else set()
+    overlap = target_include & target_kill
+    if overlap:
+        raise ValueError(f"胆码和杀码冲突：{''.join(sorted(overlap))}")
+
+    if (
+        not target_include
+        and not target_advance
+        and not target_kill
+        and not segment_filters
+        and not code_filters
+        and not advanced_filter["enabled"]
+        and not position_filter["enabled"]
+        and not shape_filter["enabled"]
+        and not pair_filter["enabled"]
+        and not rule_filters
+        and base_mode == "input"
+    ):
+        return {"error": "please enter at least one filter condition"}, 400
+
+    steps = []
+    filtered = unique[:]
+
+    def passes_legacy_filters(n):
+        if advanced_filter["enabled"] and not passes_advanced_filter(n, advanced_filter):
+            return False
+        if target_kill and any(d in n for d in target_kill):
+            return False
+        if target_include and not any(d in n for d in target_include):
+            return False
+        if target_advance:
+            a, b, c = int(n[0]), int(n[1]), int(n[2])
+            adv_set = {abs(a - b), abs(a - c), abs(b - c)}
+            if not any(str(d) in target_advance for d in adv_set):
+                return False
+        if not passes_segment_filters(n, segment_filters, segment_tolerance):
+            return False
+        if any(not passes_code_filter(n, cf) for cf in code_filters):
+            return False
+        return True
+
+    filtered = apply_filter_step(filtered, "legacy", passes_legacy_filters, steps)
+    if position_filter["enabled"]:
+        filtered = apply_filter_step(filtered, "position_filter", lambda n: passes_position_filter(n, position_filter), steps)
+    if shape_filter["enabled"]:
+        filtered = apply_filter_step(filtered, "shape_filter", lambda n: passes_shape_filter(n, shape_filter), steps)
+    if pair_filter["enabled"]:
+        filtered = apply_filter_step(filtered, "pair_filter", lambda n: passes_pair_filter(n, pair_filter), steps)
+    if rule_filters:
+        filtered = apply_filter_step(filtered, "rule_filters", lambda n: passes_rule_filters(n, rule_filters), steps)
+
+    return {
+        "total": len(unique),
+        "filtered": filtered,
+        "count": len(filtered),
+        "percent": round(len(filtered) / len(unique) * 100, 2) if unique else 0,
+        "base_mode": base_mode,
+        "advance_digits": advance_digits,
+        "segment": segment_desc(segment_filters, segment_tolerance),
+        "segment_tolerance": segment_tolerance,
+        "segment_filters": [
+            {"mode": item["mode"], "groups": item["groups_data"], "tolerance": item.get("tolerance", 0)}
+            for item in segment_filters
+        ],
+        "code_desc": code_filter_desc(code_filters),
+        "code_filters": [
+            {"code_len": cf["code_len"], "condition": cf["condition"], "digits": cf["digits"], "count_repeat": cf.get("count_repeat", False)}
+            for cf in code_filters
+        ],
+        "advanced_desc": advanced_filter_desc(advanced_filter),
+        "advanced_filter": {
+            "conditions": advanced_filter["conditions"],
+            "miss_min": advanced_filter["miss_min"],
+            "miss_max": advanced_filter["miss_max"],
+        },
+        "position_filter": serialize_position_filter(position_filter),
+        "shape_filter": {
+            "types": shape_filter["types"],
+            "mode": shape_filter["mode"],
+            "prime_count": shape_filter["prime_count"],
+            "values": shape_filter["values"],
+        },
+        "pair_filter": {
+            "pair_sums": pair_filter["pair_sums"],
+            "pair_sum_tails": pair_filter["pair_sum_tails"],
+            "pair_diffs": pair_filter["pair_diffs"],
+            "mode": pair_filter["mode"],
+        },
+        "rule_filters": rule_filters,
+        "steps": steps,
+    }, 200
 
 
 class ReusableTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -1563,6 +1845,7 @@ if __name__ == "__main__":
     print("=" * 60)
     if AUTO_OPEN_BROWSER:
         threading.Timer(1.0, open_browser).start()
+    start_scheduled_draw_update()
     for _ in range(5):
         try:
             with ReusableTCPServer(("", PORT), RequestHandler) as httpd:

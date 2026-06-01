@@ -1,3 +1,4 @@
+import datetime
 import unittest
 from unittest import mock
 
@@ -252,6 +253,40 @@ class DrawUpdateTest(unittest.TestCase):
 
         self.assertEqual(["2026126"], [r["issue"] for r in mergeable])
         self.assertEqual(["2026127", "2026128", "2026129"], missing)
+
+    def test_next_auto_update_at_uses_2126_daily_schedule(self):
+        tz = app.ZoneInfo("Asia/Shanghai")
+        before = datetime.datetime(2026, 5, 30, 21, 25, 0, tzinfo=tz)
+        at_time = datetime.datetime(2026, 5, 30, 21, 26, 0, tzinfo=tz)
+
+        self.assertEqual(
+            datetime.datetime(2026, 5, 30, 21, 26, 0, tzinfo=tz),
+            app.next_auto_update_at(before),
+        )
+        self.assertEqual(
+            datetime.datetime(2026, 5, 31, 21, 26, 0, tzinfo=tz),
+            app.next_auto_update_at(at_time),
+        )
+
+    def test_seconds_until_auto_update(self):
+        tz = app.ZoneInfo("Asia/Shanghai")
+        now = datetime.datetime(2026, 5, 30, 21, 25, 30, tzinfo=tz)
+
+        self.assertEqual(30, app.seconds_until_auto_update(now))
+
+    def test_should_retry_scheduled_update_until_target_issue_exists(self):
+        records = [{"issue": "2026140", "draw": "285"}]
+
+        self.assertTrue(app.should_retry_scheduled_update("2026141", records))
+        self.assertFalse(app.should_retry_scheduled_update("2026140", records))
+        self.assertFalse(app.should_retry_scheduled_update("", records))
+
+    def test_run_scheduled_draw_update_reports_incomplete_target(self):
+        records = [{"issue": "2026140", "draw": "285"}]
+
+        with mock.patch.object(app, "fetch_and_merge_draw_records", return_value=(records, 0, [], [], "")):
+            self.assertFalse(app.run_scheduled_draw_update("2026141"))
+            self.assertTrue(app.run_scheduled_draw_update("2026140"))
 
 
 if __name__ == "__main__":

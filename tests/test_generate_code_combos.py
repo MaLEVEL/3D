@@ -42,6 +42,14 @@ class GenerateCodeCombosTest(unittest.TestCase):
         result = app.generate_code_combos("01234")
         self.assertEqual(len(result), len(set(result)))
 
+    def test_direct_mode_generates_position_permutations(self):
+        result = app.generate_code_combos("012", mode="direct")
+        self.assertEqual(27, len(result))
+        self.assertIn("000", result)
+        self.assertIn("012", result)
+        self.assertIn("210", result)
+        self.assertIn("222", result)
+
     def test_invalid_input_too_short_raises(self):
         with self.assertRaises(ValueError):
             app.generate_code_combos("01")
@@ -55,6 +63,10 @@ class GenerateCodesEndpointLogicTest(unittest.TestCase):
     def test_generate_and_merge_5_code(self):
         result = app.generate_code_combos("01234")
         self.assertEqual(30, len(result))
+
+    def test_generate_direct_5_code(self):
+        result = app.generate_code_combos("01234", mode="direct")
+        self.assertEqual(125, len(result))
 
     def test_generate_multiple_and_merge_dedup(self):
         merged = set()
@@ -88,6 +100,19 @@ class GenerateCodesEndpointLogicTest(unittest.TestCase):
 
     def test_declared_len_must_match_digits_length(self):
         result, status = app.process_generate_codes([{"digits": "01234", "len": 8}])
+        self.assertFalse(result.get("ok"))
+        self.assertIn("error", result)
+        self.assertEqual(400, status)
+
+    def test_process_generate_codes_accepts_direct_mode(self):
+        result, status = app.process_generate_codes([{"digits": "012", "len": 3}], mode="direct")
+        self.assertTrue(result.get("ok"))
+        self.assertEqual("direct", result.get("mode"))
+        self.assertEqual(27, result.get("count"))
+        self.assertIn("210", result.get("generated"))
+
+    def test_process_generate_codes_rejects_bad_mode(self):
+        result, status = app.process_generate_codes([{"digits": "012", "len": 3}], mode="bad")
         self.assertFalse(result.get("ok"))
         self.assertIn("error", result)
         self.assertEqual(400, status)

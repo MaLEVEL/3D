@@ -418,6 +418,8 @@
     background: linear-gradient(180deg, rgba(244,247,251,0), rgba(244,247,251,.96) 24%);
   }
   .condition-summary {
+    min-width: 0;
+    max-width: 100%;
     min-height: 42px;
     padding: 10px 12px;
     border: 1px solid var(--border-2);
@@ -425,6 +427,7 @@
     background: rgba(255,255,255,.96);
     color: var(--muted);
     font-size: 12px;
+    overflow-wrap: anywhere;
   }
   .logic-note {
     padding: 9px 12px;
@@ -443,6 +446,8 @@
     align-items: center;
   }
   .condition-tag {
+    max-width: 100%;
+    min-width: 0;
     min-height: 30px;
     display: inline-flex;
     align-items: center;
@@ -454,6 +459,7 @@
     color: #1E40AF;
     font-size: 12px;
     font-weight: 900;
+    overflow-wrap: anywhere;
   }
   .condition-tag button {
     width: 18px;
@@ -661,10 +667,55 @@
     border-radius: 13px;
     background: #fff;
   }
-  .history-main { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
-  .history-preview { color: var(--muted); font-size: 12px; word-break: break-word; }
-  .history-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  .history-actions input { width: 136px; min-height: 34px; padding: 6px 10px; }
+  .history-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 248px;
+    gap: 14px;
+    align-items: start;
+  }
+  .history-content {
+    min-width: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .history-preview {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+    padding: 9px 11px;
+    border: 1px solid var(--border-2);
+    border-radius: 11px;
+    background: linear-gradient(180deg, #F8FBFF 0%, #FFF 100%);
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+    word-break: break-word;
+  }
+  .history-issue {
+    color: #334155;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+  .history-summary { min-width: 0; }
+  .history-actions {
+    display: grid;
+    gap: 8px;
+    align-items: start;
+  }
+  .history-actions input {
+    width: 100%;
+    min-height: 36px;
+    padding: 6px 10px;
+    text-align: center;
+    font: 900 14px/1 var(--mono);
+  }
+  .history-action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .history-action-buttons .btn { width: 100%; }
+  .history-action-buttons .btn-danger { grid-column: 1 / -1; }
 
   .segment-stack, .code-stack, .qima-list { display: grid; gap: 10px; }
   .segment-card, .code-card {
@@ -772,7 +823,12 @@
     }
     .step-item { grid-template-columns: 1fr; }
     .segment-row { grid-template-columns: 1fr; }
-    .history-main { display: grid; }
+    .history-main { grid-template-columns: 1fr; }
+    .history-preview { grid-template-columns: 1fr; }
+    .history-action-buttons {
+      grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
+    }
+    .history-action-buttons .btn-danger { grid-column: auto; }
     .filter-rail {
       position: fixed;
       inset: max(8px, env(safe-area-inset-top)) 0 0 0;
@@ -826,11 +882,17 @@
       gap: 6px;
       padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
       background: linear-gradient(180deg, rgba(244,247,251,0), rgba(244,247,251,.98) 18%);
+      max-width: 100%;
+      overflow: hidden;
+    }
+    .sticky-actions > * {
+      min-width: 0;
     }
     .sticky-actions .condition-summary {
       grid-area: summary;
       min-height: 32px;
       max-height: 34px;
+      width: 100%;
       padding: 5px 8px;
       overflow: hidden;
       white-space: nowrap;
@@ -936,6 +998,13 @@
               <strong>复式码生成</strong>
               <span class="hint" id="qimaSelectedHint">已选 0 个</span>
             </div>
+            <div class="card-title-row">
+              <span class="hint">生成类型</span>
+              <div class="segmented" role="group" aria-label="复式码生成类型">
+                <button type="button" class="active" data-qima-mode="group">组选</button>
+                <button type="button" data-qima-mode="direct">直选</button>
+              </div>
+            </div>
             <div id="qimaPicker"></div>
             <div class="row">
               <button class="btn btn-sm btn-soft" id="qimaAddBtn" type="button">添加已选号码</button>
@@ -958,7 +1027,7 @@
         </div>
       </details>
 
-      <details class="filter-group" open>
+      <details class="filter-group">
         <summary>
           <div class="summary-left">
             <span class="summary-icon"><svg class="icon" viewBox="0 0 24 24"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></span>
@@ -1049,7 +1118,7 @@
         <summary>
           <div class="summary-left">
             <span class="summary-icon"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
-            <span class="summary-title"><strong>区间组合</strong><span>段组、N码、尾数组合</span></span>
+            <span class="summary-title"><strong>区间组合</strong><span>段组、N码命中</span></span>
           </div>
           <svg class="icon chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
         </summary>
@@ -1089,10 +1158,6 @@
             <span class="hint">默认不计重：112 命中 1、2 算 2 个；同号计重时算 3 次。</span>
             <button class="btn btn-soft btn-full" id="codeAddBtn" type="button">添加 N码条件</button>
             <div class="code-stack" id="codeStack"></div>
-          </div>
-          <div class="compact-card disabled">
-            <div class="card-title-row"><strong>区间命中 / 尾数组合</strong><span class="pill amber">展示占位</span></div>
-            <span class="hint">和值尾、两码尾已可筛选；更复杂的尾数组合建议下一版接入独立后端规则。</span>
           </div>
         </div>
       </details>
@@ -1210,6 +1275,7 @@
   "use strict";
 
   var MAX_HISTORY = 80;
+  var HISTORY_INPUT_TEXT_LIMIT = 4000;
   var DIGITS = ["0","1","2","3","4","5","6","7","8","9"];
   var BASE_MODES = [
     ["direct", "直选全量", "000-999"],
@@ -1299,6 +1365,7 @@
     codes: [],
     qimaCodes: [],
     qimaDigits: [],
+    qimaMode: "group",
     history: [],
     draws: [],
     latestIssue: "",
@@ -1407,8 +1474,56 @@
     var d = new Date();
     return String(d.getFullYear()) + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0");
   }
+  function currentTargetIssue(){
+    return state.nextIssue || (state.latestIssue ? String(Number(state.latestIssue) + 1) : "") || todayIssue();
+  }
   function nowText(){ return new Date().toLocaleString("zh-CN", {hour12:false}); }
   function cloneData(value){ return JSON.parse(JSON.stringify(value)); }
+  function compactRequestForHistory(source){
+    var req = cloneData(source || {});
+    var baseMode = req.base_mode || req.pool_mode || state.baseMode || "input";
+    var numbers = extractNumbers(req.text || "");
+    if (baseMode === "input" && numbers.length === 1000 && numbers.join(" ") === generateBasePool("direct").join(" ")) {
+      baseMode = "direct";
+    }
+    req.base_mode = baseMode;
+    req.pool_mode = baseMode;
+    if (baseMode === "input") {
+      var text = numbers.join(" ");
+      if (text.length <= HISTORY_INPUT_TEXT_LIMIT) {
+        req.text = text;
+      } else {
+        req.text = "";
+        req.text_omitted = true;
+        req.input_count = numbers.length;
+      }
+    } else {
+      req.text = "";
+    }
+    delete req.filtered;
+    delete req.steps;
+    return req;
+  }
+  function compactHistoryItem(item){
+    item = item || {};
+    var request = compactRequestForHistory(item.request || item);
+    var baseMode = request.base_mode || request.pool_mode || item.base_mode || item.pool_mode || "input";
+    return {
+      id: item.id || Date.now(),
+      time: item.time || nowText(),
+      targetIssue: item.targetIssue || currentTargetIssue(),
+      base_mode: baseMode,
+      pool_mode: baseMode,
+      condition_summary: item.condition_summary || item.summary || conditionText(),
+      total: item.total || 0,
+      count: item.count || 0,
+      percent: item.percent || 0,
+      actualIssue: item.actualIssue || null,
+      actualDraw: item.actualDraw || null,
+      hit: item.hit == null ? null : item.hit,
+      request: request
+    };
+  }
   function escapeHtml(value){
     return String(value == null ? "" : value).replace(/[&<>"']/g, function(ch){
       return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch];
@@ -1779,6 +1894,11 @@
   function renderQima(){
     var len = state.qimaDigits.length;
     $("qimaSelectedHint").textContent = "已选 " + len + " 个";
+    qsa("[data-qima-mode]").forEach(function(btn){
+      var active = state.qimaMode === btn.dataset.qimaMode;
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
     renderPicker("qimaPicker", {
       values: DIGITS,
       maxSelect: 8,
@@ -1805,13 +1925,13 @@
   async function generateFromQima(){
     if (!state.qimaCodes.length) return toast("请先添加复式码", true);
     try {
-      var data = await apiPost("/api/generate_codes", {codes: state.qimaCodes});
+      var data = await apiPost("/api/generate_codes", {codes: state.qimaCodes, mode: state.qimaMode});
       var merged = data.generated || [];
       $("inputArea").value = merged.join(" ");
       state.baseMode = "input";
       renderBaseModes();
       markResultStale();
-      toast("已生成并填入 " + merged.length + " 组号码");
+      toast("已按" + (data.mode === "direct" ? "直选" : "组选") + "生成并填入 " + merged.length + " 组号码");
     } catch(e) { toast(e.message, true); }
   }
 
@@ -1964,7 +2084,7 @@
     state.lastResult = {
       id: Date.now(),
       time: nowText(),
-      targetIssue: state.nextIssue || todayIssue(),
+      targetIssue: currentTargetIssue(),
       request: request,
       base_mode: payload.base_mode,
       pool_mode: payload.base_mode,
@@ -2035,7 +2155,7 @@
     var request = state.lastResult && state.lastResult.request ? state.lastResult.request : buildPayload();
     var content = [
       "智能筛选选号系统 - 筛选结果",
-      "期号: " + ((state.lastResult && state.lastResult.targetIssue) || state.nextIssue || todayIssue()),
+      "期号: " + ((state.lastResult && state.lastResult.targetIssue) || currentTargetIssue()),
       "大底: " + baseModeName(request.base_mode || request.pool_mode || state.baseMode),
       "条件: " + conditionText(),
       "总数: " + state.currentTotal + " 命中: " + state.currentResult.length + " 占比: " + state.currentPercent + "%",
@@ -2232,17 +2352,22 @@
       return '<div class="draw-card"><div class="draw-top"><strong>' + escapeHtml(item.issue || "--") + '</strong><span>' + escapeHtml(item.date || "") + '</span></div><div class="balls">' + balls + '</div></div>';
     }).join("") : '<div class="empty-state" style="min-height:120px;">暂无开奖记录，可点击“更新开奖”。</div>';
   }
-  async function refreshDraws(){
+  async function refreshDraws(options){
+    var quiet = options && options.quiet;
     try {
-      toast("正在更新开奖数据");
+      if (!quiet) toast("正在更新开奖数据");
       var data = await apiPost("/api/update_draws", {});
       state.draws = data.records || [];
       state.latestIssue = data.latest ? data.latest.issue : "";
       state.latestDraw = data.latest ? data.latest.draw : "";
       state.nextIssue = data.nextIssue || "";
       renderDraws();
-      toast(data.warning || ("开奖更新完成，新增 " + (data.added || 0) + " 期"));
-    } catch(e) { toast(e.message, true); }
+      if (!quiet || data.warning) toast(data.warning || ("开奖更新完成，新增 " + (data.added || 0) + " 期"));
+      return data;
+    } catch(e) {
+      toast(e.message, true);
+      return null;
+    }
   }
 
   async function loadHistory(){
@@ -2251,7 +2376,7 @@
     renderHistory();
   }
   async function setHistory(items){
-    var data = await apiPost("/api/history", {items: items.slice(0, MAX_HISTORY)});
+    var data = await apiPost("/api/history", {items: items.slice(0, MAX_HISTORY).map(compactHistoryItem)});
     state.history = data.items || [];
     renderHistory();
   }
@@ -2262,23 +2387,62 @@
       return;
     }
     $("historyList").innerHTML = state.history.map(function(item){
-      var preview = (item.filtered || []).slice(0, 16).map(escapeHtml).join(" ") + ((item.filtered || []).length > 16 ? " ..." : "");
+      var preview = item.condition_summary || item.summary || "无筛选条件";
       var request = item.request && typeof item.request === "object" ? item.request : {};
       var modeLabel = baseModeName(item.base_mode || item.pool_mode || request.base_mode || request.pool_mode || "input");
       var status = item.hit === true ? '<span class="pill green">中奖 ' + escapeHtml(item.actualDraw || "") + '</span>' : item.hit === false ? '<span class="pill red">未中 ' + escapeHtml(item.actualDraw || "") + '</span>' : '<span class="pill amber">待开奖</span>';
-      return '<div class="history-item" data-history-id="' + escapeAttr(item.id) + '"><div class="history-main"><div><div class="pill-row"><span class="pill gray">' + escapeHtml(item.time || "") + '</span><span class="pill gray">' + escapeHtml(modeLabel) + '</span>' + status + '<span class="pill">命中 ' + escapeHtml(item.count || 0) + '</span></div><div class="history-preview">期号 ' + escapeHtml(item.targetIssue || "--") + ' | ' + preview + '</div></div><div class="history-actions"><input data-history-issue value="' + escapeAttr(item.targetIssue || "") + '" placeholder="期号"><button class="btn btn-sm btn-soft" data-history-load type="button">加载</button><button class="btn btn-sm btn-soft" data-history-save type="button">改期号</button><button class="btn btn-sm btn-danger" data-history-delete type="button">删除</button></div></div></div>';
+      return '<div class="history-item" data-history-id="' + escapeAttr(item.id) + '">' +
+        '<div class="history-main">' +
+          '<div class="history-content">' +
+            '<div class="pill-row">' +
+              '<span class="pill gray">' + escapeHtml(item.time || "") + '</span>' +
+              '<span class="pill gray">' + escapeHtml(modeLabel) + '</span>' +
+              status +
+              '<span class="pill">命中 ' + escapeHtml(item.count || 0) + '</span>' +
+            '</div>' +
+            '<div class="history-preview">' +
+              '<span class="history-issue">期号 ' + escapeHtml(item.targetIssue || "--") + '</span>' +
+              '<span class="history-summary">' + escapeHtml(preview) + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="history-actions">' +
+            '<input data-history-issue value="' + escapeAttr(item.targetIssue || "") + '" placeholder="期号">' +
+            '<div class="history-action-buttons">' +
+              '<button class="btn btn-sm btn-soft" data-history-load type="button">加载</button>' +
+              '<button class="btn btn-sm btn-soft" data-history-save type="button">改期号</button>' +
+              '<button class="btn btn-sm btn-danger" data-history-delete type="button">删除</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
     }).join("");
     qsa("[data-history-id]").forEach(function(el){
       var id = Number(el.dataset.historyId);
       el.querySelector("[data-history-load]").addEventListener("click", function(){
         var item = state.history.find(function(x){ return Number(x.id) === id; });
-        if (item) { restoreUi(item.request || item); displayResults({filtered:item.filtered || [], total:item.total || 0, percent:item.percent || 0, steps:item.steps || []}, buildPayload()); toast("已加载历史条件"); }
+        if (item) {
+          restoreUi(item.request || item);
+          state.currentResult = [];
+          state.currentTotal = item.total || 0;
+          state.currentPercent = item.percent || 0;
+          state.currentSteps = [];
+          state.lastResult = null;
+          clearResultStale();
+          $("totalCount").textContent = state.currentTotal;
+          $("filteredCount").textContent = item.count || 0;
+          $("percent").textContent = state.currentPercent + "%";
+          $("resultBadge").textContent = "历史 " + (item.count || 0) + " 组";
+          $("resultModeBadge").textContent = baseModeName((item.request && (item.request.base_mode || item.request.pool_mode)) || item.base_mode || item.pool_mode || "input");
+          renderSteps();
+          showEmpty("已加载历史条件", "历史只保存轻量摘要，请点击开始筛选查看号码列表。");
+          toast("已加载历史条件，请重新筛选");
+        }
       });
       el.querySelector("[data-history-save]").addEventListener("click", async function(){
         try {
           var item = state.history.find(function(x){ return Number(x.id) === id; });
           if (!item) return;
-          item.targetIssue = el.querySelector("[data-history-issue]").value.trim().replace(/[^\d]/g, "") || todayIssue();
+          item.targetIssue = el.querySelector("[data-history-issue]").value.trim().replace(/[^\d]/g, "") || currentTargetIssue();
           item.hit = null; item.actualDraw = null;
           await setHistory(state.history);
           toast("期号已更新");
@@ -2296,8 +2460,11 @@
     if (!state.lastResult) return toast("请先完成一次筛选", true);
     if (state.resultStale) return toast("条件已变更，请重新筛选后再保存历史。", true);
     try {
+      await refreshDraws({quiet: true});
+      state.lastResult.targetIssue = currentTargetIssue();
+      state.lastResult.time = nowText();
       var list = state.history.slice();
-      list.unshift(cloneData(state.lastResult));
+      list.unshift(compactHistoryItem(state.lastResult));
       await setHistory(list);
       toast("已保存筛选历史");
     } catch(e) { toast(e.message, true); }
@@ -2344,6 +2511,7 @@
     state.segmentTolerance = 0;
     state.codes = [{id: ++codeId, code_len:5, condition:"012", count_repeat:false, digits:"01234"}];
     state.qimaCodes = [{digits:"01234", len:5}, {digits:"123456", len:6}];
+    state.qimaMode = "group";
     renderAll();
     toast("示例数据已填入，可以直接开始筛选");
   }
@@ -2360,6 +2528,7 @@
     state.codes = [];
     state.qimaCodes = [];
     state.qimaDigits = [];
+    state.qimaMode = "group";
     state.currentResult = [];
     state.currentTotal = 0;
     state.currentPercent = 0;
@@ -2430,6 +2599,12 @@
     $("codeAddBtn").addEventListener("click", addCode);
     $("qimaAddBtn").addEventListener("click", addQima);
     $("qimaGenerateBtn").addEventListener("click", generateFromQima);
+    qsa("[data-qima-mode]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        state.qimaMode = btn.dataset.qimaMode === "direct" ? "direct" : "group";
+        renderQima();
+      });
+    });
   }
 
   bindEvents();
