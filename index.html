@@ -335,6 +335,9 @@
   .picker.count-picker .picker-grid {
     grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
   }
+  .picker.pair-code-picker .picker-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
   .digit-btn {
     min-width: 40px;
     min-height: 40px;
@@ -814,6 +817,9 @@
     .picker-grid {
       grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
       gap: 6px;
+    }
+    .picker.pair-code-picker .picker-grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
     }
     .digit-btn {
       min-width: 38px;
@@ -1792,7 +1798,7 @@
       renderPicker("rule-" + type, {
         values: item[2],
         labelMap: RULE_VALUE_LABELS[type] || {},
-        className: (RULE_VALUE_LABELS[type] ? "pattern-picker" : "") + (type.indexOf("_count") >= 0 ? " count-picker" : ""),
+        className: (RULE_VALUE_LABELS[type] ? "pattern-picker" : "") + (type.indexOf("_count") >= 0 ? " count-picker" : "") + (type === "pair_code" ? " pair-code-picker" : ""),
         copySeparator: " ",
         randomCount: Math.min(3, item[2].length),
         getSelected: function(){ return (state.ruleFilters[type] && state.ruleFilters[type].values) || []; },
