@@ -56,6 +56,24 @@ class HistoryStorageTest(unittest.TestCase):
             finally:
                 app.HISTORY_FILE = original
 
+    def test_save_history_records_keeps_editable_note(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            original = app.HISTORY_FILE
+            app.HISTORY_FILE = os.path.join(tmp, "history_records.json")
+            try:
+                saved = app.save_history_records([
+                    {"id": 1, "note": "周末主方案", "request": {"base_mode": "direct", "digits": "6"}},
+                    {"id": 2, "remark": "备用方案", "request": {"base_mode": "direct", "digits": "8"}},
+                    {"id": 3, "name": "杀尾方案", "request": {"base_mode": "direct", "kill_digits": "4"}},
+                ])
+
+                self.assertEqual("周末主方案", saved[0]["note"])
+                self.assertEqual("备用方案", saved[1]["note"])
+                self.assertEqual("杀尾方案", saved[2]["note"])
+                self.assertEqual(saved, app.load_history_records())
+            finally:
+                app.HISTORY_FILE = original
+
     def test_load_history_records_sanitizes_legacy_large_records(self):
         with tempfile.TemporaryDirectory() as tmp:
             original = app.HISTORY_FILE

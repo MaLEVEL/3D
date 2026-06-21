@@ -211,10 +211,12 @@ def sanitize_history_record(item):
     target_issue = str(item.get("targetIssue") or item.get("issue") or "")
     if not target_issue or is_calendar_date_issue(target_issue):
         target_issue = default_target_issue()
+    note = str(item.get("note") or item.get("remark") or item.get("name") or "").strip()
     record = {
         "id": item.get("id"),
         "time": item.get("time", ""),
         "targetIssue": target_issue,
+        "note": note,
         "base_mode": base_mode,
         "pool_mode": base_mode,
         "condition_summary": history_condition_summary(item, request),

@@ -52,9 +52,9 @@
   .hidden { display: none !important; }
 
   .app-shell {
-    width: min(1600px, calc(100% - 32px));
+    width: min(1600px, calc(100% - 24px));
     margin: 0 auto;
-    padding: 18px 0 32px;
+    padding: 12px 0 24px;
   }
   .topbar {
     position: sticky;
@@ -145,17 +145,17 @@
 
   .workbench {
     display: grid;
-    grid-template-columns: minmax(360px, 420px) minmax(0, 1fr);
-    gap: 20px;
+    grid-template-columns: minmax(340px, 390px) minmax(0, 1fr);
+    gap: 14px;
     align-items: start;
-    margin-top: 20px;
+    margin-top: 14px;
   }
   .filter-rail {
     position: sticky;
     top: 94px;
     align-self: start;
     display: grid;
-    gap: 14px;
+    gap: 10px;
     max-height: calc(100vh - 112px);
     overflow: auto;
     padding-right: 4px;
@@ -175,14 +175,14 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 16px 18px;
+    gap: 10px;
+    padding: 12px 14px;
     border-bottom: 1px solid var(--border-2);
   }
   .panel-title { display: grid; gap: 2px; min-width: 0; }
   .panel-title h2, .panel-title h3 { margin: 0; font-size: 15px; line-height: 1.25; }
   .panel-title span { color: var(--muted); font-size: 12px; }
-  .panel-body { padding: 16px 18px 18px; }
+  .panel-body { padding: 12px 14px 14px; }
 
   details.filter-group {
     border: 1px solid rgba(216,225,238,.9);
@@ -196,16 +196,16 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    min-height: 54px;
-    padding: 13px 15px;
+    gap: 10px;
+    min-height: 42px;
+    padding: 8px 10px;
     cursor: pointer;
   }
   details.filter-group > summary::-webkit-details-marker { display: none; }
-  .summary-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .summary-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .summary-icon {
-    width: 32px;
-    height: 32px;
+    width: 26px;
+    height: 26px;
     display: grid;
     place-items: center;
     border-radius: 10px;
@@ -214,12 +214,12 @@
     flex: 0 0 auto;
   }
   .summary-title { min-width: 0; }
-  .summary-title strong { display: block; font-size: 14px; }
-  .summary-title span { display: block; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .summary-title strong { display: block; font-size: 13px; line-height: 1.15; }
+  .summary-title span { display: block; color: var(--muted); font-size: 11px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .chevron { transition: transform .18s ease; color: var(--soft); }
   details[open] .chevron { transform: rotate(180deg); }
-  .group-body { display: grid; gap: 14px; padding: 0 15px 15px; }
-  .field { display: grid; gap: 7px; }
+  .group-body { display: grid; gap: 10px; padding: 0 12px 12px; }
+  .field { display: grid; gap: 6px; }
   .field label, .field-title {
     display: flex;
     align-items: center;
@@ -232,16 +232,16 @@
   .hint { color: var(--muted); font-size: 12px; }
   textarea, input, select {
     width: 100%;
-    min-height: 42px;
+    min-height: 36px;
     border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
     background: #fff;
     color: var(--text);
-    padding: 10px 12px;
+    padding: 8px 10px;
     outline: none;
     transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
   }
-  textarea { min-height: 124px; resize: vertical; font-family: var(--mono); line-height: 1.7; }
+  textarea { min-height: 96px; resize: vertical; font-family: var(--mono); line-height: 1.55; }
   input:focus, select:focus, textarea:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 4px rgba(29,78,216,.10);
@@ -256,14 +256,14 @@
   .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 
   .btn {
-    min-height: 40px;
+    min-height: 34px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
+    gap: 6px;
     border: 1px solid var(--border);
     border-radius: 11px;
-    padding: 9px 13px;
+    padding: 7px 10px;
     color: var(--text);
     background: #fff;
     font-weight: 800;
@@ -272,7 +272,7 @@
   }
   .btn:hover { transform: translateY(-1px); border-color: rgba(29,78,216,.34); box-shadow: var(--shadow-sm); }
   .btn:active { transform: translateY(0) scale(.98); }
-  .btn-sm { min-height: 34px; padding: 7px 10px; border-radius: 9px; font-size: 12px; }
+  .btn-sm { min-height: 30px; padding: 5px 8px; border-radius: 8px; font-size: 12px; }
   .btn-primary { color: #fff; border-color: transparent; background: var(--active-gradient); box-shadow: 0 12px 26px rgba(29,78,216,.2); }
   .btn-ghost { background: transparent; }
   .btn-soft { background: var(--surface-2); }
@@ -313,16 +313,42 @@
 
   .picker {
     display: grid;
-    gap: 8px;
-    padding: 10px;
+    gap: 6px;
+    padding: 8px;
     border: 1px solid var(--border-2);
     border-radius: 13px;
     background: var(--surface-2);
   }
+  .quick-input-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 6px;
+    align-items: center;
+  }
+  .quick-input {
+    min-height: 30px;
+    padding: 5px 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .segment-quick {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+    align-items: center;
+  }
+  .batch-input {
+    min-height: 62px;
+    font-size: 12px;
+  }
+  .batch-tools {
+    display: grid;
+    gap: 6px;
+  }
   .picker-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+    gap: 6px;
   }
   .picker.pattern-picker .picker-grid {
     grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
@@ -339,10 +365,10 @@
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
   .digit-btn {
-    min-width: 40px;
-    min-height: 40px;
+    min-width: 34px;
+    min-height: 34px;
     border: 1.5px solid var(--border);
-    border-radius: 11px;
+    border-radius: 9px;
     background: #fff;
     color: #334155;
     font: 900 13px/1 var(--mono);
@@ -358,8 +384,8 @@
   .picker-alert { color: var(--danger); font-size: 12px; font-weight: 800; }
   .compact-card {
     display: grid;
-    gap: 10px;
-    padding: 12px;
+    gap: 8px;
+    padding: 10px;
     border: 1px solid var(--border-2);
     border-radius: 13px;
     background: #fff;
@@ -699,7 +725,12 @@
     font-weight: 900;
     white-space: nowrap;
   }
-  .history-summary { min-width: 0; }
+  .history-summary { grid-column: 1 / -1; min-width: 0; }
+  .history-note {
+    min-width: 0;
+    color: #0E7490;
+    font-weight: 900;
+  }
   .history-actions {
     display: grid;
     gap: 8px;
@@ -712,6 +743,12 @@
     text-align: center;
     font: 900 14px/1 var(--mono);
   }
+  .history-actions input.history-note-input {
+    text-align: left;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 800;
+  }
   .history-action-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -723,16 +760,16 @@
   .segment-stack, .code-stack, .qima-list { display: grid; gap: 10px; }
   .segment-card, .code-card {
     display: grid;
-    gap: 10px;
-    padding: 12px;
+    gap: 8px;
+    padding: 10px;
     border: 1px solid var(--border-2);
     border-radius: 13px;
     background: #fff;
   }
   .segment-row {
     display: grid;
-    grid-template-columns: 72px minmax(0, 1fr);
-    gap: 8px;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 6px;
     align-items: start;
   }
   .segment-label { color: var(--muted); font-size: 12px; font-weight: 900; padding-top: 10px; }
@@ -1011,6 +1048,10 @@
                 <button type="button" data-qima-mode="direct">直选</button>
               </div>
             </div>
+            <div class="batch-tools">
+              <textarea class="batch-input" id="batchQimaInput" placeholder="批量复式码，一行一条：&#10;01234&#10;123456&#10;01234567"></textarea>
+              <button class="btn btn-sm btn-soft" id="batchQimaAddBtn" type="button">批量添加复式码</button>
+            </div>
             <div id="qimaPicker"></div>
             <div class="row">
               <button class="btn btn-sm btn-soft" id="qimaAddBtn" type="button">添加已选号码</button>
@@ -1139,6 +1180,10 @@
               </select>
             </div>
             <span class="hint">添加后为空段组，从第一段开始选择；容错会保存到该条段组。</span>
+            <div class="batch-tools">
+              <textarea class="batch-input" id="batchSegmentInput" placeholder="批量段组，一行一条：&#10;12345-06789&#10;01278-34569&#10;01-23-456789"></textarea>
+              <button class="btn btn-sm btn-soft" id="batchSegmentAddBtn" type="button">批量添加段组</button>
+            </div>
             <div class="grid-2">
               <button class="btn btn-soft" data-add-segment="2-2-6" type="button">添加 2-2-6</button>
               <button class="btn btn-soft" data-add-segment="2-3-5" type="button">添加 2-3-5</button>
@@ -1149,6 +1194,10 @@
           </div>
           <div class="compact-card">
             <div class="card-title-row"><strong>N码命中</strong><span class="hint">选择 N 个数字与命中范围</span></div>
+            <div class="batch-tools">
+              <textarea class="batch-input" id="batchCodeInput" placeholder="批量 N码，一行一条：&#10;01234&#10;123456=123&#10;012345 repeat"></textarea>
+              <button class="btn btn-sm btn-soft" id="batchCodeAddBtn" type="button">批量添加 N码</button>
+            </div>
             <div class="grid-3">
               <select id="codeLenSelect">
                 <option value="3">3码</option><option value="4">4码</option><option value="5" selected>5码</option><option value="6">6码</option><option value="7">7码</option><option value="8">8码</option>
@@ -1485,6 +1534,13 @@
   }
   function nowText(){ return new Date().toLocaleString("zh-CN", {hour12:false}); }
   function cloneData(value){ return JSON.parse(JSON.stringify(value)); }
+  function normalizeHistoryNote(value){
+    return String(value || "").trim().slice(0, 40);
+  }
+  function historyNoteText(item){
+    var note = normalizeHistoryNote(item && (item.note || item.remark || item.name));
+    return note || "无";
+  }
   function compactRequestForHistory(source){
     var req = cloneData(source || {});
     var baseMode = req.base_mode || req.pool_mode || state.baseMode || "input";
@@ -1518,6 +1574,7 @@
       id: item.id || Date.now(),
       time: item.time || nowText(),
       targetIssue: item.targetIssue || currentTargetIssue(),
+      note: normalizeHistoryNote(item.note || item.remark || item.name),
       base_mode: baseMode,
       pool_mode: baseMode,
       condition_summary: item.condition_summary || item.summary || conditionText(),
@@ -1651,6 +1708,41 @@
     return hit ? hit[1] : mode;
   }
 
+  function pickerTextValue(id, selected){
+    var config = pickerConfigs[id] || {};
+    var values = (config.values || DIGITS).map(String);
+    var selectedSet = new Set((selected || []).map(String));
+    return values.filter(function(value){ return selectedSet.has(value); }).join(config.quickSeparator || " ");
+  }
+  function parseQuickValues(text, allowedValues, options){
+    options = options || {};
+    var allowed = (allowedValues || DIGITS).map(String);
+    var allowedSet = new Set(allowed);
+    var tokens = String(text || "").match(/[A-Za-z0-9:]+/g) || [];
+    var result = [];
+    function add(value){
+      value = String(value);
+      if (allowedSet.has(value) && result.indexOf(value) < 0) result.push(value);
+    }
+    tokens.forEach(function(token){
+      if (allowedSet.has(token)) return add(token);
+      if (options.tokenSize && token.length % options.tokenSize === 0) {
+        for (var i = 0; i < token.length; i += options.tokenSize) add(token.slice(i, i + options.tokenSize));
+        return;
+      }
+      if (/^\d+$/.test(token) && allowed.every(function(v){ return v.length === 1; })) {
+        token.split("").forEach(add);
+      }
+    });
+    return allowed.filter(function(value){ return result.indexOf(value) >= 0; });
+  }
+  function applyPickerQuickInput(id, text){
+    var config = pickerConfigs[id];
+    if (!config) return;
+    var values = parseQuickValues(text, config.values || DIGITS, config);
+    setPickerSelected(id, values);
+    if (values.length || String(text || "").trim()) toast("已应用文本输入：" + values.length + " 项");
+  }
   function renderPicker(id, config){
     pickerConfigs[id] = config;
     var el = $(id);
@@ -1661,7 +1753,8 @@
     var disabled = new Set((config.disabled || []).map(String));
     var conflict = new Set((config.conflict || []).map(String));
     el.className = "picker" + (config.className ? " " + config.className : "");
-    el.innerHTML = '<div class="picker-grid">' + values.map(function(value){
+    var quickInput = config.quickInput ? '<div class="quick-input-row"><input class="quick-input" data-picker-text="' + escapeAttr(id) + '" value="' + escapeAttr(pickerTextValue(id, Array.from(selected))) + '" placeholder="' + escapeAttr(config.quickPlaceholder || "可直接输入，空格/逗号分隔") + '"><button class="btn btn-sm btn-soft" type="button" data-picker-apply="' + escapeAttr(id) + '">应用</button><button class="btn btn-sm btn-ghost" type="button" data-picker-clear="' + escapeAttr(id) + '">清空</button></div>' : "";
+    el.innerHTML = quickInput + '<div class="picker-grid">' + values.map(function(value){
       value = String(value);
       var isSelected = selected.has(value);
       var isDisabled = disabled.has(value);
@@ -1670,6 +1763,23 @@
     }).join("") + '</div>' + (config.alert ? '<div class="picker-alert">' + config.alert + '</div>' : "");
     qsa("[data-picker-value]", el).forEach(function(btn){
       btn.addEventListener("click", function(){ pickerValueClick(id, btn.dataset.pickerValue); });
+    });
+    qsa("[data-picker-apply]", el).forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var input = el.querySelector('[data-picker-text="' + btn.dataset.pickerApply + '"]');
+        applyPickerQuickInput(btn.dataset.pickerApply, input ? input.value : "");
+      });
+    });
+    qsa("[data-picker-clear]", el).forEach(function(btn){
+      btn.addEventListener("click", function(){ setPickerSelected(btn.dataset.pickerClear, []); });
+    });
+    qsa("[data-picker-text]", el).forEach(function(input){
+      input.addEventListener("keydown", function(e){
+        if (e.key === "Enter") {
+          e.preventDefault();
+          applyPickerQuickInput(input.dataset.pickerText, input.value);
+        }
+      });
     });
   }
   function setPickerSelected(id, values){
@@ -1799,6 +1909,9 @@
         values: item[2],
         labelMap: RULE_VALUE_LABELS[type] || {},
         className: (RULE_VALUE_LABELS[type] ? "pattern-picker" : "") + (type.indexOf("_count") >= 0 ? " count-picker" : "") + (type === "pair_code" ? " pair-code-picker" : ""),
+        quickInput: true,
+        tokenSize: type === "pair_code" ? 2 : 0,
+        quickPlaceholder: type === "pair_code" ? "如 12 13 18 或 121318" : "如 1 2 3 或 1,2,3",
         copySeparator: " ",
         randomCount: Math.min(3, item[2].length),
         getSelected: function(){ return (state.ruleFilters[type] && state.ruleFilters[type].values) || []; },
@@ -1821,6 +1934,109 @@
     });
   }
 
+  function segmentGroupText(seg){
+    return seg.groups.filter(Boolean).join(" ");
+  }
+  function parseSegmentGroupsText(text, mode){
+    var sizes = SEGMENT_SIZES[mode] || [];
+    var tokens = String(text || "").match(/\d+/g) || [];
+    if (tokens.length === 1 && tokens[0].length > sizes[0]) {
+      var source = tokens[0];
+      var sliced = [];
+      var offset = 0;
+      sizes.forEach(function(size){
+        sliced.push(source.slice(offset, offset + size));
+        offset += size;
+      });
+      tokens = sliced.filter(Boolean);
+    }
+    return sizes.map(function(size, index){
+      return cleanDigits(tokens[index] || "").slice(0, size);
+    });
+  }
+  function autoFillSegmentLastGroup(seg, changedRow){
+    var sizes = SEGMENT_SIZES[seg.mode] || [];
+    var last = sizes.length - 1;
+    if (last <= 0 || changedRow === last) return;
+    var used = {};
+    for (var i = 0; i < last; i++) {
+      var group = seg.groups[i] || "";
+      if (group.length !== sizes[i]) return;
+      group.split("").forEach(function(d){ used[d] = true; });
+    }
+    var rest = DIGITS.filter(function(d){ return !used[d]; });
+    if (rest.length === sizes[last]) seg.groups[last] = rest.join("");
+  }
+  function applySegmentGroupsInput(seg, text){
+    var groups = parseSegmentGroupsText(text, seg.mode);
+    var used = {};
+    seg.groups = groups.map(function(group, index){
+      var size = SEGMENT_SIZES[seg.mode][index];
+      var next = [];
+      group.split("").forEach(function(d){
+        if (!used[d] && next.length < size) {
+          used[d] = true;
+          next.push(d);
+        }
+      });
+      return next.join("");
+    });
+    for (var i = 0; i < seg.groups.length - 1; i++) autoFillSegmentLastGroup(seg, i);
+    renderSegments();
+    updateSummary();
+    markResultStale();
+    toast("已应用段组输入");
+  }
+  function detectSegmentMode(groups){
+    var sizes = groups.map(function(group){ return group.length; }).join("-");
+    return SEGMENT_SIZES[sizes] ? sizes : "";
+  }
+  function normalizeSegmentGroups(groups, mode){
+    var sizes = SEGMENT_SIZES[mode] || [];
+    var used = {};
+    return sizes.map(function(size, index){
+      var next = [];
+      cleanDigits(groups[index] || "").split("").forEach(function(d){
+        if (!used[d] && next.length < size) {
+          used[d] = true;
+          next.push(d);
+        }
+      });
+      return next.join("");
+    });
+  }
+  function parseBatchSegmentLine(line){
+    var tokens = String(line || "").match(/\d+/g) || [];
+    if (!tokens.length) return null;
+    var groups = tokens.map(cleanDigits).filter(Boolean);
+    var joined = cleanDigits(tokens.join(""));
+    if (groups.length === 1 && joined.length === 10) {
+      groups = [joined.slice(0, 5), joined.slice(5)];
+    }
+    var mode = detectSegmentMode(groups);
+    if (!mode) return null;
+    groups = normalizeSegmentGroups(groups, mode);
+    var all = groups.join("");
+    if (all.length !== 10 || new Set(all.split("")).size !== 10) return null;
+    return {mode: mode, groups: groups};
+  }
+  function addBatchSegments(){
+    var input = $("batchSegmentInput");
+    var lines = String(input.value || "").split(/\r?\n/);
+    var added = 0;
+    var tolerance = normalizeSegmentTolerance(state.segmentTolerance);
+    lines.forEach(function(line){
+      var parsed = parseBatchSegmentLine(line);
+      if (!parsed) return;
+      state.segments.push({id: ++segmentId, mode: parsed.mode, groups: parsed.groups, tolerance: tolerance});
+      added++;
+    });
+    if (!added) return toast("没有识别到有效段组。示例：12345-06789", true);
+    input.value = "";
+    renderSegments();
+    updateSummary();
+    toast("已批量添加段组 " + added + " 条");
+  }
   function renderSegments(){
     var toleranceSelect = $("segmentToleranceSelect");
     if (toleranceSelect) toleranceSelect.value = String(normalizeSegmentTolerance(state.segmentTolerance));
@@ -1834,13 +2050,15 @@
       var rows = sizes.map(function(size, row){
         return '<div class="segment-row"><span class="segment-label">第 ' + (row + 1) + ' 组 / ' + size + '码</span><div id="segment-' + seg.id + '-' + row + '"></div></div>';
       }).join("");
-      return '<div class="segment-card"><div class="card-title-row"><strong>' + escapeHtml(seg.mode) + ' 段组 #' + escapeHtml(seg.id) + '</strong><div class="row"><span class="pill gray">' + segmentToleranceLabel(tolerance) + '</span><button class="btn btn-sm btn-ghost" type="button" data-remove-segment="' + escapeAttr(seg.id) + '">删除</button></div></div>' + rows + '</div>';
+      return '<div class="segment-card"><div class="card-title-row"><strong>' + escapeHtml(seg.mode) + ' 段组 #' + escapeHtml(seg.id) + '</strong><div class="row"><span class="pill gray">' + segmentToleranceLabel(tolerance) + '</span><button class="btn btn-sm btn-ghost" type="button" data-remove-segment="' + escapeAttr(seg.id) + '">删除</button></div></div><div class="segment-quick"><input class="quick-input" data-segment-groups="' + escapeAttr(seg.id) + '" value="' + escapeAttr(segmentGroupText(seg)) + '" placeholder="如 01234 56789，也可输入 0123456789"><button class="btn btn-sm btn-soft" type="button" data-segment-apply="' + escapeAttr(seg.id) + '">应用</button></div>' + rows + '</div>';
     }).join("");
     state.segments.forEach(function(seg){
       SEGMENT_SIZES[seg.mode].forEach(function(size, row){
         renderPicker("segment-" + seg.id + "-" + row, {
           values: DIGITS,
           maxSelect: size,
+          quickInput: true,
+          quickPlaceholder: "输入本组数字",
           getSelected: function(){ return (seg.groups[row] || "").split("").filter(Boolean); },
           setSelected: function(v){
             var usedElsewhere = {};
@@ -1849,8 +2067,25 @@
             });
             v = v.filter(function(d){ return !usedElsewhere[d]; }).slice(0, size);
             seg.groups[row] = v.sort(sortValue).join("");
+            autoFillSegmentLastGroup(seg, row);
           }
         });
+      });
+    });
+    qsa("[data-segment-apply]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var seg = state.segments.find(function(item){ return String(item.id) === btn.dataset.segmentApply; });
+        var input = document.querySelector('[data-segment-groups="' + btn.dataset.segmentApply + '"]');
+        if (seg) applySegmentGroupsInput(seg, input ? input.value : "");
+      });
+    });
+    qsa("[data-segment-groups]").forEach(function(input){
+      input.addEventListener("keydown", function(e){
+        if (e.key === "Enter") {
+          e.preventDefault();
+          var seg = state.segments.find(function(item){ return String(item.id) === input.dataset.segmentGroups; });
+          if (seg) applySegmentGroupsInput(seg, input.value);
+        }
       });
     });
     qsa("[data-remove-segment]").forEach(function(btn){
@@ -1879,6 +2114,8 @@
       renderPicker("code-" + code.id, {
         values: DIGITS,
         maxSelect: code.code_len,
+        quickInput: true,
+        quickPlaceholder: "如 01234 或 0 1 2 3 4",
         randomCount: code.code_len,
         getSelected: function(){ return (code.digits || "").split("").filter(Boolean); },
         setSelected: function(v){ code.digits = v.sort(sortValue).join(""); }
@@ -1896,6 +2133,39 @@
     state.codes.push({id: ++codeId, code_len: normalizeCodeLen($("codeLenSelect").value), condition: normalizeCodeCondition($("codeCondSelect").value), count_repeat: $("codeRepeatSelect").value === "repeat", digits: ""});
     renderCodes();
     updateSummary();
+  }
+  function parseBatchCodeLine(line){
+    var text = String(line || "").trim();
+    if (!text) return null;
+    var digitMatch = text.match(/\d{3,8}/);
+    if (!digitMatch) return null;
+    var digits = cleanDigits(digitMatch[0]);
+    if (digits.length < 3 || digits.length > 8) return null;
+    var conditionMatch = text.match(/=?(012|123|01|23)\b/);
+    var repeat = /\brepeat\b/i.test(text);
+    return {
+      id: ++codeId,
+      code_len: digits.length,
+      condition: normalizeCodeCondition(conditionMatch ? conditionMatch[1] : $("codeCondSelect").value),
+      count_repeat: repeat || $("codeRepeatSelect").value === "repeat",
+      digits: digits
+    };
+  }
+  function addBatchCodes(){
+    var input = $("batchCodeInput");
+    var added = 0;
+    String(input.value || "").split(/\r?\n/).forEach(function(line){
+      var code = parseBatchCodeLine(line);
+      if (!code) return;
+      if (state.codes.some(function(item){ return item.digits === code.digits && item.condition === code.condition && item.count_repeat === code.count_repeat; })) return;
+      state.codes.push(code);
+      added++;
+    });
+    if (!added) return toast("没有识别到有效 N码。示例：01234 或 123456=123", true);
+    input.value = "";
+    renderCodes();
+    updateSummary();
+    toast("已批量添加 N码 " + added + " 条");
   }
   function renderQima(){
     var len = state.qimaDigits.length;
@@ -1927,6 +2197,23 @@
     state.qimaDigits = [];
     renderQima();
     toast("已添加复式码 " + digits);
+  }
+  function addBatchQima(){
+    var input = $("batchQimaInput");
+    var added = 0;
+    String(input.value || "").split(/\r?\n/).forEach(function(line){
+      var digits = cleanDigits(line);
+      var len = digits.length;
+      if (len < 3 || len > 8) return;
+      if (state.qimaCodes.some(function(item){ return item.digits === digits && item.len === len; })) return;
+      state.qimaCodes.push({digits: digits, len: len});
+      added++;
+    });
+    if (!added) return toast("没有识别到有效复式码。请输入 3-8 个不重复数字", true);
+    input.value = "";
+    state.qimaDigits = [];
+    renderQima();
+    toast("已批量添加复式码 " + added + " 条");
   }
   async function generateFromQima(){
     if (!state.qimaCodes.length) return toast("请先添加复式码", true);
@@ -2394,6 +2681,7 @@
     }
     $("historyList").innerHTML = state.history.map(function(item){
       var preview = item.condition_summary || item.summary || "无筛选条件";
+      var noteText = historyNoteText(item);
       var request = item.request && typeof item.request === "object" ? item.request : {};
       var modeLabel = baseModeName(item.base_mode || item.pool_mode || request.base_mode || request.pool_mode || "input");
       var status = item.hit === true ? '<span class="pill green">中奖 ' + escapeHtml(item.actualDraw || "") + '</span>' : item.hit === false ? '<span class="pill red">未中 ' + escapeHtml(item.actualDraw || "") + '</span>' : '<span class="pill amber">待开奖</span>';
@@ -2408,14 +2696,16 @@
             '</div>' +
             '<div class="history-preview">' +
               '<span class="history-issue">期号 ' + escapeHtml(item.targetIssue || "--") + '</span>' +
+              '<span class="history-note">备注 ' + escapeHtml(noteText) + '</span>' +
               '<span class="history-summary">' + escapeHtml(preview) + '</span>' +
             '</div>' +
           '</div>' +
           '<div class="history-actions">' +
             '<input data-history-issue value="' + escapeAttr(item.targetIssue || "") + '" placeholder="期号">' +
+            '<input class="history-note-input" data-history-note value="' + escapeAttr(normalizeHistoryNote(item.note || item.remark || item.name)) + '" placeholder="备注/方案名，默认无" maxlength="40">' +
             '<div class="history-action-buttons">' +
               '<button class="btn btn-sm btn-soft" data-history-load type="button">加载</button>' +
-              '<button class="btn btn-sm btn-soft" data-history-save type="button">改期号</button>' +
+              '<button class="btn btn-sm btn-soft" data-history-save type="button">保存修改</button>' +
               '<button class="btn btn-sm btn-danger" data-history-delete type="button">删除</button>' +
             '</div>' +
           '</div>' +
@@ -2448,10 +2738,15 @@
         try {
           var item = state.history.find(function(x){ return Number(x.id) === id; });
           if (!item) return;
-          item.targetIssue = el.querySelector("[data-history-issue]").value.trim().replace(/[^\d]/g, "") || currentTargetIssue();
-          item.hit = null; item.actualDraw = null;
+          var nextIssue = el.querySelector("[data-history-issue]").value.trim().replace(/[^\d]/g, "") || currentTargetIssue();
+          var nextNote = normalizeHistoryNote(el.querySelector("[data-history-note]").value);
+          if (nextIssue !== item.targetIssue) {
+            item.hit = null; item.actualDraw = null; item.actualIssue = null;
+          }
+          item.targetIssue = nextIssue;
+          item.note = nextNote;
           await setHistory(state.history);
-          toast("期号已更新");
+          toast("历史备注已保存");
         } catch(e) { toast(e.message, true); }
       });
       el.querySelector("[data-history-delete]").addEventListener("click", async function(){
@@ -2466,9 +2761,12 @@
     if (!state.lastResult) return toast("请先完成一次筛选", true);
     if (state.resultStale) return toast("条件已变更，请重新筛选后再保存历史。", true);
     try {
+      var note = prompt("给这条历史加个备注/方案名（可不填，默认无）", "");
+      if (note === null) return;
       await refreshDraws({quiet: true});
       state.lastResult.targetIssue = currentTargetIssue();
       state.lastResult.time = nowText();
+      state.lastResult.note = normalizeHistoryNote(note);
       var list = state.history.slice();
       list.unshift(compactHistoryItem(state.lastResult));
       await setHistory(list);
@@ -2595,6 +2893,7 @@
       state.segmentTolerance = normalizeSegmentTolerance(this.value);
     });
     qsa("[data-add-segment]").forEach(function(btn){ btn.addEventListener("click", function(){ addSegment(btn.dataset.addSegment); }); });
+    $("batchSegmentAddBtn").addEventListener("click", addBatchSegments);
     qsa("[data-clear-rule-group]").forEach(function(btn){
       btn.addEventListener("click", function(){
         RULE_GROUPS[btn.dataset.clearRuleGroup].forEach(function(item){ delete state.ruleFilters[item[0]]; });
@@ -2603,7 +2902,9 @@
       });
     });
     $("codeAddBtn").addEventListener("click", addCode);
+    $("batchCodeAddBtn").addEventListener("click", addBatchCodes);
     $("qimaAddBtn").addEventListener("click", addQima);
+    $("batchQimaAddBtn").addEventListener("click", addBatchQima);
     $("qimaGenerateBtn").addEventListener("click", generateFromQima);
     qsa("[data-qima-mode]").forEach(function(btn){
       btn.addEventListener("click", function(){
