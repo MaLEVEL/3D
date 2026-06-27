@@ -337,6 +337,22 @@
     gap: 6px;
     align-items: center;
   }
+  .segment-batch-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+    align-items: center;
+  }
+  .segment-batch-row label {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+  .segment-batch-pill {
+    background: #E0F2FE;
+    color: #0369A1;
+  }
   .batch-input {
     min-height: 62px;
     font-size: 12px;
@@ -766,13 +782,6 @@
     border-radius: 13px;
     background: #fff;
   }
-  .segment-row {
-    display: grid;
-    grid-template-columns: 64px minmax(0, 1fr);
-    gap: 6px;
-    align-items: start;
-  }
-  .segment-label { color: var(--muted); font-size: 12px; font-weight: 900; padding-top: 10px; }
   .qima-tag {
     display: inline-flex;
     align-items: center;
@@ -865,7 +874,6 @@
       font-size: 12px;
     }
     .step-item { grid-template-columns: 1fr; }
-    .segment-row { grid-template-columns: 1fr; }
     .history-main { grid-template-columns: 1fr; }
     .history-preview { grid-template-columns: 1fr; }
     .history-action-buttons {
@@ -1179,16 +1187,16 @@
                 <option value="2">容错 2</option>
               </select>
             </div>
-            <span class="hint">添加后为空段组，从第一段开始选择；容错会保存到该条段组。</span>
+            <span class="hint">一行输入一条段组，系统会按 5-5、3-3-4、2-3-5、2-2-6 自动识别；容错会保存到本次添加的段组。</span>
             <div class="batch-tools">
+              <div class="segment-batch-row">
+                <label for="segmentBatchSelect">添加到</label>
+                <select id="segmentBatchSelect">
+                  <option value="new" selected>新建批次</option>
+                </select>
+              </div>
               <textarea class="batch-input" id="batchSegmentInput" placeholder="批量段组，一行一条：&#10;12345-06789&#10;01278-34569&#10;01-23-456789"></textarea>
               <button class="btn btn-sm btn-soft" id="batchSegmentAddBtn" type="button">批量添加段组</button>
-            </div>
-            <div class="grid-2">
-              <button class="btn btn-soft" data-add-segment="2-2-6" type="button">添加 2-2-6</button>
-              <button class="btn btn-soft" data-add-segment="2-3-5" type="button">添加 2-3-5</button>
-              <button class="btn btn-soft" data-add-segment="3-3-4" type="button">添加 3-3-4</button>
-              <button class="btn btn-soft" data-add-segment="5-5" type="button">添加 5-5</button>
             </div>
             <div class="segment-stack" id="segmentStack"></div>
           </div>
@@ -1342,9 +1350,6 @@
   ];
   var SEGMENT_SIZES = {"2-2-6":[2,2,6], "2-3-5":[2,3,5], "3-3-4":[3,3,4], "5-5":[5,5]};
   var SEGMENT_DEMOS = {"2-2-6":["01","23","456789"], "2-3-5":["01","234","56789"], "3-3-4":["012","345","6789"], "5-5":["01234","56789"]};
-  function emptySegmentGroups(mode){
-    return (SEGMENT_SIZES[mode] || []).map(function(){ return ""; });
-  }
   var RULE_GROUPS = {
     sum_rules: [
       ["sum", "和值", range(0, 27)],
@@ -1437,6 +1442,7 @@
   };
   var pickerConfigs = {};
   var segmentId = 0;
+  var segmentBatchId = 0;
   var codeId = 0;
   var mobileFilterPrepared = false;
 
@@ -1513,6 +1519,62 @@
     if (!Number.isFinite(n)) return 0;
     n = Math.floor(n);
     return Math.max(0, Math.min(2, n));
+  }
+  function segmentBatchGroups(){
+    var seen = {};
+    var groups = [];
+    state.segments.forEach(function(seg){
+      var batchId = String(seg.batchId || seg.batch_id || "").trim();
+      if (!batchId) return;
+      if (!seen[batchId]) {
+        seen[batchId] = {id: batchId, count: 0};
+        groups.push(seen[batchId]);
+      }
+      seen[batchId].count++;
+    });
+    return groups;
+  }
+  function segmentBatchLabel(batchId){
+    batchId = String(batchId || "").trim();
+    if (!batchId) return "旧批次";
+    var groups = segmentBatchGroups();
+    for (var i = 0; i < groups.length; i++) {
+      if (groups[i].id === batchId) return "批次 " + (i + 1);
+    }
+    var match = batchId.match(/^segment-batch-(\d+)$/);
+    return match ? "批次 " + match[1] : "批次";
+  }
+  function nextSegmentBatchId(){
+    var used = {};
+    state.segments.forEach(function(seg){
+      var batchId = String(seg.batchId || seg.batch_id || "").trim();
+      if (batchId) used[batchId] = true;
+    });
+    do {
+      segmentBatchId += 1;
+    } while (used["segment-batch-" + segmentBatchId]);
+    return "segment-batch-" + segmentBatchId;
+  }
+  function renderSegmentBatchSelect(){
+    var select = $("segmentBatchSelect");
+    if (!select) return;
+    var current = select.value || "new";
+    var batches = segmentBatchGroups();
+    var options = ['<option value="new">新建批次</option>'];
+    batches.forEach(function(batch){
+      options.push('<option value="' + escapeAttr(batch.id) + '">' + escapeHtml(segmentBatchLabel(batch.id) + "（" + batch.count + "条）") + '</option>');
+    });
+    select.innerHTML = options.join("");
+    if (current !== "new" && batches.some(function(batch){ return batch.id === current; })) {
+      select.value = current;
+    } else {
+      select.value = "new";
+    }
+  }
+  function selectedSegmentBatchId(){
+    var select = $("segmentBatchSelect");
+    if (select && select.value && select.value !== "new") return select.value;
+    return nextSegmentBatchId();
   }
   function segmentToleranceLabel(value){
     var n = normalizeSegmentTolerance(value);
@@ -1628,10 +1690,16 @@
     config.signal = controller.signal;
     return {config: config, done: function(){ clearTimeout(timer); }};
   }
+  function apiPath(path){
+    if (window.location.protocol === "file:" && String(path || "").charAt(0) === "/") {
+      return "http://127.0.0.1:5000" + path;
+    }
+    return path;
+  }
   async function fetchJson(path, options, timeoutMs){
     var request = fetchOptionsWithTimeout(options, timeoutMs);
     try {
-      var res = await fetch(path, request.config);
+      var res = await fetch(apiPath(path), request.config);
       return parseApiResponse(res);
     } catch(e) {
       if (e && e.name === "AbortError") throw new Error("请求超时，请检查本地服务是否正常。");
@@ -2025,10 +2093,12 @@
     var lines = String(input.value || "").split(/\r?\n/);
     var added = 0;
     var tolerance = normalizeSegmentTolerance(state.segmentTolerance);
+    var batchId = "";
     lines.forEach(function(line){
       var parsed = parseBatchSegmentLine(line);
       if (!parsed) return;
-      state.segments.push({id: ++segmentId, mode: parsed.mode, groups: parsed.groups, tolerance: tolerance});
+      if (!batchId) batchId = selectedSegmentBatchId();
+      state.segments.push({id: ++segmentId, batchId: batchId, mode: parsed.mode, groups: parsed.groups, tolerance: tolerance});
       added++;
     });
     if (!added) return toast("没有识别到有效段组。示例：12345-06789", true);
@@ -2040,38 +2110,16 @@
   function renderSegments(){
     var toleranceSelect = $("segmentToleranceSelect");
     if (toleranceSelect) toleranceSelect.value = String(normalizeSegmentTolerance(state.segmentTolerance));
+    renderSegmentBatchSelect();
     if (!state.segments.length) {
       $("segmentStack").innerHTML = '<div class="empty-state" style="min-height:88px;">暂未添加段组条件。</div>';
       return;
     }
     $("segmentStack").innerHTML = state.segments.map(function(seg){
-      var sizes = SEGMENT_SIZES[seg.mode];
       var tolerance = normalizeSegmentTolerance(seg.tolerance);
-      var rows = sizes.map(function(size, row){
-        return '<div class="segment-row"><span class="segment-label">第 ' + (row + 1) + ' 组 / ' + size + '码</span><div id="segment-' + seg.id + '-' + row + '"></div></div>';
-      }).join("");
-      return '<div class="segment-card"><div class="card-title-row"><strong>' + escapeHtml(seg.mode) + ' 段组 #' + escapeHtml(seg.id) + '</strong><div class="row"><span class="pill gray">' + segmentToleranceLabel(tolerance) + '</span><button class="btn btn-sm btn-ghost" type="button" data-remove-segment="' + escapeAttr(seg.id) + '">删除</button></div></div><div class="segment-quick"><input class="quick-input" data-segment-groups="' + escapeAttr(seg.id) + '" value="' + escapeAttr(segmentGroupText(seg)) + '" placeholder="如 01234 56789，也可输入 0123456789"><button class="btn btn-sm btn-soft" type="button" data-segment-apply="' + escapeAttr(seg.id) + '">应用</button></div>' + rows + '</div>';
+      var batchId = seg.batchId || seg.batch_id || "";
+      return '<div class="segment-card" data-segment-batch="' + escapeAttr(batchId) + '"><div class="card-title-row"><strong>' + escapeHtml(seg.mode) + ' 段组 #' + escapeHtml(seg.id) + '</strong><div class="row"><span class="pill segment-batch-pill">' + escapeHtml(segmentBatchLabel(batchId)) + '</span><span class="pill gray">' + segmentToleranceLabel(tolerance) + '</span><button class="btn btn-sm btn-ghost" type="button" data-remove-segment="' + escapeAttr(seg.id) + '">删除</button></div></div><div class="segment-quick"><input class="quick-input" data-segment-groups="' + escapeAttr(seg.id) + '" value="' + escapeAttr(segmentGroupText(seg)) + '" placeholder="如 01234 56789，也可输入 0123456789"><button class="btn btn-sm btn-soft" type="button" data-segment-apply="' + escapeAttr(seg.id) + '">应用</button></div></div>';
     }).join("");
-    state.segments.forEach(function(seg){
-      SEGMENT_SIZES[seg.mode].forEach(function(size, row){
-        renderPicker("segment-" + seg.id + "-" + row, {
-          values: DIGITS,
-          maxSelect: size,
-          quickInput: true,
-          quickPlaceholder: "输入本组数字",
-          getSelected: function(){ return (seg.groups[row] || "").split("").filter(Boolean); },
-          setSelected: function(v){
-            var usedElsewhere = {};
-            seg.groups.forEach(function(groupDigits, groupIndex){
-              if (groupIndex !== row) groupDigits.split("").forEach(function(d){ usedElsewhere[d] = true; });
-            });
-            v = v.filter(function(d){ return !usedElsewhere[d]; }).slice(0, size);
-            seg.groups[row] = v.sort(sortValue).join("");
-            autoFillSegmentLastGroup(seg, row);
-          }
-        });
-      });
-    });
     qsa("[data-segment-apply]").forEach(function(btn){
       btn.addEventListener("click", function(){
         var seg = state.segments.find(function(item){ return String(item.id) === btn.dataset.segmentApply; });
@@ -2095,11 +2143,6 @@
         updateSummary();
       });
     });
-  }
-  function addSegment(mode){
-    state.segments.push({id: ++segmentId, mode: mode, groups: emptySegmentGroups(mode), tolerance: normalizeSegmentTolerance(state.segmentTolerance)});
-    renderSegments();
-    updateSummary();
   }
 
   function renderCodes(){
@@ -2290,7 +2333,7 @@
       digits: state.digits.join(""),
       advance_digits: "",
       kill_digits: state.killDigits.join(""),
-      segment_filters: state.segments.map(function(seg){ return {mode: seg.mode, enabled: true, groups: seg.groups.slice(), tolerance: normalizeSegmentTolerance(seg.tolerance)}; }),
+      segment_filters: state.segments.map(function(seg){ return {mode: seg.mode, enabled: true, groups: seg.groups.slice(), tolerance: normalizeSegmentTolerance(seg.tolerance), batch_id: seg.batchId || seg.batch_id || ""}; }),
       segment_tolerance: normalizeSegmentTolerance(state.segmentTolerance),
       group_pattern_enabled: !!state.groupPatternEnabled,
       code_filters: state.codes.map(function(code){ return {code_len: code.code_len, condition: code.condition, digits: code.digits, count_repeat: normalizeCodeRepeat(code.count_repeat), enabled: true}; }),
@@ -2486,7 +2529,7 @@
         parts.push({key:"rule:" + type, label:(rule.mode === "exclude" ? "排除" : "包含") + RULE_LABELS[type] + " " + rule.values.map(function(v){ return labels[v] || v; }).join(",")});
       }
     });
-    if (state.segments.length) parts.push({key:"segments", label:"段组 " + state.segments.map(function(s){ return s.mode + "(" + segmentToleranceLabel(s.tolerance) + ")"; }).join(", ")});
+    if (state.segments.length) parts.push({key:"segments", label:"段组 " + state.segments.map(function(s){ return segmentBatchLabel(s.batchId || s.batch_id) + " " + s.mode + "(" + segmentToleranceLabel(s.tolerance) + ")"; }).join(", ")});
     if (state.codes.length) parts.push({key:"codes", label:"N码 " + state.codes.map(function(c){ return c.code_len + "码" + c.condition + "[" + c.digits + "] " + codeRepeatLabel(c); }).join(",")});
     return parts;
   }
@@ -2619,7 +2662,15 @@
     });
     state.groupPatternEnabled = normalizeEnabled(ui.groupPatternEnabled != null ? ui.groupPatternEnabled : req.group_pattern_enabled) || hasRestoredGroupPattern;
     state.segmentTolerance = normalizeSegmentTolerance(ui.segmentTolerance != null ? ui.segmentTolerance : req.segment_tolerance);
-    state.segments = (ui.segments || req.segment_filters || []).map(function(item){ return {id: ++segmentId, mode: item.mode, groups: (item.groups || []).map(cleanDigits), tolerance: normalizeSegmentTolerance(item.tolerance != null ? item.tolerance : state.segmentTolerance)}; }).filter(function(item){ return SEGMENT_SIZES[item.mode]; });
+    state.segments = (ui.segments || req.segment_filters || []).map(function(item){
+      return {
+        id: ++segmentId,
+        batchId: item.batchId || item.batch_id || "",
+        mode: item.mode,
+        groups: (item.groups || []).map(cleanDigits),
+        tolerance: normalizeSegmentTolerance(item.tolerance != null ? item.tolerance : state.segmentTolerance)
+      };
+    }).filter(function(item){ return SEGMENT_SIZES[item.mode]; });
     state.codes = (ui.codes || req.code_filters || []).map(function(item){ return {id: ++codeId, code_len: normalizeCodeLen(item.code_len), condition: normalizeCodeCondition(item.condition), count_repeat: normalizeCodeRepeat(item.count_repeat), digits: cleanDigits(item.digits)}; });
     renderAll();
   }
@@ -2785,7 +2836,7 @@
   async function clearHistory(){
     if (!state.history.length || !confirm("清空所有筛选历史？")) return;
     try {
-      var res = await fetch("/api/history", {method:"DELETE"});
+      var res = await fetch(apiPath("/api/history"), {method:"DELETE"});
       var data = await parseApiResponse(res);
       state.history = data.items || [];
       renderHistory();
@@ -2808,9 +2859,10 @@
       mod012: {mode:"exclude", values:["000","222"]}
     };
     state.groupPatternEnabled = false;
+    var demoSegmentBatchId = nextSegmentBatchId();
     state.segments = [
-      {id: ++segmentId, mode:"2-3-5", groups:SEGMENT_DEMOS["2-3-5"].slice(), tolerance: 0},
-      {id: ++segmentId, mode:"3-3-4", groups:SEGMENT_DEMOS["3-3-4"].slice(), tolerance: 0}
+      {id: ++segmentId, batchId: demoSegmentBatchId, mode:"2-3-5", groups:SEGMENT_DEMOS["2-3-5"].slice(), tolerance: 0},
+      {id: ++segmentId, batchId: demoSegmentBatchId, mode:"3-3-4", groups:SEGMENT_DEMOS["3-3-4"].slice(), tolerance: 0}
     ];
     state.segmentTolerance = 0;
     state.codes = [{id: ++codeId, code_len:5, condition:"012", count_repeat:false, digits:"01234"}];
@@ -2892,7 +2944,6 @@
     $("segmentToleranceSelect").addEventListener("change", function(){
       state.segmentTolerance = normalizeSegmentTolerance(this.value);
     });
-    qsa("[data-add-segment]").forEach(function(btn){ btn.addEventListener("click", function(){ addSegment(btn.dataset.addSegment); }); });
     $("batchSegmentAddBtn").addEventListener("click", addBatchSegments);
     qsa("[data-clear-rule-group]").forEach(function(btn){
       btn.addEventListener("click", function(){

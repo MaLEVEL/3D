@@ -845,8 +845,9 @@ def normalize_segment_filters(data):
             groups_data = [g for g in item.get("groups", []) if g and str(g).strip()]
             groups = validate_segment_groups(groups_data, mode)
             tolerance = normalize_segment_tolerance({"segment_tolerance": item.get("tolerance", default_tolerance)})
+            batch_id = str(item.get("batch_id", item.get("batchId", ""))).strip()
             if groups:
-                result.append({"mode": mode, "groups_data": groups_data, "groups": groups, "tolerance": tolerance})
+                result.append({"mode": mode, "groups_data": groups_data, "groups": groups, "tolerance": tolerance, "batch_id": batch_id})
         return result
 
     mode = data.get("segment_mode", "2-3-5")
@@ -869,12 +870,19 @@ def normalize_segment_tolerance(data):
 def passes_segment_filters(number, segment_filters, tolerance=0):
     if not segment_filters:
         return True
-    misses_by_tolerance = {}
+    misses_by_batch = {}
+    tolerance_by_batch = {}
     for item in segment_filters:
         item_tolerance = normalize_segment_tolerance({"segment_tolerance": item.get("tolerance", tolerance)})
+        batch_id = str(item.get("batch_id", "")).strip()
+        batch_key = ("batch", batch_id) if batch_id else ("legacy_tolerance", item_tolerance)
+        if batch_key in tolerance_by_batch:
+            tolerance_by_batch[batch_key] = min(tolerance_by_batch[batch_key], item_tolerance)
+        else:
+            tolerance_by_batch[batch_key] = item_tolerance
         if not passes_segment_pattern(number, item["groups"], item["mode"]):
-            misses_by_tolerance[item_tolerance] = misses_by_tolerance.get(item_tolerance, 0) + 1
-    return all(misses <= item_tolerance for item_tolerance, misses in misses_by_tolerance.items())
+            misses_by_batch[batch_key] = misses_by_batch.get(batch_key, 0) + 1
+    return all(misses <= tolerance_by_batch[batch_key] for batch_key, misses in misses_by_batch.items())
 
 
 def validate_code_filter(item):
@@ -1770,7 +1778,7 @@ def build_filter_result(data):
         "segment": segment_desc(segment_filters, segment_tolerance),
         "segment_tolerance": segment_tolerance,
         "segment_filters": [
-            {"mode": item["mode"], "groups": item["groups_data"], "tolerance": item.get("tolerance", 0)}
+            {"mode": item["mode"], "groups": item["groups_data"], "tolerance": item.get("tolerance", 0), "batch_id": item.get("batch_id", "")}
             for item in segment_filters
         ],
         "code_desc": code_filter_desc(code_filters),

@@ -294,6 +294,22 @@ class SegmentPatternExpansionTest(unittest.TestCase):
 
         self.assertTrue(app.passes_segment_filters("147", filters))
 
+    def test_segment_filters_group_misses_by_batch_id(self):
+        filters = app.normalize_segment_filters({
+            "segment_filters": [
+                {"mode": "3-3-4", "groups": ["049", "168", "2357"], "tolerance": 2, "batch_id": "wealth-334"},
+                {"mode": "3-3-4", "groups": ["137", "458", "0269"], "tolerance": 2, "batch_id": "wealth-334"},
+                {"mode": "3-3-4", "groups": ["029", "458", "1367"], "tolerance": 2, "batch_id": "wealth-334"},
+                {"mode": "3-3-4", "groups": ["048", "369", "1257"], "tolerance": 2, "batch_id": "wealth-334"},
+                {"mode": "5-5", "groups": ["01257", "34689"], "tolerance": 2, "batch_id": "wealth-55"},
+                {"mode": "5-5", "groups": ["02567", "13489"], "tolerance": 2, "batch_id": "wealth-55"},
+                {"mode": "5-5", "groups": ["01345", "26789"], "tolerance": 2, "batch_id": "wealth-55"},
+                {"mode": "5-5", "groups": ["01256", "34789"], "tolerance": 2, "batch_id": "wealth-55"},
+            ]
+        })
+
+        self.assertTrue(app.passes_segment_filters("130", filters))
+
     def test_segment_filters_strict_added_after_tolerant_group_still_blocks(self):
         filters = app.normalize_segment_filters({
             "segment_filters": [
