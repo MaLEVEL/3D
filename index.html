@@ -2062,7 +2062,7 @@
   function normalizeSegmentGroups(groups, mode){
     var sizes = SEGMENT_SIZES[mode] || [];
     var used = {};
-    return sizes.map(function(size, index){
+    var normalized = sizes.map(function(size, index){
       var next = [];
       cleanDigits(groups[index] || "").split("").forEach(function(d){
         if (!used[d] && next.length < size) {
@@ -2072,6 +2072,20 @@
       });
       return next.join("");
     });
+    var last = sizes.length - 1;
+    if (last > 0 && normalized[last].length < sizes[last]) {
+      var usedBeforeLast = {};
+      var previousComplete = true;
+      for (var i = 0; i < last; i++) {
+        if (normalized[i].length !== sizes[i]) previousComplete = false;
+        normalized[i].split("").forEach(function(d){ usedBeforeLast[d] = true; });
+      }
+      if (previousComplete) {
+        var rest = DIGITS.filter(function(d){ return !usedBeforeLast[d]; });
+        if (rest.length === sizes[last]) normalized[last] = rest.join("");
+      }
+    }
+    return normalized;
   }
   function parseBatchSegmentLine(line){
     var tokens = String(line || "").match(/\d+/g) || [];
